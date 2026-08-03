@@ -1,0 +1,92 @@
+<diagram program="umletino" version="15.1"><zoom_level>8</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>232</x><y>78</y><w>280</w><h>136</h></coordinates><panel_attributes>Pedido
+--
+-Id_Pedido: Long
+-fecha: LocalDate
+--
++cargarPedido():Pedido
++borrarPedido(Long Id_Pedido): void
++modificarPedido(Long Id_Pedido): void
++buscarPedidosPorFecha(LocalDate fecha): List&lt;Pedido&gt;
++buscarPedido(Long Id_Pedido): Pedido
++buscarPedidosCliente(Long Id_Cliente): List&lt;Pedido&gt;</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>584</x><y>142</y><w>224</w><h>136</h></coordinates><panel_attributes>Cliente
+--
+-Id_Cliente: Long
+-cuit: String
+-nombre: String
+-contacto: String
+--
++cargarCliente():Cliente
++borrarCliente(Long Id_Cliente): void
++modificarCliente(Long Id_Cliente): void
++buscarClientePorCuit(String cuit): Cliente</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>32</x><y>142</y><w>160</w><h>64</h></coordinates><panel_attributes>EstadoPedido
+--
+-Id_EstadoPedido: Long
+-descripcion: String
+--</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>248</x><y>270</y><w>280</w><h>88</h></coordinates><panel_attributes>DetallePedido
+--
+-Id_DetallePedido: Long
+-cantidad: double
+-precioUnitario: double
+--</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>960</x><y>318</y><w>296</w><h>144</h></coordinates><panel_attributes>Usuario
+--
+-Id_Usuario: Long
+-nombre: String
+-email: String
+-passwordHash: String
+--
++iniciarSesion(String email, String password):void
++cargarUsuario():Usuario
++borrarUsuario(Long Id_Usuario): void
++modificarUsuario(Long Id_Usuario):void
++buscarPorNombre(String nombre): Usuario</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1200</x><y>534</y><w>160</w><h>64</h></coordinates><panel_attributes>Rol
+--
+-Id_Rol: Long
+-descripcion: String
+--</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>600</x><y>494</y><w>296</w><h>120</h></coordinates><panel_attributes>Mix
+--
+-Id_Mix: Long
+-nombre: String
+-precioVenta: double
+-fechaElaboracion: LocalDate
+-cantidadProducida: double
+--</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1216</x><y>630</y><w>280</w><h>104</h></coordinates><panel_attributes>Formula
+--
+-Id_Formula: Long
+--
++cargarFormula():Formula
++borrarFormula(Long Id_Formula): void
++modificarFormula(Long Id_Formula):void
++buscarFormula(Long Id_Formula):void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1080</x><y>798</y><w>312</w><h>160</h></coordinates><panel_attributes>MateriaPrima
+--
+-Id_MateriaPrima: Long
+-nombre: String
+-unidadMedida: String
+-precio: double
+-cantidadActual: double
+-cantidadMinima: double
+-fechaIngreso: LocalDate
+--
++cargarMateriaPrima():MateriaPrima
++borrarMateriaPrima(Long Id_MateriaPrima): void
++actualizarPrecio(Double precio):void
++modificarMateriaPrima(Long Id_MateriaPrima): void</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>368</x><y>206</y><w>32</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=n</panel_attributes><additional_attributes>10;10;10;80</additional_attributes></element><element><id>Relation</id><coordinates><x>504</x><y>86</y><w>168</w><h>72</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>180;70;180;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>120</x><y>78</y><w>128</w><h>80</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>10;80;10;10;140;10</additional_attributes></element><element><id>Relation</id><coordinates><x>464</x><y>350</y><w>168</w><h>168</h></coordinates><panel_attributes>lt=-
+m2=n
+m1=1
+solicita</panel_attributes><additional_attributes>190;180;150;180;150;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>736</x><y>326</y><w>240</w><h>184</h></coordinates><panel_attributes>lt=-
+m1=0..n
+m2=1
+realiza</panel_attributes><additional_attributes>10;210;10;20;280;20</additional_attributes></element><element><id>Relation</id><coordinates><x>1248</x><y>374</y><w>112</w><h>176</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>110;200;110;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>888</x><y>574</y><w>344</w><h>88</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>410;80;140;80;140;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1384</x><y>726</y><w>88</w><h>112</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;-
+m1=n
+m2=m</panel_attributes><additional_attributes>10;110;80;110;80;10</additional_attributes></element><element><id>Relation</id><coordinates><x>408</x><y>30</y><w>576</w><h>304</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>10;60;10;10;690;10;690;360</additional_attributes></element></diagram>
