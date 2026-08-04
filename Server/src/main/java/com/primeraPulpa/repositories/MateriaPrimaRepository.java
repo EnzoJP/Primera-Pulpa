@@ -1,0 +1,18 @@
+package com.primeraPulpa.repositories;
+
+import com.primeraPulpa.entities.MateriaPrima;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+
+public interface MateriaPrimaRepository extends BaseRepository<MateriaPrima, Long> {
+
+    // HU-05: filtrar por nombre
+    List<MateriaPrima> findByNombreContainingIgnoreCase(String nombre);
+
+    // HU-06: materias primas cuyo stock actual está por debajo del mínimo
+    @Query("SELECT m FROM MateriaPrima m " +
+           "WHERE m.eliminado = false " +
+           "AND m.cantidadActual < m.cantidadMinima")
+    List<MateriaPrima> findConStockBajo();
+}
