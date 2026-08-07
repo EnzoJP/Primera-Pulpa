@@ -34,4 +34,8 @@ public class Rol extends BaseEntity<Long> {
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
     }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
 }
