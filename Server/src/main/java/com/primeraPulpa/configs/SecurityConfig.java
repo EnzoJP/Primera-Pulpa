@@ -46,7 +46,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, UsuarioService usuarioService) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/error/**").permitAll()
@@ -54,6 +54,8 @@ public class SecurityConfig {
         )
         .formLogin(form -> form
             .loginPage("/login")
+            .usernameParameter("username")
+            .passwordParameter("password")
             .defaultSuccessUrl("/usuarios", true)
             .permitAll()
         )
