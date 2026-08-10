@@ -7,14 +7,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@CrossOrigin("*")
-@RequestMapping(path = "api/v1/detalles-pedido")
+@RequestMapping(path = "/detalles-pedido")
 public class DetallePedidoController extends BaseController<DetallePedido, Long> {
 
     private final DetallePedidoRepository detallePedidoRepository;
 
     public DetallePedidoController(DetallePedidoService service, DetallePedidoRepository detallePedidoRepository) {
-        super(service, DetallePedido.class, "/api/v1/detalles-pedido", "detallePedido");
+        super(service, DetallePedido.class, "/detalles-pedido", "detallePedido");
         this.detallePedidoRepository = detallePedidoRepository;
     }
 

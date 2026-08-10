@@ -3,6 +3,7 @@ package com.primeraPulpa.Services;
 import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -11,10 +12,12 @@ import java.util.Optional;
 public class UsuarioService extends BaseService<Usuario, Long> {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository repository) {
+    public UsuarioService(UsuarioRepository repository, PasswordEncoder passwordEncoder) {
         super(repository);
         this.usuarioRepository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -22,34 +25,36 @@ public class UsuarioService extends BaseService<Usuario, Long> {
         if (usuario.getNombre() == null || usuario.getNombre().trim().isEmpty()) {
             throw new ErrorServiceException("Debe indicar el nombre del usuario");
         }
-        if (usuario.getEmail() == null || !usuario.getEmail().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+
+        if (usuario.getEmail() == null ||
+                !usuario.getEmail().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
             throw new ErrorServiceException("Debe indicar un email válido");
         }
+
         if (usuario.getRol() == null) {
-            throw new ErrorServiceException("Debe asignar un rol al usuario (ADMIN o EMPLEADO)");
+            throw new ErrorServiceException(
+                    "Debe asignar un rol al usuario (ADMIN o EMPLEADO)"
+            );
         }
     }
 
     @Override
     protected void preAlta(Usuario usuario) throws ErrorServiceException {
-        // HU-02: no permitir emails duplicados
-        Optional<Usuario> existente = usuarioRepository.findByEmail(usuario.getEmail());
+        Optional<Usuario> existente =
+                usuarioRepository.findByEmail(usuario.getEmail());
+
         if (existente.isPresent()) {
-            throw new ErrorServiceException("Ya existe un usuario registrado con ese email");
+            throw new ErrorServiceException(
+                    "Ya existe un usuario registrado con ese email"
+            );
         }
+        usuario.setPasswordHash(
+                passwordEncoder.encode(usuario.getPasswordHash())
+        );
     }
 
-    // HU-01: login por email y contraseña
-    public Usuario login(String email, String password) throws ErrorServiceException {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .filter(u -> !Boolean.TRUE.equals(u.getEliminado()))
-                .orElseThrow(() -> new ErrorServiceException("Usuario o contraseña incorrectos"));
-
-        // NOTA: acá falta el hashing real (ej. BCrypt). Se deja comparación directa
-        // como placeholder hasta que definamos la librería de seguridad a usar.
-        if (!usuario.getPasswordHash().equals(password)) {
-            throw new ErrorServiceException("Usuario o contraseña incorrectos");
-        }
-        return usuario;
-    }
+    // en el alta:
+    /*usuario.setPasswordHash(
+            passwordEncoder.encode(usuario.getPasswordHash())
+            );*/
 }

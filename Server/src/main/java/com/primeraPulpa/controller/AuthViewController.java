@@ -8,7 +8,7 @@ public class AuthViewController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/api/v1/usuarios";
+        return "redirect:/usuarios";
     }
 
     @GetMapping("/login")

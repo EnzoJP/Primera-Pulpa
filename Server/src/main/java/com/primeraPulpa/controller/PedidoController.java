@@ -10,8 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@CrossOrigin("*")
-@RequestMapping(path = "api/v1/pedidos")
+@RequestMapping(path = "/pedidos")
 public class PedidoController extends BaseController<Pedido, Long> {
 
     private final PedidoRepository pedidoRepository;
@@ -19,7 +18,7 @@ public class PedidoController extends BaseController<Pedido, Long> {
     private final MixService mixService;
 
     public PedidoController(PedidoService service, PedidoRepository pedidoRepository, ClienteService clienteService, MixService mixService) {
-        super(service, Pedido.class, "/api/v1/pedidos", "pedido");
+        super(service, Pedido.class, "/pedidos", "pedido");
         this.pedidoRepository = pedidoRepository;
         this.clienteService = clienteService;
         this.mixService = mixService;

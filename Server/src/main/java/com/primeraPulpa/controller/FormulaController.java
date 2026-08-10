@@ -7,14 +7,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@CrossOrigin("*")
-@RequestMapping(path = "api/v1/formulas")
+@RequestMapping(path = "/formulas")
 public class FormulaController extends BaseController<Formula, Long> {
 
     private final FormulaRepository formulaRepository;
 
     public FormulaController(FormulaService service, FormulaRepository formulaRepository) {
-        super(service, Formula.class, "/api/v1/formulas", "formula");
+        super(service, Formula.class, "/formulas", "formula");
         this.formulaRepository = formulaRepository;
     }
 

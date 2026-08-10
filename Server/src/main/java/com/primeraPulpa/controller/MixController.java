@@ -7,11 +7,10 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@CrossOrigin("*")
-@RequestMapping(path = "api/v1/mixes")
+@RequestMapping(path = "/mixes")
 public class MixController extends BaseController<Mix, Long> {
 
     public MixController(MixService service) {
-        super(service, Mix.class, "/api/v1/mixes", "mix");
+        super(service, Mix.class, "/mixes", "mix");
     }
 }

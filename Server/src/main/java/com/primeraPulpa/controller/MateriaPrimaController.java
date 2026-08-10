@@ -7,14 +7,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@CrossOrigin("*")
-@RequestMapping(path = "api/v1/materias-primas")
+@RequestMapping(path = "/materias-primas")
 public class MateriaPrimaController extends BaseController<MateriaPrima, Long> {
 
     private final MateriaPrimaRepository materiaPrimaRepository;
 
     public MateriaPrimaController(MateriaPrimaService service, MateriaPrimaRepository materiaPrimaRepository) {
-        super(service, MateriaPrima.class, "/api/v1/materias-primas", "materiaPrima");
+        super(service, MateriaPrima.class, "/materias-primas", "materiaPrima");
         this.materiaPrimaRepository = materiaPrimaRepository;
     }
 
