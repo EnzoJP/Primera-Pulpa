@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle}">Formulario</title>
+</head>
+<body>
+<h1 th:text="${formTitle}">Formulario</h1>
+<p th:if="${error}" th:text="${error}"></p>
+<form th:object="${item}" th:action="${formAction}" method="post">
+    <div th:each="field : ${formFields}">
+        <label th:for="${field.path}" th:text="${field.label}">campo</label>
+        <input th:if="${field.inputType != 'date' and field.inputType != 'datetime-local'}"
+               th:type="${field.inputType}" th:field="*{__${field.path}__}">
+        <input th:if="${field.inputType == 'date' or field.inputType == 'datetime-local'}"
+               th:type="${field.inputType}" th:field="*{__${field.path}__}">
+    </div>
+    <button type="submit">Guardar</button>
+</form>
+<p><a th:href="${basePath}">Volver</a></p>
+</body>
+</html>
+
+

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Detalle de ' + ${entityName}">Detalle</title>
+</head>
+<body>
+<h1 th:text="'Detalle de ' + ${entityName}">Detalle</h1>
+<pre th:text="${item}">Entidad</pre>
+<p>
+    <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
+    <a th:href="${basePath}">Volver</a>
+</p>
+</body>
+</html>
+
+

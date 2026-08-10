@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Listado de ' + ${entityName}">Listado</title>
+</head>
+<body>
+<h1 th:text="'Listado de ' + ${entityName}">Listado</h1>
+<p th:if="${success}" th:text="${success}"></p>
+<p th:if="${error}" th:text="${error}"></p>
+<p><a th:href="${basePath + '/nuevo'}">Nuevo</a></p>
+<table border="1" cellpadding="6">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td th:text="${item.id}">1</td>
+        <td>
+            <a th:href="${basePath + '/' + item.id}">Ver</a>
+            <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
+            <form th:action="${basePath + '/' + item.id + '/eliminar'}" method="post" style="display:inline;">
+                <button type="submit">Eliminar</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
+
+

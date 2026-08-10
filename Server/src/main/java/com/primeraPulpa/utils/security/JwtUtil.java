@@ -27,10 +27,10 @@ public class JwtUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
-  @Value("${jwt.secret}")
+  @Value("${jwt.secret:}")
   private String secret;
 
-  @Value("${jwt.expiration}")
+  @Value("${jwt.expiration:0}")
   private Long expiration;
 
   public String generateToken(String usuarioId, String nombreUsuario, Rol rol) {
