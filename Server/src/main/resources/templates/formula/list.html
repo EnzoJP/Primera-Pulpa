@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Fórmulas</title>
+</head>
+<body>
+<h1>Listado de Fórmulas</h1>
+<p th:if="${success}" th:text="${success}"></p>
+<p th:if="${error}" th:text="${error}"></p>
+<p><a th:href="${basePath + '/nuevo'}">Nueva fórmula</a></p>
+<table border="1" cellpadding="6">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Mix</th>
+        <th>Materia prima</th>
+        <th>Porcentaje (%)</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td th:text="${item.id}">1</td>
+        <td th:text="${item.mix?.nombre}">Mix</td>
+        <td th:text="${item.materiaPrima?.nombre}">Materia prima</td>
+        <td th:text="${item.porcentaje}">0</td>
+        <td>
+            <a th:href="${basePath + '/' + item.id}">Ver</a>
+            <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
+            <form th:action="${basePath + '/' + item.id + '/eliminar'}" method="post" style="display:inline;">
+                <button type="submit">Eliminar</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

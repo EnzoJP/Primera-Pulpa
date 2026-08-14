@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Detalle de ' + ${item.nombre}">Detalle</title>
+</head>
+<body>
+<h1 th:text="'Detalle de ' + ${item.nombre}">Detalle</h1>
+<table border="1" cellpadding="6">
+    <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
+    <tr><th>Nombre</th><td th:text="${item.nombre}">Mix</td></tr>
+    <tr><th>Precio de venta</th><td th:text="${item.precioVenta}">0</td></tr>
+    <tr><th>Costo</th><td th:text="${item.costo}">0</td></tr>
+    <tr><th>Cantidad producida</th><td th:text="${item.cantidadProducida}">0</td></tr>
+    <tr><th>Fecha de elaboración</th><td th:text="${item.fechaElaboracion}">2026-01-01</td></tr>
+</table>
+<p>
+    <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
+    <a th:href="${basePath}">Volver</a>
+</p>
+</body>
+</html>

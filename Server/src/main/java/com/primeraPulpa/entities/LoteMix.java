@@ -14,20 +14,14 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Mix extends BaseEntity<Long> {
+public class LoteMix extends BaseEntity<Long> {
 
-    private String nombre;
-    private double precioVenta;
+    @ManyToOne
+    private Mix mix;
+
     private LocalDate fechaElaboracion;
-    private double cantidadProducida;
-
-    // Costo por unidad (kg) del mix, calculado desde las fórmulas:
-    // suma de (porcentaje / 100) * precio de cada materia prima.
-    private double costo;
-
-    // Usuario que realizó la elaboración de este mix. INNCESARIO
-    //@ManyToOne
-    //private Usuario usuario;
+    //private Double cantidadInicial; No se si nos interesa
+    private Double cantidadElaborada;
 
     @Override
     public Long getId() {

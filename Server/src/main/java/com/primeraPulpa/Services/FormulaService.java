@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class FormulaService extends BaseService<Formula, Long> {
 
-    public FormulaService(FormulaRepository repository) {
+    private final MixService mixService;
+
+    public FormulaService(FormulaRepository repository, MixService mixService) {
         super(repository);
+        this.mixService = mixService;
     }
 
     @Override
@@ -20,8 +23,23 @@ public class FormulaService extends BaseService<Formula, Long> {
         if (formula.getMateriaPrima() == null) {
             throw new ErrorServiceException("Debe indicar la materia prima de la fórmula");
         }
-        if (formula.getCantidad() <= 0) {
-            throw new ErrorServiceException("La cantidad debe ser mayor a cero");
+        if (formula.getPorcentaje() <= 0 || formula.getPorcentaje() > 100) {
+            throw new ErrorServiceException("El porcentaje debe ser mayor a cero y menor o igual a 100");
         }
+    }
+
+    @Override
+    protected void postAlta(Formula formula) throws ErrorServiceException {
+        mixService.recalcularCosto(formula.getMix().getId());
+    }
+
+    @Override
+    protected void postModificacion(Formula formula) throws ErrorServiceException {
+        mixService.recalcularCosto(formula.getMix().getId());
+    }
+
+    @Override
+    protected void postBaja(Long id) throws ErrorServiceException {
+        repository.findById(id).ifPresent(f -> mixService.recalcularCosto(f.getMix().getId()));
     }
 }

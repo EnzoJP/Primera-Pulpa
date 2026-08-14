@@ -12,10 +12,13 @@ import java.time.LocalDate;
 public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
 
     private final FormulaRepository formulaRepository;
+    private final MixService mixService;
 
-    public MateriaPrimaService(MateriaPrimaRepository repository, FormulaRepository formulaRepository) {
+    public MateriaPrimaService(MateriaPrimaRepository repository, FormulaRepository formulaRepository,
+                               MixService mixService) {
         super(repository);
         this.formulaRepository = formulaRepository;
+        this.mixService = mixService;
     }
 
     @Override
@@ -41,6 +44,15 @@ public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
         if (materiaPrima.getFechaIngreso() == null) {
             materiaPrima.setFechaIngreso(LocalDate.now());
         }
+    }
+
+    // Si cambia el precio, se recalculan los costos de los mixes que la usan
+    @Override
+    protected void postModificacion(MateriaPrima materiaPrima) throws ErrorServiceException {
+        formulaRepository.findByMateriaPrimaId(materiaPrima.getId()).stream()
+                .map(f -> f.getMix().getId())
+                .distinct()
+                .forEach(mixService::recalcularCosto);
     }
 
     // HU-03: no se puede dar de baja una materia prima referenciada en una fórmula

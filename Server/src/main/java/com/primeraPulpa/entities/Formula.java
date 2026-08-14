@@ -14,9 +14,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Formula extends BaseEntity<Long> {
 
-    // NOTA: no está en el diagrama original, agregado porque sin cantidad
-    // la fórmula no puede calcular el consumo (ver HU-07). Confirmar con el equipo.
-    private double cantidad;
+    // Porcentaje que representa esta materia prima dentro del mix.
+    // No depende de la cantidad total a producir: si se producen 25 kg,
+    // la cantidad de cada materia prima es 25 * (porcentaje / 100).
+    private double porcentaje;
 
     @ManyToOne
     private Mix mix;

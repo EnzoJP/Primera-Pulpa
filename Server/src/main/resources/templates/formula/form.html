@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle}">Formulario</title>
+</head>
+<body>
+<h1 th:text="${formTitle}">Formulario</h1>
+<p th:if="${error}" th:text="${error}"></p>
+<form th:object="${item}" th:action="${formAction}" method="post">
+    <div>
+        <label for="mix">Mix</label>
+        <select id="mix" name="mix" required>
+            <option value="">Seleccionar...</option>
+            <option th:each="m : ${mixes}" th:value="${m.id}"
+                    th:selected="${item.mix != null and item.mix.id == m.id}"
+                    th:text="${m.nombre}">Mix</option>
+        </select>
+    </div>
+    <div>
+        <label for="materiaPrima">Materia prima</label>
+        <select id="materiaPrima" name="materiaPrima" required>
+            <option value="">Seleccionar...</option>
+            <option th:each="mp : ${materiasPrimas}" th:value="${mp.id}"
+                    th:selected="${item.materiaPrima != null and item.materiaPrima.id == mp.id}"
+                    th:text="${mp.nombre}">Materia prima</option>
+        </select>
+    </div>
+    <div>
+        <label for="porcentaje">Porcentaje (%)</label>
+        <input id="porcentaje" type="number" step="0.01" min="0.01" max="100" th:field="*{porcentaje}" required>
+    </div>
+    <button type="submit">Guardar</button>
+</form>
+<p><a th:href="${basePath}">Volver</a></p>
+</body>
+</html>

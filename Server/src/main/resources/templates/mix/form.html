@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle}">Formulario</title>
+</head>
+<body>
+<h1 th:text="${formTitle}">Formulario</h1>
+<p th:if="${error}" th:text="${error}"></p>
+<form th:object="${item}" th:action="${formAction}" method="post">
+    <div>
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" th:field="*{nombre}" required>
+    </div>
+    <div>
+        <label for="precioVenta">Precio de venta</label>
+        <input id="precioVenta" type="number" step="0.01" min="0" th:field="*{precioVenta}" required>
+    </div>
+    <div>
+        <label for="fechaElaboracion">Fecha de elaboración</label>
+        <input id="fechaElaboracion" type="date" th:field="*{fechaElaboracion}">
+    </div>
+    <div>
+        <label for="cantidadProducida">Cantidad producida</label>
+        <input id="cantidadProducida" type="number" step="0.01" min="0" th:field="*{cantidadProducida}">
+    </div>
+    <button type="submit">Guardar</button>
+</form>
+<p><a th:href="${basePath}">Volver</a></p>
+</body>
+</html>

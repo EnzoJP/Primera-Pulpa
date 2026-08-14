@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Fórmula</title>
+</head>
+<body>
+<h1>Detalle de Fórmula</h1>
+<table border="1" cellpadding="6">
+    <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
+    <tr><th>Mix</th><td th:text="${item.mix?.nombre}">Mix</td></tr>
+    <tr><th>Materia prima</th><td th:text="${item.materiaPrima?.nombre}">Materia prima</td></tr>
+    <tr><th>Porcentaje (%)</th><td th:text="${item.porcentaje}">0</td></tr>
+</table>
+<p>
+    <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
+    <a th:href="${basePath}">Volver</a>
+</p>
+</body>
+</html>

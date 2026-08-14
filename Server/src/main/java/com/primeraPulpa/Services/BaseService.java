@@ -43,6 +43,7 @@ public abstract class BaseService<T extends BaseEntity<ID>, ID> {
             return repository.findById(id).map(entidad -> {
                 entidadNueva.setId(id);
                 T actualizado = repository.save(entidadNueva);
+                postModificacion(actualizado);
                 return actualizado;
             });
 
@@ -59,6 +60,7 @@ public abstract class BaseService<T extends BaseEntity<ID>, ID> {
             return repository.findById(id).map(entidad -> {
                 entidad.setEliminado(true);
                 repository.save(entidad);
+                postBaja(id);
                 return true;
             }).orElse(false);
 
@@ -111,5 +113,7 @@ public abstract class BaseService<T extends BaseEntity<ID>, ID> {
     protected void preAlta(T entidad) throws ErrorServiceException {}
     protected void postAlta(T entidad)throws ErrorServiceException {}
     protected void preModificacion(T entidad)throws ErrorServiceException {}
+    protected void postModificacion(T entidad)throws ErrorServiceException {}
     protected void preBaja(ID id)throws ErrorServiceException {}
+    protected void postBaja(ID id)throws ErrorServiceException {}
 }
