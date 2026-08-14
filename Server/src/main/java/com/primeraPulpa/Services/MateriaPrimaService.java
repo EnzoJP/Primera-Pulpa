@@ -23,7 +23,7 @@ public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
         if (materiaPrima.getNombre() == null || materiaPrima.getNombre().trim().isEmpty()) {
             throw new ErrorServiceException("Debe indicar el nombre de la materia prima");
         }
-        if (materiaPrima.getUnidadMedida() == null || materiaPrima.getUnidadMedida().trim().isEmpty()) {
+        if (materiaPrima.getUnidadMedida() == null) {
             throw new ErrorServiceException("Debe indicar la unidad de medida");
         }
         if (materiaPrima.getPrecio() < 0) {

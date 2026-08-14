@@ -10,6 +10,8 @@ public interface MateriaPrimaRepository extends BaseRepository<MateriaPrima, Lon
     // HU-05: filtrar por nombre
     List<MateriaPrima> findByNombreContainingIgnoreCase(String nombre);
 
+    List<MateriaPrima> findByUnidadMedidaId(Long id);
+
     // HU-06: materias primas cuyo stock actual está por debajo del mínimo
     @Query("SELECT m FROM MateriaPrima m " +
            "WHERE m.eliminado = false " +

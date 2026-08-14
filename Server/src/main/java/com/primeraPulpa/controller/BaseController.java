@@ -46,7 +46,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
 
             cargarAtributosBase(model);
             model.addAttribute("items", activos);
-            return "crud/list";
+            return vistaListado();
         } catch (ErrorServiceException e) {
             model.addAttribute("error", e.getMessage());
             return "error/500";
@@ -64,7 +64,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             T entidad = service.getOne(id);
             cargarAtributosBase(model);
             model.addAttribute("item", entidad);
-            return "crud/detail";
+            return vistaDetalle();
         } catch (ErrorServiceException e) {
             model.addAttribute("error", e.getMessage());
             return "error/404";
@@ -83,7 +83,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             cargarAtributosBase(model);
             model.addAttribute("formAction", basePath);
             model.addAttribute("formTitle", "Crear " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         }
 
         try {
@@ -97,13 +97,13 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("formAction", basePath);
             model.addAttribute("formTitle", "Crear " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         } catch (Exception e) {
             cargarAtributosBase(model);
             model.addAttribute("error", "Error al crear la entidad");
             model.addAttribute("formAction", basePath);
             model.addAttribute("formTitle", "Crear " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         }
     }
 
@@ -115,7 +115,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             model.addAttribute("item", entidad);
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         } catch (Exception e) {
             model.addAttribute("error", "Entidad no encontrada");
             return "error/404";
@@ -132,7 +132,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             cargarAtributosBase(model);
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         }
 
         try {
@@ -152,13 +152,13 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         } catch (Exception e) {
             cargarAtributosBase(model);
             model.addAttribute("error", "Error al actualizar la entidad");
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
-            return "crud/form";
+            return vistaFormulario();
         }
     }
 
@@ -268,6 +268,14 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
 
     protected String vistaFormulario() {
         return "crud/form";  // default, cada entidad puede tener su propio template
+    }
+
+    protected String vistaListado() {
+        return "crud/list";
+    }
+
+    protected String vistaDetalle() {
+        return "crud/detail";
     }
 
 

@@ -1,29 +1,21 @@
 package com.primeraPulpa.entities;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Entity
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MateriaPrima extends BaseEntity<Long> {
+public class UnidadMedida extends BaseEntity<Long> {
 
-    private String nombre;
-
-    @ManyToOne
-    private UnidadMedida unidadMedida;
-    private double precio;
-    private double cantidadActual;
-    private double cantidadMinima;
-    private LocalDate fechaIngreso;
+    private String descripcion;
 
     @Override
     public Long getId() {

@@ -4,8 +4,10 @@ import com.primeraPulpa.Services.ClienteService;
 import com.primeraPulpa.Services.RolService;
 import com.primeraPulpa.Services.UsuarioService;
 import com.primeraPulpa.entities.Rol;
+import com.primeraPulpa.entities.UnidadMedida;
 import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.repositories.ClienteRepository;
+import com.primeraPulpa.repositories.UnidadMedidaRepository;
 import com.primeraPulpa.repositories.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +25,18 @@ public class DataInitializer {
   public CommandLineRunner initDatabase(UsuarioRepository usuarioRepository,
                                         PasswordEncoder passwordEncoder,
                                         UsuarioService usuarioService,
-                                        RolService rolService) {
+                                        RolService rolService,
+                                        UnidadMedidaRepository unidadMedidaRepository) {
 
     return args -> {
+      // Unidades de medida iniciales
+      if (unidadMedidaRepository.count() == 0) {
+        unidadMedidaRepository.save(UnidadMedida.builder().descripcion("kg").build());
+        unidadMedidaRepository.save(UnidadMedida.builder().descripcion("litros").build());
+        unidadMedidaRepository.save(UnidadMedida.builder().descripcion("unidades").build());
+        logger.info("Unidades de medida iniciales creadas");
+      }
+
       // Check if the admin user already exists
       if (usuarioRepository.findByEmail("admin@example.com").isEmpty()) {
           final Rol rol = rolService.alta(Rol.builder()
