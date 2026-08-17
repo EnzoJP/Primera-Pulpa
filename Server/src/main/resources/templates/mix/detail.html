@@ -9,10 +9,13 @@
 <table border="1" cellpadding="6">
     <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
     <tr><th>Nombre</th><td th:text="${item.nombre}">Mix</td></tr>
-    <tr><th>Precio de venta</th><td th:text="${item.precioVenta}">0</td></tr>
-    <tr><th>Costo</th><td th:text="${item.costo}">0</td></tr>
-    <tr><th>Cantidad producida</th><td th:text="${item.cantidadProducida}">0</td></tr>
-    <tr><th>Fecha de elaboración</th><td th:text="${item.fechaElaboracion}">2026-01-01</td></tr>
+    <tr><th>Precio de venta</th><td th:text="${item.precioVenta}">-</td></tr>
+    <tr><th>Costo (por kg)</th><td th:text="${item.costo}">0</td></tr>
+    <tr>
+        <th>Ganancia</th>
+        <td th:if="${item.precioVenta != null}" th:text="${item.precioVenta - item.costo}">0</td>
+        <td th:if="${item.precioVenta == null}">-</td>
+    </tr>
 </table>
 <p>
     <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>

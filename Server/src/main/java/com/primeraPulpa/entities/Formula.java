@@ -49,4 +49,16 @@ public class Formula extends BaseEntity<Long> {
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
     }
+
+    public double getCosto(){
+        double costo = 0;
+        double cantidad = this.getCantidad();
+        List<DetalleFormula> detalles = this.getDetalles();
+        for(DetalleFormula detalle : detalles){
+            double Kgramos = detalle.getGramos()/1000.0;
+            double costoMP = detalle.getMateriaPrima().getPrecio();
+            costo += Kgramos*costoMP;
+        }
+        return costo/cantidad;
+    }
 }

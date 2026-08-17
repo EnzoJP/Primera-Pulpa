@@ -15,9 +15,8 @@
         <th>ID</th>
         <th>Nombre</th>
         <th>Precio de venta</th>
-        <th>Costo</th>
-        <th>Cantidad producida</th>
-        <th>Fecha de elaboración</th>
+        <th>Costo (por kg)</th>
+        <th>Ganancia</th>
         <th>Acciones</th>
     </tr>
     </thead>
@@ -25,10 +24,10 @@
     <tr th:each="item : ${items}">
         <td th:text="${item.id}">1</td>
         <td th:text="${item.nombre}">Mix</td>
-        <td th:text="${item.precioVenta}">0</td>
+        <td th:text="${item.precioVenta}">-</td>
         <td th:text="${item.costo}">0</td>
-        <td th:text="${item.cantidadProducida}">0</td>
-        <td th:text="${item.fechaElaboracion}">2026-01-01</td>
+        <td th:if="${item.precioVenta != null}" th:text="${item.precioVenta - item.costo}">0</td>
+        <td th:if="${item.precioVenta == null}">-</td>
         <td>
             <a th:href="${basePath + '/' + item.id}">Ver</a>
             <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>

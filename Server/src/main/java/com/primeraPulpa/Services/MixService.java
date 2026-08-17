@@ -31,15 +31,8 @@ public class MixService extends BaseService<Mix, Long> {
         if (mix.getNombre() == null || mix.getNombre().trim().isEmpty()) {
             throw new ErrorServiceException("Debe indicar el nombre del mix");
         }
-        if (mix.getPrecioVenta() < 0) {
+        if (mix.getPrecioVenta() != null && mix.getPrecioVenta() < 0) {
             throw new ErrorServiceException("El precio de venta no puede ser negativo");
-        }
-    }
-
-    @Override
-    protected void preAlta(Mix mix) throws ErrorServiceException {
-        if (mix.getCantidadProducida() < 0) {
-            mix.setCantidadProducida(0);
         }
     }
 
@@ -57,10 +50,12 @@ public class MixService extends BaseService<Mix, Long> {
     //   costo mix = costo fórmula + Σ valores de costos adicionales (bolsa, etiqueta...)
     @Transactional
     public void recalcularCosto(Long mixId) {
+
         Mix mix = repository.findById(mixId).orElse(null);
         if (mix == null) {
             return;
         }
+
 
         double costoFormula = 0;
         Formula formula = formulaRepository.findByMixId(mixId).stream()
@@ -68,12 +63,16 @@ public class MixService extends BaseService<Mix, Long> {
                 .findFirst()
                 .orElse(null);
         if (formula != null && formula.getCantidad() > 0) {
+            costoFormula = formula.getCosto();
+        }
+        /*if (formula != null && formula.getCantidad() > 0) {
             double costoTotal = formula.getDetalles().stream()
                     .filter(d -> d.getMateriaPrima() != null && d.getGramos() > 0)
                     .mapToDouble(d -> (d.getGramos() / 1000.0) * d.getMateriaPrima().getPrecio())
                     .sum();
             costoFormula = costoTotal / formula.getCantidad();
-        }
+            }*/
+
 
         double costoAdicional = costoAdicionalRepository.findAll().stream()
                 .filter(c -> !Boolean.TRUE.equals(c.getEliminado()))
