@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Detalle de ' + ${item.descripcion}">Detalle</title>
+</head>
+<body>
+<h1 th:text="'Detalle de ' + ${item.descripcion}">Detalle</h1>
+<table border="1" cellpadding="6">
+    <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
+    <tr><th>Descripción</th><td th:text="${item.descripcion}">bolsa</td></tr>
+    <tr><th>Valor (por kg)</th><td th:text="${item.valor}">0</td></tr>
+</table>
+<p>
+    <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
+    <a th:href="${basePath}">Volver</a>
+</p>
+</body>
+</html>

@@ -1,9 +1,13 @@
 package com.primeraPulpa.Services;
 
+import com.primeraPulpa.entities.DetalleFormula;
 import com.primeraPulpa.entities.Formula;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.FormulaRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class FormulaService extends BaseService<Formula, Long> {
@@ -18,14 +22,39 @@ public class FormulaService extends BaseService<Formula, Long> {
     @Override
     protected void validar(Formula formula) throws ErrorServiceException {
         if (formula.getMix() == null) {
-            throw new ErrorServiceException("Debe indicar el mix al que pertenece la fórmula");
+            throw new ErrorServiceException("Debe indicar el mix de la fórmula");
         }
-        if (formula.getMateriaPrima() == null) {
-            throw new ErrorServiceException("Debe indicar la materia prima de la fórmula");
+        if (formula.getCantidad() <= 0) {
+            throw new ErrorServiceException("Debe indicar la cantidad que produce la fórmula");
         }
-        if (formula.getPorcentaje() <= 0 || formula.getPorcentaje() > 100) {
-            throw new ErrorServiceException("El porcentaje debe ser mayor a cero y menor o igual a 100");
+        boolean hayDetalles = formula.getDetalles() != null &&
+                formula.getDetalles().stream()
+                        .anyMatch(d -> d.getMateriaPrima() != null && d.getGramos() > 0);
+        if (!hayDetalles) {
+            throw new ErrorServiceException("Debe cargar al menos una materia prima con gramos");
         }
+    }
+
+    @Override
+    protected void preAlta(Formula formula) throws ErrorServiceException {
+        prepararDetalles(formula);
+    }
+
+    @Override
+    protected void preModificacion(Formula formula) throws ErrorServiceException {
+        prepararDetalles(formula);
+    }
+
+    // Deja solo los detalles con gramos > 0 y los vincula a la fórmula
+    private void prepararDetalles(Formula formula) {
+        List<DetalleFormula> usados = new ArrayList<>();
+        for (DetalleFormula d : formula.getDetalles()) {
+            if (d.getMateriaPrima() != null && d.getGramos() > 0) {
+                d.setFormula(formula);
+                usados.add(d);
+            }
+        }
+        formula.setDetalles(usados);
     }
 
     @Override

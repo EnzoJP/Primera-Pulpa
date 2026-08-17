@@ -1,11 +1,16 @@
 package com.primeraPulpa.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -14,16 +19,16 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Formula extends BaseEntity<Long> {
 
-    // Porcentaje que representa esta materia prima dentro del mix.
-    // No depende de la cantidad total a producir: si se producen 25 kg,
-    // la cantidad de cada materia prima es 25 * (porcentaje / 100).
-    private double porcentaje;
+    // Cantidad total que produce la fórmula (ej: 25 kg). En base a ese total
+    // se reparten las materias primas según los gramos cargados en los detalles.
+    private double cantidad;
 
-    @ManyToOne
+    // 1 fórmula = 1 mix
+    @OneToOne
     private Mix mix;
 
-    @ManyToOne
-    private MateriaPrima materiaPrima;
+    @OneToMany(mappedBy = "formula", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleFormula> detalles = new ArrayList<>();
 
     @Override
     public Long getId() {

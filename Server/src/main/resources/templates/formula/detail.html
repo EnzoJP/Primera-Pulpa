@@ -9,8 +9,22 @@
 <table border="1" cellpadding="6">
     <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
     <tr><th>Mix</th><td th:text="${item.mix?.nombre}">Mix</td></tr>
-    <tr><th>Materia prima</th><td th:text="${item.materiaPrima?.nombre}">Materia prima</td></tr>
-    <tr><th>Porcentaje (%)</th><td th:text="${item.porcentaje}">0</td></tr>
+    <tr><th>Cantidad que produce (kg)</th><td th:text="${item.cantidad}">0</td></tr>
+</table>
+<h2>Materias primas</h2>
+<table border="1" cellpadding="6">
+    <thead>
+    <tr>
+        <th>Materia prima</th>
+        <th>Gramos</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="d : ${item.detalles}">
+        <td th:text="${d.materiaPrima?.nombre}">Materia prima</td>
+        <td th:text="${d.gramos}">0</td>
+    </tr>
+    </tbody>
 </table>
 <p>
     <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>

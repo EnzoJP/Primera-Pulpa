@@ -7,28 +7,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Mix extends BaseEntity<Long> {
+public class DetalleFormula extends BaseEntity<Long> {
 
-    private String nombre;
-    private double precioVenta;
-    private LocalDate fechaElaboracion;
-    private double cantidadProducida;
+    @ManyToOne
+    private Formula formula;
 
-    // Costo por kg del mix. Se calcula desde la fórmula (gramos de cada
-    // materia prima * precio, dividido la cantidad que produce) más los
-    // costos adicionales del catálogo (bolsa, etiqueta, etc.).
-    private double costo;
+    @ManyToOne
+    private MateriaPrima materiaPrima;
 
-    // Usuario que realizó la elaboración de este mix. INNCESARIO
-    //@ManyToOne
-    //private Usuario usuario;
+    // Gramos de esta materia prima dentro de la receta
+    private double gramos;
 
     @Override
     public Long getId() {

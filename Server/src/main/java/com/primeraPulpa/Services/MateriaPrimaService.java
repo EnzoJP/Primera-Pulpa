@@ -2,7 +2,7 @@ package com.primeraPulpa.Services;
 
 import com.primeraPulpa.entities.MateriaPrima;
 import com.primeraPulpa.exceptions.ErrorServiceException;
-import com.primeraPulpa.repositories.FormulaRepository;
+import com.primeraPulpa.repositories.DetalleFormulaRepository;
 import com.primeraPulpa.repositories.MateriaPrimaRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +11,13 @@ import java.time.LocalDate;
 @Service
 public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
 
-    private final FormulaRepository formulaRepository;
+    private final DetalleFormulaRepository detalleFormulaRepository;
     private final MixService mixService;
 
-    public MateriaPrimaService(MateriaPrimaRepository repository, FormulaRepository formulaRepository,
+    public MateriaPrimaService(MateriaPrimaRepository repository, DetalleFormulaRepository detalleFormulaRepository,
                                MixService mixService) {
         super(repository);
-        this.formulaRepository = formulaRepository;
+        this.detalleFormulaRepository = detalleFormulaRepository;
         this.mixService = mixService;
     }
 
@@ -49,16 +49,16 @@ public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
     // Si cambia el precio, se recalculan los costos de los mixes que la usan
     @Override
     protected void postModificacion(MateriaPrima materiaPrima) throws ErrorServiceException {
-        formulaRepository.findByMateriaPrimaId(materiaPrima.getId()).stream()
-                .map(f -> f.getMix().getId())
+        detalleFormulaRepository.findByMateriaPrimaId(materiaPrima.getId()).stream()
+                .map(d -> d.getFormula().getMix().getId())
                 .distinct()
                 .forEach(mixService::recalcularCosto);
     }
 
-    // HU-03: no se puede dar de baja una materia prima referenciada en una fórmula
+    // HU-03: no se puede dar de baja una materia prima usada en una fórmula
     @Override
     protected void preBaja(Long id) throws ErrorServiceException {
-        boolean referenciada = !formulaRepository.findByMateriaPrimaId(id).isEmpty();
+        boolean referenciada = !detalleFormulaRepository.findByMateriaPrimaId(id).isEmpty();
         if (referenciada) {
             throw new ErrorServiceException("No se puede dar de baja una materia prima utilizada en una fórmula");
         }

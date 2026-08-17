@@ -2,29 +2,27 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Listado de Fórmulas</title>
+    <title>Listado de Costos Adicionales</title>
 </head>
 <body>
-<h1>Listado de Fórmulas</h1>
+<h1>Listado de Costos Adicionales</h1>
 <p th:if="${success}" th:text="${success}"></p>
 <p th:if="${error}" th:text="${error}"></p>
-<p><a th:href="${basePath + '/nuevo'}">Nueva fórmula</a></p>
+<p><a th:href="${basePath + '/nuevo'}">Nuevo costo adicional</a></p>
 <table border="1" cellpadding="6">
     <thead>
     <tr>
         <th>ID</th>
-        <th>Mix</th>
-        <th>Cantidad que produce (kg)</th>
-        <th>Materias primas</th>
+        <th>Descripción</th>
+        <th>Valor (por kg)</th>
         <th>Acciones</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="item : ${items}">
         <td th:text="${item.id}">1</td>
-        <td th:text="${item.mix?.nombre}">Mix</td>
-        <td th:text="${item.cantidad}">0</td>
-        <td th:text="${item.detalles?.size()}">0</td>
+        <td th:text="${item.descripcion}">bolsa</td>
+        <td th:text="${item.valor}">0</td>
         <td>
             <a th:href="${basePath + '/' + item.id}">Ver</a>
             <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>

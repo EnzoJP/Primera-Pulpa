@@ -81,6 +81,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
                          Model model) {
         if (bindingResult.hasErrors()) {
             cargarAtributosBase(model);
+            cargarDatosFormulario(model);
             model.addAttribute("formAction", basePath);
             model.addAttribute("formTitle", "Crear " + entityName);
             return vistaFormulario();
@@ -94,12 +95,14 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             return "redirect:" + basePath;
         } catch (ErrorServiceException e) {
             cargarAtributosBase(model);
+            cargarDatosFormulario(model);
             model.addAttribute("error", e.getMessage());
             model.addAttribute("formAction", basePath);
             model.addAttribute("formTitle", "Crear " + entityName);
             return vistaFormulario();
         } catch (Exception e) {
             cargarAtributosBase(model);
+            cargarDatosFormulario(model);
             model.addAttribute("error", "Error al crear la entidad");
             model.addAttribute("formAction", basePath);
             model.addAttribute("formTitle", "Crear " + entityName);
@@ -113,6 +116,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             T entidad = service.getOne(id);
             cargarAtributosBase(model);
             model.addAttribute("item", entidad);
+            cargarDatosFormulario(model);
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
             return vistaFormulario();
@@ -130,6 +134,7 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
                          Model model) {
         if (bindingResult.hasErrors()) {
             cargarAtributosBase(model);
+            cargarDatosFormulario(model);
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
             return vistaFormulario();
@@ -149,12 +154,14 @@ public abstract class BaseController<T extends BaseEntity<ID>, ID> {
             }
         } catch (ErrorServiceException e) {
             cargarAtributosBase(model);
+            cargarDatosFormulario(model);
             model.addAttribute("error", e.getMessage());
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
             return vistaFormulario();
         } catch (Exception e) {
             cargarAtributosBase(model);
+            cargarDatosFormulario(model);
             model.addAttribute("error", "Error al actualizar la entidad");
             model.addAttribute("formAction", basePath + "/" + id);
             model.addAttribute("formTitle", "Editar " + entityName);
