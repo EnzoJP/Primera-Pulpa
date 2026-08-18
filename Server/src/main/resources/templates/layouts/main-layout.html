@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(titulo, activePage, content)">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:fragment="layout(titulo, activePage, content)">
 <head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
 <body class="bg-surface font-body-md text-on-surface text-body-md flex min-h-screen">

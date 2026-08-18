@@ -1,39 +1,64 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
-<main>
-    <div class="w-full md:ml-64 p-md lg:p-lg min-h-screen flex flex-col items-center pt-20 md:pt-lg">
-        <div class="w-full lg:w-[70%] max-w-container-max card">
-            <div class="mb-lg border-b border-outline-variant pb-md flex justify-between items-center">
-                <div>
-                    <h2 class="page-title" th:text="'Detalle de ' + ${item.nombre}">Detalle</h2>
-                    <p class="page-subtitle" th:text="'Información del usuario ID: ' + ${item.id}"></p>
-                </div>
-                <div>
-                    <span class="px-md py-xs rounded-full font-label-md uppercase tracking-wider border border-outline-variant text-[13px]"
-                          th:classappend="${item.rol?.descripcion == 'ADMIN'} ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface'"
-                          th:text="${item.rol?.descripcion}">ROL</span>
-                </div>
-            </div>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.nombre} + ' - Primera Pulpa', 'usuarios', ~{::#usuario-detail-content})}">
+<body>
 
-            <div class="bg-surface-container-low rounded-lg p-md mb-xl font-code-md text-body-md text-on-surface whitespace-pre-wrap border border-outline-variant">
-<p><strong>ID:</strong> <span th:text="${item.id}"></span></p>
-<p><strong>Nombre:</strong> <span th:text="${item.nombre}"></span></p>
-<p><strong>Correo Electrónico:</strong> <span th:text="${item.email}"></span></p>
-<p><strong>Estado:</strong> <span th:class="${item.eliminado ? 'text-error' : 'text-primary'}" th:text="${item.eliminado ? 'Inactivo (Desactivado)' : 'Activo'}"></span></p>
-            </div>
+<div id="usuario-detail-content" class="max-w-3xl mx-auto space-y-md">
 
-            <!-- Botones de Acción -->
-            <div class="flex justify-end gap-md pt-lg border-t border-outline-variant">
-                <a th:href="${basePath}" class="btn-secondary">
-                    <span class="material-symbols-outlined text-[18px] mr-xs">arrow_back</span>
-                    Volver
-                </a>
-                <a th:href="${basePath + '/' + item.id + '/editar'}" class="btn-primary">
-                    <span class="material-symbols-outlined text-[18px]">edit</span>
-                    Editar
-                </a>
+    <div class="pb-sm border-b border-outline-variant/20">
+        <a th:href="@{|${basePath}|}"
+           class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span>Volver al listado</span>
+        </a>
+        <div class="flex items-center justify-between gap-sm">
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${item.nombre}">
+                Nombre del Usuario
+            </h1>
+            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold font-label-caps"
+                  th:classappend="${item.rol != null and item.rol.descripcion == 'ADMIN'} ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'"
+                  th:text="${item.rol != null ? item.rol.descripcion : 'SIN ROL'}">ADMIN</span>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Información detallada de la cuenta de usuario.</p>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg space-y-md">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+            <div class="space-y-1">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">ID de Usuario</span>
+                <p class="font-data-tabular text-body-md text-primary font-bold" th:text="'#' + ${item.id}">#1</p>
+            </div>
+            <div class="space-y-1">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Estado de la Cuenta</span>
+                <p>
+                    <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold font-label-caps"
+                          th:classappend="${item.eliminado == true} ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'"
+                          th:text="${item.eliminado == true ? 'Inactivo (Desactivado)' : 'Activo'}">Activo</span>
+                </p>
+            </div>
+            <div class="space-y-1">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Nombre Completo</span>
+                <p class="font-body-md text-body-md text-on-surface" th:text="${item.nombre}">Juan Perez</p>
+            </div>
+            <div class="space-y-1">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Correo Electrónico</span>
+                <p class="font-body-md text-body-md text-on-surface font-data-tabular" th:text="${item.email}">juan@ejemplo.com</p>
             </div>
         </div>
+
+        <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
+            <a th:href="@{|${basePath}|}"
+               class="px-md py-2.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors">
+                Volver
+            </a>
+            <a th:href="@{|${basePath}/${item.id}/editar|}"
+               class="inline-flex items-center gap-xs px-md py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+                <span>Editar Usuario</span>
+            </a>
+        </div>
     </div>
-</main>
+</div>
+
+</body>
 </html>

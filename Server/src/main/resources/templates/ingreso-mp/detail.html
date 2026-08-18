@@ -1,52 +1,95 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
-<main>
-    <div class="p-md lg:p-lg max-w-container-max mx-auto w-full flex flex-col gap-lg pb-3xl">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Detalle de Ingreso MP - Primera Pulpa', 'ingresos-mp', ~{::#ingreso-detail-content})}">
+<body>
 
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md">
-            <div>
-                <h2 class="page-title">Detalle del Ingreso <span class="text-primary font-code-md" th:text="'#' + ${ingreso.id}">#1</span></h2>
-                <p class="page-subtitle" th:text="'Registrado el ' + ${#temporals.format(ingreso.fechaHora, 'dd/MM/yyyy')} + ' a las ' + ${#temporals.format(ingreso.fechaHora, 'HH:mm')}">Fecha</p>
+<div id="ingreso-detail-content" class="space-y-md">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">move_to_inbox</span>
+                <span>Comprobante de Ingreso</span>
             </div>
-            <a th:href="@{/ingresos-mp}" class="btn-secondary">
-                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-                Volver
-            </a>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
+                Ingreso <span class="font-data-tabular" th:text="'#' + ${ingreso.id}">#1</span>
+            </h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant"
+               th:text="'Registrado el ' + ${#temporals.format(ingreso.fechaHora, 'dd/MM/yyyy')} + ' a las ' + ${#temporals.format(ingreso.fechaHora, 'HH:mm')} + ' hs'">Fecha</p>
         </div>
 
-        <div class="table-card">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr class="table-header">
-                            <th class="table-th">Materia Prima</th>
-                            <th class="table-th text-right">Cantidad</th>
-                            <th class="table-th text-right">Costo Unitario</th>
-                            <th class="table-th text-right">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody class="font-body-md text-body-md text-on-surface">
-                        <tr th:each="det : ${ingreso.detalles}" class="table-row">
-                            <td class="table-td font-title-lg" th:text="${det.materiaPrima?.nombre}">MP</td>
-                            <td class="table-td text-right font-code-md" th:text="${det.cantidad + ' ' + det.materiaPrima?.unidadMedida?.descripcion}">0 kg</td>
-                            <td class="table-td text-right font-code-md text-primary" th:text="'$' + ${#numbers.formatDecimal(det.costoUnitario, 1, 2)}">$0.00</td>
-                            <td class="table-td text-right font-code-md" th:text="'$' + ${#numbers.formatDecimal(det.cantidad * det.costoUnitario, 1, 2)}">$0.00</td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(ingreso.detalles)}">
-                            <td colspan="4" class="py-lg px-md text-center text-on-surface-variant font-body-md">Sin detalles.</td>
-                        </tr>
-                    </tbody>
-                    <!-- Total -->
-                    <tfoot>
-                        <tr class="border-t-2 border-outline-variant bg-surface-container-low/50">
-                            <td colspan="3" class="table-td text-right font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total</td>
-                            <td class="table-td text-right font-code-md font-bold text-on-surface"
-                                th:text="'$' + ${#numbers.formatDecimal(ingreso.detalles.stream().mapToDouble(d -> d.cantidad * d.costoUnitario).sum(), 1, 2)}">$0.00</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+        <a th:href="@{/ingresos-mp}"
+           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span>Volver al Listado</span>
+        </a>
+    </header>
+
+    <!-- Tabla de Detalles -->
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse table-fixed">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
+                    <th class="py-3 px-4 font-normal w-36 text-center">Unidad</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Cantidad</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Costo Unitario ($)</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right pr-6">Subtotal ($)</th>
+                </tr>
+                </thead>
+
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="det : ${ingreso.detalles}" class="hover:bg-surface-container-low transition-colors">
+                    <!-- Materia Prima -->
+                    <td class="py-3.5 px-4 font-medium text-primary">
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0">spa</span>
+                            <span class="truncate" th:text="${det.materiaPrima?.nombre}">Materia Prima</span>
+                        </div>
+                    </td>
+
+                    <!-- Unidad -->
+                    <td class="py-3.5 px-4 text-center font-label-caps text-on-surface-variant">
+                        <span class="inline-block px-2.5 py-0.5 rounded bg-surface-container text-xs font-semibold"
+                              th:text="${det.materiaPrima?.unidadMedida?.descripcion ?: 'kg'}">kg</span>
+                    </td>
+
+                    <!-- Cantidad -->
+                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface"
+                        th:text="${det.cantidad}">0</td>
+
+                    <!-- Costo Unitario -->
+                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                        <span class="text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(det.costoUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+
+                    <!-- Subtotal -->
+                    <td class="py-3.5 px-4 pr-6 text-right font-data-tabular text-data-tabular font-bold text-primary">
+                        <span class="text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(det.cantidad * det.costoUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+                </tr>
+                </tbody>
+
+                <!-- Total -->
+                <tfoot>
+                <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
+                    <td colspan="4" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                        Costo Total del Ingreso:
+                    </td>
+                    <td class="py-4 px-4 pr-6 text-right font-data-tabular text-body-lg font-bold text-primary">
+                        <span class="text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(ingreso.detalles.stream().mapToDouble(d -> d.cantidad * d.costoUnitario).sum(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
-</main>
+</div>
+
+</body>
 </html>

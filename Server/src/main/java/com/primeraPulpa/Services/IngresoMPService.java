@@ -37,14 +37,9 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
             throw new ErrorServiceException("El ingreso debe tener al menos una materia prima.");
         }
 
-        IngresoMP ingreso = IngresoMP.builder()
-                .fechaHora(LocalDateTime.now())
-                .build();
-        ingreso.setEliminado(false);
-        IngresoMP ingresoGuardado = repository.save(ingreso);
-
+        // 1. Validar todos los detalles antes de persistir
         for (DetalleIngresoMP detalle : detalles) {
-            if (detalle.getMateriaPrima() == null) {
+            if (detalle.getMateriaPrima() == null || detalle.getMateriaPrima().getId() == null) {
                 throw new ErrorServiceException("Cada detalle debe indicar la materia prima.");
             }
             if (detalle.getCantidad() <= 0) {
@@ -54,13 +49,32 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
                 throw new ErrorServiceException("El costo unitario no puede ser negativo.");
             }
 
+            MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId())
+                    .orElseThrow(() -> new ErrorServiceException("Materia prima no encontrada."));
+
+            if (detalle.getCantidad() < mp.getCantidadMinima()) {
+                String unidad = mp.getUnidadMedida() != null ? (" " + mp.getUnidadMedida().getDescripcion()) : "";
+                throw new ErrorServiceException("La cantidad ingresada para '" + mp.getNombre() + "' (" + detalle.getCantidad() + unidad +
+                        ") no puede ser menor al stock mínimo establecido (" + mp.getCantidadMinima() + unidad + ").");
+            }
+        }
+
+        // 2. Guardar cabecera de ingreso
+        IngresoMP ingreso = IngresoMP.builder()
+                .fechaHora(LocalDateTime.now())
+                .build();
+        ingreso.setEliminado(false);
+        IngresoMP ingresoGuardado = repository.save(ingreso);
+
+        // 3. Guardar detalles y actualizar stock
+        for (DetalleIngresoMP detalle : detalles) {
+            MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId()).get();
+
             detalle.setIngresoMP(ingresoGuardado);
             detalle.setEliminado(false);
             detalleRepository.save(detalle);
 
             // Actualizar stock de la materia prima
-            MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId())
-                    .orElseThrow(() -> new ErrorServiceException("Materia prima no encontrada."));
             mp.setCantidadActual(mp.getCantidadActual() + detalle.getCantidad());
             materiaPrimaRepository.save(mp);
         }

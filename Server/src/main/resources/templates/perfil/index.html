@@ -1,111 +1,73 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
-<main>
-    <div class="flex-1 p-md md:p-lg overflow-y-auto max-w-[container-max] mx-auto w-full">
-        <!-- Header -->
-        <header class="mb-xl">
-            <h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Mi Perfil</h1>
-            <p class="font-body-md text-body-md text-on-surface-variant">Gestiona tu información personal y credenciales de acceso al ERP.</p>
-        </header>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Mi Perfil - Primera Pulpa', 'perfil', ~{::#perfil-content})}">
+<body>
 
-        <!-- Profile Layout -->
-        <div class="flex flex-col lg:flex-row gap-gutter">
-            <!-- Left: Presentation Card -->
-            <div class="lg:w-1/3">
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col items-center text-center shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
-                    <div class="relative mb-md">
-                        <div class="w-32 h-32 rounded-full border-4 border-surface-container-low flex items-center justify-center bg-primary-container text-on-primary-container text-display-lg"
-                             th:text="${usuario != null and usuario.nombre != null ? #strings.substring(usuario.nombre, 0, 2).toUpperCase() : 'US'}">
-                            US
-                        </div>
-                        <button class="absolute bottom-0 right-0 w-8 h-8 bg-surface-container-lowest border border-outline-variant rounded-full flex items-center justify-center hover:bg-surface-container-low transition-colors shadow-sm">
-                            <span class="material-symbols-outlined text-[16px] text-on-surface-variant">edit</span>
-                        </button>
-                    </div>
-                    
-                    <h2 class="font-headline-md text-headline-md text-on-surface mb-xs" th:text="${usuario != null ? usuario.nombre : 'Usuario Actual'}">Usuario Actual</h2>
-                    <div class="inline-flex items-center px-sm py-xs bg-primary-fixed text-on-primary-fixed-variant rounded-full mb-lg">
-                        <span class="material-symbols-outlined text-[14px] mr-xs" style="font-variation-settings: 'FILL' 1;">shield_person</span>
-                        <span class="font-label-md text-label-md" th:text="${usuario != null and usuario.rol != null ? usuario.rol.descripcion : 'Rol Asignado'}">Rol Asignado</span>
-                    </div>
+<div id="perfil-content" class="space-y-md">
 
-                    <div class="w-full border-t border-surface-container-highest pt-md text-left">
-                        <div class="flex flex-col gap-sm">
-                            <div class="flex items-center gap-sm">
-                                <span class="material-symbols-outlined text-on-surface-variant">mail</span>
-                                <span class="font-body-md text-body-md text-on-surface-variant" th:text="${usuario != null ? usuario.email : 'usuario@primerapulpa.com'}">usuario@primerapulpa.com</span>
-                            </div>
-                            <div class="flex items-center gap-sm">
-                                <span class="material-symbols-outlined text-on-surface-variant">badge</span>
-                                <span class="font-body-md text-body-md text-on-surface-variant" th:text="${usuario != null ? 'ID: ' + usuario.id : 'ID: EMP-0001'}">ID: EMP-0001</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Header -->
+    <header class="pb-sm border-b border-outline-variant/20">
+        <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+            <span class="material-symbols-outlined text-[18px]">account_circle</span>
+            <span>Cuenta de Usuario</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Mi Perfil</h1>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Información personal y credenciales de acceso al ERP.</p>
+    </header>
+
+    <!-- Layout Perfil -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+        <!-- Columna Izquierda: Tarjeta de Presentación -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg flex flex-col items-center text-center">
+            <div class="w-28 h-28 rounded-full border-4 border-surface-container-high flex items-center justify-center bg-primary-container text-on-primary-container text-display font-bold mb-md"
+                 th:text="${usuario != null and usuario.nombre != null ? #strings.substring(usuario.nombre, 0, 2).toUpperCase() : 'US'}">
+                US
             </div>
 
-            <!-- Right: Edit Form -->
-            <div class="lg:w-2/3">
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
-                    <!-- Tabs -->
-                    <div class="flex border-b border-outline-variant px-lg pt-md gap-lg">
-                        <button class="pb-sm border-b-2 border-primary font-label-md text-label-md text-primary">Información Personal</button>
-                        <button class="pb-sm border-b-2 border-transparent font-label-md text-label-md text-on-surface-variant hover:text-on-surface">Seguridad</button>
-                    </div>
+            <h2 class="font-headline-md text-headline-md text-primary mb-1" th:text="${usuario != null ? usuario.nombre : 'Usuario Actual'}">Usuario Actual</h2>
+            <div class="inline-flex items-center gap-1 px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-semibold font-label-caps mb-lg">
+                <span class="material-symbols-outlined text-[15px]">verified_user</span>
+                <span th:text="${usuario != null and usuario.rol != null ? usuario.rol.descripcion : 'ROL'}">ADMIN</span>
+            </div>
 
-                    <div class="p-lg">
-                        <form class="space-y-xl">
-                            <!-- Personal Info Section -->
-                            <section>
-                                <h3 class="font-title-lg text-title-lg text-on-surface mb-md">Datos Generales</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
-                                    <div class="flex flex-col gap-xs md:col-span-2">
-                                        <label for="firstName" class="font-label-md text-label-md text-on-surface">Nombre Completo</label>
-                                        <input type="text" id="firstName" th:value="${usuario != null ? usuario.nombre : 'Usuario'}" disabled class="h-10 px-md bg-surface-container-low border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface-variant cursor-not-allowed"/>
-                                    </div>
-                                    <div class="flex flex-col gap-xs md:col-span-2">
-                                        <label for="email" class="font-label-md text-label-md text-on-surface">Correo Electrónico</label>
-                                        <input type="email" id="email" th:value="${usuario != null ? usuario.email : 'usuario@primerapulpa.com'}" disabled class="h-10 px-md bg-surface-container-low border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface-variant cursor-not-allowed"/>
-                                    </div>
-                                </div>
-                            </section>
+            <div class="w-full border-t border-outline-variant/20 pt-md space-y-sm text-left">
+                <div class="flex items-center gap-2 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[20px] text-outline">mail</span>
+                    <span class="font-body-sm text-body-sm truncate" th:text="${usuario != null ? usuario.email : 'usuario@primerapulpa.com'}">usuario@primerapulpa.com</span>
+                </div>
+                <div class="flex items-center gap-2 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[20px] text-outline">badge</span>
+                    <span class="font-body-sm text-body-sm font-data-tabular" th:text="${usuario != null ? 'ID: #' + usuario.id : 'ID: #1'}">ID: #1</span>
+                </div>
+            </div>
+        </div>
 
-                            <hr class="border-surface-container-highest"/>
+        <!-- Columna Derecha: Datos Generales -->
+        <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg">
+            <h3 class="font-headline-md text-headline-md text-primary mb-md">Datos de la Cuenta</h3>
 
-                            <!-- Password Section -->
-                            <section>
-                                <h3 class="font-title-lg text-title-lg text-on-surface mb-md">Cambiar Contraseña</h3>
-                                <div class="space-y-md max-w-md">
-                                    <div class="flex flex-col gap-xs">
-                                        <label for="currentPassword" class="font-label-md text-label-md text-on-surface">Contraseña Actual</label>
-                                        <input type="password" id="currentPassword" placeholder="••••••••" class="h-10 px-md bg-surface-bright border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow"/>
-                                    </div>
-                                    <div class="flex flex-col gap-xs">
-                                        <label for="newPassword" class="font-label-md text-label-md text-on-surface">Nueva Contraseña</label>
-                                        <input type="password" id="newPassword" placeholder="••••••••" class="h-10 px-md bg-surface-bright border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow"/>
-                                    </div>
-                                    <div class="flex flex-col gap-xs">
-                                        <label for="confirmPassword" class="font-label-md text-label-md text-on-surface">Confirmar Nueva Contraseña</label>
-                                        <input type="password" id="confirmPassword" placeholder="••••••••" class="h-10 px-md bg-surface-bright border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow"/>
-                                    </div>
-                                </div>
-                            </section>
+            <div class="space-y-md">
+                <div class="space-y-1.5">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Nombre Completo</label>
+                    <input type="text" th:value="${usuario != null ? usuario.nombre : 'Usuario'}" disabled
+                           class="w-full px-md py-2.5 bg-surface-container-low border border-outline-variant/40 rounded-lg font-body-md text-body-md text-on-surface-variant cursor-not-allowed"/>
+                </div>
 
-                            <!-- Actions -->
-                            <div class="flex justify-end gap-md pt-md border-t border-surface-container-highest">
-                                <button type="button" class="px-lg h-10 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm">
-                                    Descartar
-                                </button>
-                                <button type="button" class="px-lg h-10 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:bg-surface-tint transition-colors shadow-sm flex items-center gap-xs">
-                                    <span class="material-symbols-outlined text-[18px]">save</span>
-                                    Guardar Cambios
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                <div class="space-y-1.5">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Correo Electrónico</label>
+                    <input type="email" th:value="${usuario != null ? usuario.email : 'usuario@primerapulpa.com'}" disabled
+                           class="w-full px-md py-2.5 bg-surface-container-low border border-outline-variant/40 rounded-lg font-body-md text-body-md text-on-surface-variant cursor-not-allowed"/>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Rol de Permisos</label>
+                    <input type="text" th:value="${usuario != null and usuario.rol != null ? usuario.rol.descripcion : 'SIN ROL'}" disabled
+                           class="w-full px-md py-2.5 bg-surface-container-low border border-outline-variant/40 rounded-lg font-body-md text-body-md text-on-surface-variant cursor-not-allowed"/>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div>
+
+</body>
 </html>
