@@ -1,25 +1,131 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="'Detalle de ' + ${item.nombre}">Detalle</title>
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.nombre} + ' - Primera Pulpa', 'mixes', ~{::#mix-detail-content})}">
 <body>
-<h1 th:text="'Detalle de ' + ${item.nombre}">Detalle</h1>
-<table border="1" cellpadding="6">
-    <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
-    <tr><th>Nombre</th><td th:text="${item.nombre}">Mix</td></tr>
-    <tr><th>Precio de venta</th><td th:text="${item.precioVenta}">-</td></tr>
-    <tr><th>Costo (por kg)</th><td th:text="${item.costo}">0</td></tr>
-    <tr>
-        <th>Ganancia</th>
-        <td th:if="${item.precioVenta != null}" th:text="${item.precioVenta - item.costo}">0</td>
-        <td th:if="${item.precioVenta == null}">-</td>
-    </tr>
-</table>
-<p>
-    <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
-    <a th:href="${basePath}">Volver</a>
-</p>
+
+<div id="mix-detail-content" class="max-w-4xl mx-auto space-y-md">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <a th:href="@{|${basePath}|}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver a mixes</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${item.nombre}">
+                    Mix Frutos Secos Clásico
+                </h1>
+                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium"
+                      th:text="'#' + ${item.id}">#1</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Ficha comercial, estructura de costos y rendimiento por kilogramo.</p>
+        </div>
+
+        <div class="flex items-center gap-xs">
+            <a th:href="@{|${basePath}/${item.id}/editar|}"
+               class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+                <span>Editar Mix</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
+
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+            <div class="flex justify-between items-start mb-xs">
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Precio de Venta</p>
+                <span class="material-symbols-outlined text-outline">payments</span>
+            </div>
+            <div class="flex items-baseline gap-1" th:if="${item.precioVenta != null}">
+                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                <span class="font-display text-[32px] leading-tight text-primary font-bold"
+                      th:text="${#numbers.formatDecimal(item.precioVenta, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                <span class="font-label-caps text-xs text-on-surface-variant">/ kg</span>
+            </div>
+            <div class="flex items-baseline gap-1" th:unless="${item.precioVenta != null}">
+                <span class="font-display text-[32px] leading-tight text-on-surface-variant font-bold">—</span>
+            </div>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">Valor sugerido al público</p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+            <div class="flex justify-between items-start mb-xs">
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Costo de Insumos</p>
+                <span class="material-symbols-outlined text-outline">shopping_bag</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                <span class="font-display text-[32px] leading-tight text-primary font-bold"
+                      th:text="${#numbers.formatDecimal(item.costo ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                <span class="font-label-caps text-xs text-on-surface-variant">/ kg</span>
+            </div>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">Calculado a partir de la fórmula</p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+            <div class="flex justify-between items-start mb-xs">
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Margen Unitario</p>
+                <span class="material-symbols-outlined"
+                      th:classappend="${item.precioVenta != null and (item.precioVenta - (item.costo ?: 0)) >= 0} ? 'text-secondary' : 'text-error'">
+                    trending_up
+                </span>
+            </div>
+
+            <div th:if="${item.precioVenta != null}" th:with="ganancia=${item.precioVenta - (item.costo ?: 0)}">
+                <div class="flex items-baseline gap-1">
+                    <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                    <span class="font-display text-[32px] leading-tight font-bold"
+                          th:classappend="${ganancia >= 0} ? 'text-secondary' : 'text-error'"
+                          th:text="${#numbers.formatDecimal(ganancia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    <span class="font-label-caps text-xs text-on-surface-variant">/ kg</span>
+                </div>
+                <div class="mt-2" th:if="${item.precioVenta > 0}">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px]"
+                          th:classappend="${ganancia >= 0} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'">
+                        <span class="material-symbols-outlined text-[14px]" th:text="${ganancia >= 0} ? 'check_circle' : 'warning'">check_circle</span>
+                        <span th:text="${#numbers.formatDecimal((ganancia / item.precioVenta) * 100, 1, 'POINT', 1, 'COMMA')} + '% rentabilidad'">35%</span>
+                    </span>
+                </div>
+            </div>
+
+            <div th:unless="${item.precioVenta != null}">
+                <span class="font-display text-[32px] leading-tight text-on-surface-variant font-bold">—</span>
+                <p class="font-body-sm text-xs text-on-surface-variant mt-2">Precio de venta no definido</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
+            <h2 class="font-headline-md text-headline-md text-primary">Información General y Composición</h2>
+            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Propiedades</span>
+        </div>
+
+        <div class="p-md md:p-lg">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-lg gap-y-md">
+
+                <div class="border-b border-outline-variant/10 pb-3">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Nombre Comercial</dt>
+                    <dd class="font-body-md text-body-md text-on-surface font-medium" th:text="${item.nombre}">Mix Frutos Secos Clásico</dd>
+                </div>
+
+
+                <div class="border-b border-outline-variant/10 pb-3">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Estado en Catálogo</dt>
+                    <dd>
+                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container">Activo</span>
+                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container">Inactivo</span>
+                    </dd>
+                </div>
+
+            </dl>
+        </div>
+    </div>
+
+</div>
+
 </body>
 </html>

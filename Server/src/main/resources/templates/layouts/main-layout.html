@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(titulo, activePage, content)">
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="bg-surface font-body-md text-on-surface text-body-md flex min-h-screen">
+
+<aside th:replace="~{fragments/sidebar :: sidebar(${activePage})}"></aside>
+
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+
+    <div class="flex-1 p-md md:p-margin pb-xl">
+        <div th:replace="${content}"></div>
+    </div>
+</main>
+
+</body>
+</html>

@@ -1,13 +1,51 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>404</title>
-</head>
-<body>
-<h1>404 - Recurso no encontrado</h1>
-<p th:text="${error}">No se encontro la pagina solicitada.</p>
-<p><a href="/">Ir al inicio</a></p>
+
+<head th:replace="~{fragments/head :: head(titulo='404 - Página no encontrada')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface min-h-screen antialiased flex flex-col items-center justify-center p-margin">
+
+<div class="max-w-md w-full text-center space-y-md">
+
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary-container text-on-primary-container soft-shadow mx-auto">
+        <span class="material-symbols-outlined text-on-primary text-[36px] fill">eco</span>
+    </div>
+
+    <div class="space-y-xs">
+        <span class="font-display text-[72px] leading-none font-bold text-primary tracking-tight">404</span>
+        <h1 class="font-headline-lg text-headline-lg text-primary">Recurso no encontrado</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto"
+           th:text="${error != null ? error : 'El registro o la página que buscas no existe o fue dada de baja.'}">
+            El registro o la página que buscas no existe o fue dada de baja.
+        </p>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md space-y-sm">
+        <div class="flex items-center justify-center gap-xs text-on-surface-variant font-label-caps text-label-caps">
+            <span class="material-symbols-outlined text-outline text-[18px]">search_off</span>
+            <span>Verifica el identificador o enlace ingresado</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-sm pt-xs">
+            <a href="javascript:history.back()"
+               class="w-full sm:w-auto px-md py-2 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors inline-flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Volver atrás
+            </a>
+
+            <a th:href="@{/dashboard}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">home</span>
+                Ir al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <p class="font-body-sm text-xs text-on-surface-variant">
+        Primera Pulpa &bull; Sistema de Control de Stock
+    </p>
+
+</div>
+
 </body>
 </html>
-

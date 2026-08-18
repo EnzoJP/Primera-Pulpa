@@ -1,24 +1,71 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
-<h1>Iniciar sesion</h1>
-<p th:if="${param.error}">Usuario o contrasena invalidos.</p>
-<p th:if="${param.logout}">Sesion cerrada correctamente.</p>
-<form th:action="@{/login}" method="post">
-    <div>
-        <label for="username">Email</label>
-        <input id="username" name="username" type="text" required>
-    </div>
-    <div>
-        <label for="password">Contrasena</label>
-        <input id="password" name="password" type="password" required>
-    </div>
-    <button type="submit">Entrar</button>
-</form>
+<head th:replace="~{fragments/head :: head(titulo='Iniciar sesión - Primera Pulpa')}"></head>
+<body class="bg-surface antialiased text-on-surface">
+<main class="flex min-h-screen w-full">
+
+
+    <section class="hidden md:block md:w-1/2 lg:w-[55%] relative">
+        <div class="absolute inset-0 bg-cover bg-center"
+             style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCNpYQKDQcWBxwPMINO163bFtcrPgHHDT49FGvtJy37HAwwsNHnGS7p1CnefSBKBKByJBo-rXmUJX2be-HlaXpYVT_jaWo0tGtnZYlMGhgbtuC8sjgRK1wDa4a0WzNxhAnhxQpY4XONFSaxlJOyGW8oJtVsVwm_nYKwYqZ8mqus7CFWL4Mq3AQVKHXVtvHoY3bSXx5RVVJj5aQvo9ncM4pO5MQ7qJ9UcwsHGgYwl-WrkdNl-nZqUeSxRA')">
+            <div class="absolute inset-0 bg-primary/10 mix-blend-multiply"></div>
+        </div>
+        <div class="absolute top-margin left-margin flex items-center gap-xs">
+            <span class="material-symbols-outlined text-on-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+            <span class="font-headline-md text-headline-md text-on-primary drop-shadow-md">Primera Pulpa</span>
+        </div>
+    </section>
+
+    <!-- Sección del formulario -->
+    <section class="w-full md:w-1/2 lg:w-[45%] flex flex-col justify-center px-margin py-xl bg-surface">
+        <div class="w-full max-w-md mx-auto space-y-xl">
+
+            <header class="space-y-sm">
+                <h1 class="font-display text-display text-primary tracking-tight">Primera Pulpa</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant">Iniciá sesión para gestionar tu stock, fórmulas y costos.</p>
+            </header>
+
+            <p th:if="${param.error}" class="font-body-sm text-body-sm text-error">Usuario o contraseña inválidos.</p>
+            <p th:if="${param.logout}" class="font-body-sm text-body-sm text-secondary">Sesión cerrada correctamente.</p>
+
+            <form th:action="@{/login}" method="post" class="space-y-md">
+                <div class="space-y-xs">
+                    <label class="block font-label-caps text-label-caps text-primary" for="username">Email</label>
+                    <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-sm text-outline">mail</span>
+                        <input id="username" name="username" type="text" required
+                               placeholder="usuario@primerapulpa.com"
+                               class="w-full pl-xl pr-sm py-sm bg-surface-container border border-outline-variant rounded-DEFAULT font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all"/>
+                    </div>
+                </div>
+
+                <div class="space-y-xs">
+                    <label class="block font-label-caps text-label-caps text-primary" for="password">Contraseña</label>
+                    <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-sm text-outline">lock</span>
+                        <input id="password" name="password" type="password" required
+                               placeholder="••••••••"
+                               class="w-full pl-xl pr-sm py-sm bg-surface-container border border-outline-variant rounded-DEFAULT font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all"/>
+                    </div>
+                </div>
+
+                <div class="pt-sm">
+                    <button type="submit"
+                            class="w-full flex items-center justify-center gap-xs bg-primary text-on-primary font-label-caps text-label-caps py-sm px-md rounded-DEFAULT hover:bg-tertiary transition-colors shadow-sm active:scale-[0.98]">
+                        <span>Entrar</span>
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="pt-lg border-t border-surface-variant">
+                <p class="font-body-sm text-body-sm text-on-surface-variant text-center">
+                    ¿Necesitás acceso? Contactá al administrador del sistema.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</main>
 </body>
 </html>
-

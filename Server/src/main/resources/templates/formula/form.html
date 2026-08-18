@@ -1,49 +1,139 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${formTitle}">Formulario</title>
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout(${formTitle} + ' - Primera Pulpa', 'formulas', ~{::#formula-form-content})}">
 <body>
-<h1 th:text="${formTitle}">Formulario</h1>
-<p th:if="${error}" th:text="${error}"></p>
-<form th:object="${item}" th:action="${formAction}" method="post">
-    <div>
-        <label for="mix">Mix</label>
-        <select id="mix" name="mix" required>
-            <option value="">Seleccionar...</option>
-            <option th:each="m : ${mixes}" th:value="${m.id}"
-                    th:selected="${item.mix != null and item.mix.id == m.id}"
-                    th:text="${m.nombre}">Mix</option>
-        </select>
+
+<div id="formula-form-content" class="max-w-4xl mx-auto space-y-md">
+
+    <div class="pb-sm border-b border-outline-variant/20">
+        <a th:href="@{|${basePath}|}"
+           class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span>Volver a fórmulas</span>
+        </a>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${formTitle}">
+            Formulario de Fórmula
+        </h1>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Define el producto resultante y la dosificación de ingredientes por lote.</p>
     </div>
-    <div>
-        <label for="cantidad">Cantidad que produce (kg)</label>
-        <input id="cantidad" type="number" step="0.01" min="0.01" th:field="*{cantidad}" required>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ocurrió un error al guardar la fórmula.</span>
     </div>
-    <h2>Materias primas (gramos)</h2>
-    <table border="1" cellpadding="6">
-        <thead>
-        <tr>
-            <th>Materia prima</th>
-            <th>Unidad</th>
-            <th>Gramos</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="d, st : ${item.detalles}">
-            <td th:text="${d.materiaPrima.nombre}">Materia prima</td>
-            <td th:text="${d.materiaPrima.unidadMedida?.descripcion}">kg</td>
-            <td>
-                <input type="hidden" th:name="'detalles[' + ${st.index} + '].id'" th:value="${d.id}">
-                <input type="hidden" th:name="'detalles[' + ${st.index} + '].materiaPrima'" th:value="${d.materiaPrima.id}">
-                <input type="number" step="0.01" min="0" th:field="*{detalles[__${st.index}__].gramos}">
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <button type="submit">Guardar</button>
-</form>
-<p><a th:href="${basePath}">Volver</a></p>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg">
+        <form th:object="${item}" th:action="${formAction}" method="post" class="space-y-lg">
+
+            <input type="hidden" th:if="*{id != null}" th:field="*{id}" />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+
+                <div class="space-y-1.5">
+                    <label for="mix" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                        Producto Resultante (Mix) <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="mix" name="mix" required
+                                class="w-full appearance-none bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-10">
+                            <option value="">Seleccione un mix...</option>
+                            <option th:each="m : ${mixes}"
+                                    th:value="${m.id}"
+                                    th:selected="${item.mix != null and item.mix.id == m.id}"
+                                    th:text="${m.nombre}">Mix Premium</option>
+                        </select>
+                        <span class="material-symbols-outlined text-on-surface-variant absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[20px]">
+                            expand_more
+                        </span>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="cantidad" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                        Rendimiento Estimado (kg) <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <input id="cantidad" type="number" step="0.01" min="0.01" th:field="*{cantidad}" required
+                               placeholder="Ej: 100.00"
+                               class="w-full bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-12" />
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-label-caps text-label-caps text-on-surface-variant">
+                            kg
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-sm pt-sm border-t border-outline-variant/20">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-headline-md text-headline-md text-primary">Dosificación de Materias Primas</h2>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Especifica la cantidad en gramos requerida para esta receta.</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container rounded-lg border border-outline-variant/20 overflow-hidden mt-sm">
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container-high border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                            <tr>
+                                <th class="py-3 px-base font-normal">Materia Prima</th>
+                                <th class="py-3 px-base font-normal w-32">Unidad Base</th>
+                                <th class="py-3 px-base font-normal w-48 text-right">Gramos Requeridos</th>
+                            </tr>
+                            </thead>
+                            <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10 bg-surface-container-lowest">
+                            <tr th:each="d, st : ${item.detalles}" class="hover:bg-surface-container-low transition-colors">
+
+                                <td class="py-3 px-base font-medium text-primary flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-outline text-[18px]">inventory</span>
+                                    <span th:text="${d.materiaPrima.nombre}">Almendras Enteras</span>
+                                </td>
+
+                                <td class="py-3 px-base font-label-caps text-on-surface-variant">
+                                        <span class="px-2 py-0.5 rounded bg-surface-container text-xs"
+                                              th:text="${d.materiaPrima.unidadMedida?.descripcion ?: 'kg'}">kg</span>
+                                </td>
+
+                                <td class="py-3 px-base text-right">
+                                    <input type="hidden" th:name="'detalles[' + ${st.index} + '].id'" th:value="${d.id}">
+                                    <input type="hidden" th:name="'detalles[' + ${st.index} + '].materiaPrima'" th:value="${d.materiaPrima.id}">
+
+                                    <div class="inline-flex items-center gap-1.5 justify-end">
+                                        <input type="number" step="0.01" min="0"
+                                               th:field="*{detalles[__${st.index}__].gramos}"
+                                               placeholder="0.00"
+                                               class="w-32 text-right bg-surface border border-outline-variant/40 rounded-lg px-2.5 py-1.5 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                                        <span class="font-label-caps text-label-caps text-on-surface-variant">g</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(item.detalles)}">
+                                <td colspan="3" class="py-md text-center text-on-surface-variant font-body-sm">
+                                    No hay materias primas configuradas para dosificar.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
+                <a th:href="@{|${basePath}|}"
+                   class="px-md py-2.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-xs px-md py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                    <span class="material-symbols-outlined text-[18px]">save</span>
+                    <span>Guardar Fórmula</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
 </body>
 </html>

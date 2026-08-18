@@ -1,35 +1,102 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="'Listado de ' + ${entityName}">Listado</title>
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Listado de ' + ${entityName} + ' - Primera Pulpa',${activeMenu ?: 'dashboard'}, ~{::#list-content})}">
 <body>
-<h1 th:text="'Listado de ' + ${entityName}">Listado</h1>
-<p th:if="${success}" th:text="${success}"></p>
-<p th:if="${error}" th:text="${error}"></p>
-<p><a th:href="${basePath + '/nuevo'}">Nuevo</a></p>
-<table border="1" cellpadding="6">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Acciones</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${items}">
-        <td th:text="${item.id}">1</td>
-        <td>
-            <a th:href="${basePath + '/' + item.id}">Ver</a>
-            <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
-            <form th:action="${basePath + '/' + item.id + '/eliminar'}" method="post" style="display:inline;">
-                <button type="submit">Eliminar</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+
+<div id="list-content" class="space-y-md">
+
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                <span>Administración</span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="'Gestión de ' + ${entityName}">Listado</h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Consulta, filtra y gestiona los registros del sistema.</p>
+        </div>
+
+        <a th:href="@{|${basePath}/nuevo|}"
+           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            <span>Nuevo <span th:text="${entityName}">Registro</span></span>
+        </a>
+    </header>
+
+    <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
+        <span class="material-symbols-outlined text-secondary fill">check_circle</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${success}">Operación exitosa.</span>
+    </div>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ocurrió un error.</span>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-base font-normal w-20">ID</th>
+                    <th th:each="header : ${headers}" class="py-3 px-base font-normal" th:text="${header}">Columna</th>
+                    <th class="py-3 px-base font-normal text-right">Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+                    <td class="py-3.5 px-base font-data-tabular text-data-tabular text-on-surface-variant font-medium" th:text="${item.id}">#1</td>
+
+                    <td th:each="field : ${fields}" class="py-3.5 px-base">
+                            <span th:if="${item[field] instanceof T(java.lang.Boolean)}"
+                                  th:class="${!item[field]} ? 'inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container' : 'inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container'"
+                                  th:text="${!item[field] ? 'Activo' : 'Inactivo'}">
+                            </span>
+                        <span th:unless="${item[field] instanceof T(java.lang.Boolean)}" th:text="${item[field]}">Valor</span>
+                    </td>
+
+                    <td class="py-3.5 px-base text-right whitespace-nowrap">
+                        <div class="inline-flex items-center justify-end gap-xs">
+                            <a th:href="@{|${basePath}/${item.id}|}"
+                               title="Ver Detalle"
+                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">visibility</span>
+                            </a>
+                            <a th:href="@{|${basePath}/${item.id}/editar|}"
+                               title="Editar"
+                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">edit</span>
+                            </a>
+                            <form th:action="@{|${basePath}/${item.id}/eliminar|}"
+                                  method="post"
+                                  class="inline m-0"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                                <button type="submit"
+                                        title="Eliminar"
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td th:colspan="${#lists.size(headers) + 2}" class="py-xl text-center">
+                        <div class="flex flex-col items-center justify-center gap-xs text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[40px]">folder_open</span>
+                            <p class="font-body-md text-body-md">No se encontraron registros disponibles.</p>
+                            <a th:href="@{|${basePath}/nuevo|}" class="font-label-caps text-label-caps text-secondary hover:underline mt-1">
+                                Crear el primer registro
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
-
-

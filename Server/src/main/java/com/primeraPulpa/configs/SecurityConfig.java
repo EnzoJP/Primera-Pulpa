@@ -57,7 +57,7 @@ public class SecurityConfig {
             .loginPage("/login")
             .usernameParameter("username")
             .passwordParameter("password")
-            .defaultSuccessUrl("/usuarios", true)
+            .defaultSuccessUrl("/dashboard", true) //redirige al dashboard (home)
             .permitAll()
         )
         .logout(logout -> logout

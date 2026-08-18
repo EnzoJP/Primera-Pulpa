@@ -1,39 +1,116 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Listado de Fórmulas</title>
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Listado de Fórmulas - Primera Pulpa', 'formulas', ~{::#formulas-content})}">
 <body>
-<h1>Listado de Fórmulas</h1>
-<p th:if="${success}" th:text="${success}"></p>
-<p th:if="${error}" th:text="${error}"></p>
-<p><a th:href="${basePath + '/nuevo'}">Nueva fórmula</a></p>
-<table border="1" cellpadding="6">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Mix</th>
-        <th>Cantidad que produce (kg)</th>
-        <th>Materias primas</th>
-        <th>Acciones</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${items}">
-        <td th:text="${item.id}">1</td>
-        <td th:text="${item.mix?.nombre}">Mix</td>
-        <td th:text="${item.cantidad}">0</td>
-        <td th:text="${item.detalles?.size()}">0</td>
-        <td>
-            <a th:href="${basePath + '/' + item.id}">Ver</a>
-            <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
-            <form th:action="${basePath + '/' + item.id + '/eliminar'}" method="post" style="display:inline;">
-                <button type="submit">Eliminar</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+
+<div id="formulas-content" class="space-y-md">
+
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">science</span>
+                <span>Producción y Recetas</span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Listado de Fórmulas</h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Gestión de proporciones, mezclas y rendimiento de materia prima.</p>
+        </div>
+
+        <a th:href="@{|${basePath}/nuevo|}"
+           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            <span>Nueva Fórmula</span>
+        </a>
+    </header>
+
+    <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
+        <span class="material-symbols-outlined text-secondary fill">check_circle</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${success}">Operación realizada correctamente.</span>
+    </div>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-base font-normal w-20">ID</th>
+                    <th class="py-3 px-base font-normal">Mix</th>
+                    <th class="py-3 px-base font-normal">Rendimiento Estimado</th>
+                    <th class="py-3 px-base font-normal">Materias Primas</th>
+                    <th class="py-3 px-base font-normal text-right">Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+
+                    <td class="py-3.5 px-base font-data-tabular text-data-tabular text-on-surface-variant font-medium" th:text="${item.id}">#1</td>
+
+                    <td class="py-3.5 px-base font-medium text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined text-outline text-[20px]">blender</span>
+                        <span th:text="${item.mix?.nombre ?: 'Sin especificar'}">Mix Frutos Secos</span>
+                    </td>
+
+                    <td class="py-3.5 px-base font-data-tabular text-data-tabular">
+                        <span th:text="${item.cantidad}">100</span> <span class="text-on-surface-variant text-xs">kg</span>
+                    </td>
+
+                    <td class="py-3.5 px-base">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-caps text-[11px] bg-surface-container text-on-surface-variant border border-outline-variant/30">
+                                <span class="material-symbols-outlined text-[14px]">format_list_bulleted</span>
+                                <span th:text="${item.detalles != null ? item.detalles.size() : 0}">3</span>
+                                <span>ingredientes</span>
+                            </span>
+                    </td>
+
+                    <td class="py-3.5 px-base text-right whitespace-nowrap">
+                        <div class="inline-flex items-center justify-end gap-xs">
+                            <a th:href="@{|${basePath}/${item.id}|}"
+                               title="Ver Detalle"
+                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">visibility</span>
+                            </a>
+
+                            <a th:href="@{|${basePath}/${item.id}/editar|}"
+                               title="Editar"
+                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">edit</span>
+                            </a>
+
+                            <form th:action="@{|${basePath}/${item.id}/eliminar|}"
+                                  method="post"
+                                  class="inline m-0"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar esta fórmula?');">
+                                <button type="submit"
+                                        title="Eliminar"
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(items)}">
+                    <td colspan="5" class="py-xl text-center">
+                        <div class="flex flex-col items-center justify-center gap-xs text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[40px]">science</span>
+                            <p class="font-body-md text-body-md">No hay fórmulas registradas en el sistema.</p>
+                            <a th:href="@{|${basePath}/nuevo|}" class="font-label-caps text-label-caps text-secondary hover:underline mt-1">
+                                Crear la primera fórmula
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
