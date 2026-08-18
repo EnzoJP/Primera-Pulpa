@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${titulo}">Primera Pulpa</title>
 
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +12,110 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500&family=Work+Sans:wght@400;700&display=swap">
 
 
-    <script th:src="@{/css/tailwind.config.js}"></script>
+    <style type="text/tailwindcss">
+      @custom-variant dark (&:where(.dark, .dark *));
+
+      @theme {
+        --color-secondary-container: #caeaac;
+        --color-background: #fff8f3;
+        --color-secondary-fixed: #cdecae;
+        --color-surface-variant: #e9e1db;
+        --color-on-surface-variant: #4e453e;
+        --color-on-background: #1e1b17;
+        --color-on-primary-container: #bba08c;
+        --color-on-error-container: #93000a;
+        --color-on-primary-fixed-variant: #574333;
+        --color-on-tertiary-fixed-variant: #484741;
+        --color-inverse-primary: #dec1ac;
+        --color-on-secondary: #ffffff;
+        --color-tertiary-container: #3c3b36;
+        --color-surface-container-highest: #e9e1db;
+        --color-on-primary: #ffffff;
+        --color-inverse-on-surface: #f7efe9;
+        --color-on-tertiary: #ffffff;
+        --color-on-error: #ffffff;
+        --color-on-secondary-fixed-variant: #354e1f;
+        --color-on-tertiary-fixed: #1c1c17;
+        --color-surface-container-low: #faf2ec;
+        --color-surface-bright: #fff8f3;
+        --color-secondary: #4c6635;
+        --color-outline: #80756d;
+        --color-surface-container-high: #efe7e0;
+        --color-primary-container: #4a3728;
+        --color-surface-dim: #e0d9d2;
+        --color-error: #ba1a1a;
+        --color-tertiary: #262521;
+        --color-tertiary-fixed-dim: #c9c6bf;
+        --color-inverse-surface: #33302c;
+        --color-error-container: #ffdad6;
+        --color-outline-variant: #d2c4bb;
+        --color-on-tertiary-container: #a8a59e;
+        --color-surface-tint: #705a49;
+        --color-surface-container: #f4ece6;
+        --color-primary-fixed-dim: #dec1ac;
+        --color-on-primary-fixed: #28180b;
+        --color-surface: #fff8f3;
+        --color-surface-container-lowest: #ffffff;
+        --color-primary-fixed: #fbddc7;
+        --color-on-surface: #1e1b17;
+        --color-primary: #322214;
+        --color-on-secondary-container: #506a39;
+        --color-on-secondary-fixed: #0d2000;
+        --color-secondary-fixed-dim: #b2d094;
+        --color-tertiary-fixed: #e6e2da;
+
+        --radius: 0.5rem;
+        --radius-sm: 0.25rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --radius-full: 9999px;
+
+        --spacing-margin: 32px;
+        --spacing-md: 24px;
+        --spacing-xl: 64px;
+        --spacing-sm: 12px;
+        --spacing-lg: 40px;
+        --spacing-gutter: 24px;
+        --spacing-base: 8px;
+        --spacing-xs: 4px;
+
+        --font-label-caps: "Work Sans";
+        --font-headline-md: "Hanken Grotesk";
+        --font-body-sm: "Work Sans";
+        --font-body-md: "Work Sans";
+        --font-body-lg: "Work Sans";
+        --font-headline-lg: "Hanken Grotesk";
+        --font-data-tabular: "JetBrains Mono";
+        --font-display: "Hanken Grotesk";
+
+        --text-label-caps: 12px;
+        --text-label-caps--line-height: 16px;
+        --text-label-caps--letter-spacing: 0.05em;
+        --text-label-caps--font-weight: 700;
+        --text-headline-md: 24px;
+        --text-headline-md--line-height: 32px;
+        --text-headline-md--font-weight: 600;
+        --text-body-sm: 14px;
+        --text-body-sm--line-height: 20px;
+        --text-body-sm--font-weight: 400;
+        --text-body-md: 16px;
+        --text-body-md--line-height: 24px;
+        --text-body-md--font-weight: 400;
+        --text-body-lg: 18px;
+        --text-body-lg--line-height: 28px;
+        --text-body-lg--font-weight: 400;
+        --text-headline-lg: 32px;
+        --text-headline-lg--line-height: 40px;
+        --text-headline-lg--font-weight: 600;
+        --text-data-tabular: 14px;
+        --text-data-tabular--line-height: 20px;
+        --text-data-tabular--font-weight: 500;
+        --text-display: 48px;
+        --text-display--line-height: 56px;
+        --text-display--letter-spacing: -0.02em;
+        --text-display--font-weight: 700;
+      }
+    </style>
     <link rel="stylesheet" th:href="@{/css/components.css}">
 </head>
