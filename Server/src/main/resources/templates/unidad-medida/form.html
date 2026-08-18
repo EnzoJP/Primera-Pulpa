@@ -1,19 +1,62 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${formTitle}">Formulario</title>
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout(${formTitle} + ' - Primera Pulpa', 'unidades-medida', ~{::#unidad-form-content})}">
 <body>
-<h1 th:text="${formTitle}">Formulario</h1>
-<p th:if="${error}" th:text="${error}"></p>
-<form th:object="${item}" th:action="${formAction}" method="post">
-    <div>
-        <label for="descripcion">Descripción</label>
-        <input id="descripcion" type="text" th:field="*{descripcion}" placeholder="ej: kg, litros, unidades" required>
+
+<div id="unidad-form-content" class="max-w-2xl mx-auto space-y-md">
+
+    <div class="pb-sm border-b border-outline-variant/20">
+        <a th:href="@{|${basePath}|}"
+           class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span>Volver a unidades de medida</span>
+        </a>
+        <div class="flex items-center gap-sm">
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${formTitle}">
+                Nueva Unidad de Medida
+            </h1>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Define magnitudes y abreviaturas para materias primas e insumos.</p>
     </div>
-    <button type="submit">Guardar</button>
-</form>
-<p><a th:href="${basePath}">Volver</a></p>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ocurrió un error al procesar la solicitud.</span>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg">
+        <form th:object="${item}" th:action="${formAction}" method="post" class="space-y-md">
+
+            <input type="hidden" th:if="*{id != null}" th:field="*{id}" />
+
+            <div class="space-y-1.5">
+                <label for="descripcion" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    Descripción / Símbolo <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                    <input id="descripcion" type="text" th:field="*{descripcion}" required
+                           placeholder="ej: Kilogramos (kg), Litros (l), Gramos (g), Unidades (u)"
+                           class="w-full bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline" />
+                </div>
+                <p class="font-body-sm text-xs text-on-surface-variant">Nombre legible o abreviatura estándar utilizada en recetas y stock.</p>
+                <p th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}" class="text-error font-body-sm text-xs mt-1"></p>
+            </div>
+
+            <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
+                <a th:href="@{|${basePath}|}"
+                   class="px-md py-2.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center gap-xs px-md py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                    <span class="material-symbols-outlined text-[18px]">save</span>
+                    <span>Guardar Unidad</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
 </body>
 </html>

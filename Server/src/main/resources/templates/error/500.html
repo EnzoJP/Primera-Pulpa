@@ -1,13 +1,51 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>500</title>
-</head>
-<body>
-<h1>500 - Error interno</h1>
-<p th:text="${error}">Ocurrio un error interno.</p>
-<p><a href="/">Ir al inicio</a></p>
+
+<head th:replace="~{fragments/head :: head(titulo='500 - Error del Servidor')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface min-h-screen antialiased flex flex-col items-center justify-center p-margin">
+
+<div class="max-w-md w-full text-center space-y-md">
+
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-error-container text-on-error-container soft-shadow mx-auto">
+        <span class="material-symbols-outlined text-error text-[36px] fill">error</span>
+    </div>
+
+    <div class="space-y-xs">
+        <span class="font-display text-[72px] leading-none font-bold text-primary tracking-tight">500</span>
+        <h1 class="font-headline-lg text-headline-lg text-primary">Error interno del servidor</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto"
+           th:text="${error != null ? error : 'Ocurrió un problema inesperado al procesar la solicitud.'}">
+            Ocurrió un problema inesperado al procesar la solicitud.
+        </p>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md space-y-sm">
+        <div class="flex items-center justify-center gap-xs text-on-surface-variant font-label-caps text-label-caps">
+            <span class="material-symbols-outlined text-outline text-[18px]">build</span>
+            <span>Por favor intenta nuevamente o contacta soporte</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-sm pt-xs">
+            <button onclick="window.location.reload()"
+                    class="w-full sm:w-auto px-md py-2 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors inline-flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+                Reintentar
+            </button>
+
+            <a th:href="@{/dashboard}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">home</span>
+                Ir al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <p class="font-body-sm text-xs text-on-surface-variant">
+        Primera Pulpa &bull; Sistema de Control de Stock
+    </p>
+
+</div>
+
 </body>
 </html>
-

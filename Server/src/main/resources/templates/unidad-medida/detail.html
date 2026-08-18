@@ -1,18 +1,77 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="'Detalle de ' + ${item.descripcion}">Detalle</title>
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.descripcion} + ' - Primera Pulpa', 'unidades-medida', ~{::#unidad-detail-content})}">
 <body>
-<h1 th:text="'Detalle de ' + ${item.descripcion}">Detalle</h1>
-<table border="1" cellpadding="6">
-    <tr><th>ID</th><td th:text="${item.id}">1</td></tr>
-    <tr><th>Descripción</th><td th:text="${item.descripcion}">kg</td></tr>
-</table>
-<p>
-    <a th:href="${basePath + '/' + item.id + '/editar'}">Editar</a>
-    <a th:href="${basePath}">Volver</a>
-</p>
+
+<div id="unidad-detail-content" class="max-w-3xl mx-auto space-y-md">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <a th:href="@{|${basePath}|}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver a unidades</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="'Detalle: ' + ${item.descripcion}">
+                    Detalle de Unidad
+                </h1>
+                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium"
+                      th:text="'#' + ${item.id}">#1</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Parámetro métrico utilizado en el inventario y fórmulas de producción.</p>
+        </div>
+
+        <div class="flex items-center gap-xs">
+            <a th:href="@{|${basePath}/${item.id}/editar|}"
+               class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+                <span>Editar Unidad</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
+            <h2 class="font-headline-md text-headline-md text-primary">Información General</h2>
+            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Propiedades</span>
+        </div>
+
+        <div class="p-md md:p-lg space-y-md">
+            <div class="flex items-center gap-md p-md bg-surface-container-low rounded-lg border border-outline-variant/10">
+                <div class="w-12 h-12 rounded-lg bg-secondary-container/40 flex items-center justify-center text-secondary flex-shrink-0">
+                    <span class="material-symbols-outlined text-[28px]">straighten</span>
+                </div>
+                <div>
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Descripción / Símbolo</span>
+                    <p class="font-headline-md text-headline-md text-primary font-semibold mt-0.5" th:text="${item.descripcion}">Kilogramos (kg)</p>
+                </div>
+            </div>
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-lg gap-y-md pt-xs">
+
+                <div class="border-b border-outline-variant/10 pb-3">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Identificador (ID)</dt>
+                    <dd class="font-data-tabular text-data-tabular text-on-surface font-medium" th:text="${item.id}">1</dd>
+                </div>
+
+                <div class="border-b border-outline-variant/10 pb-3">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Estado en el Sistema</dt>
+                    <dd>
+                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container">
+                            Activo
+                        </span>
+                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container">
+                            Dado de baja
+                        </span>
+                    </dd>
+                </div>
+
+            </dl>
+        </div>
+    </div>
+
+</div>
+
 </body>
 </html>
