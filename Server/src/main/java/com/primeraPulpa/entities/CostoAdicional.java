@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CostoAdicional extends BaseEntity<Long> {
 
-    // Costo adicional al precio por kg del mix (ej: bolsa, etiqueta).
+    // Costo adicional al precio por unidad del mix (ej: bolsa, etiqueta).
     // Es un catálogo compartido por todos los mixes, no se relaciona con Mix.
     private String descripcion;
     private double valor;

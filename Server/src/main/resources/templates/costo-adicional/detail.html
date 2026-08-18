@@ -20,7 +20,7 @@
                 <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium"
                       th:text="'#' + ${item.id}">#1</span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Concepto de gasto indirecto o insumo de empaque aplicado al costo por kilogramo.</p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Concepto de gasto indirecto o insumo de empaque aplicado al costo por unidad producida.</p>
         </div>
 
         <!-- Botón de Edición -->
@@ -43,9 +43,9 @@
             <span class="font-label-caps text-lg text-on-surface-variant">$</span>
             <span class="font-display text-[32px] leading-tight text-primary font-bold"
                   th:text="${#numbers.formatDecimal(item.valor ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-            <span class="font-label-caps text-xs text-on-surface-variant">/ kg</span>
+            <span class="font-label-caps text-xs text-on-surface-variant">/ unidad</span>
         </div>
-        <p class="font-body-sm text-xs text-on-surface-variant mt-2">Monto que se adiciona al costo total por cada kilogramo producido</p>
+        <p class="font-body-sm text-xs text-on-surface-variant mt-2">Monto que se adiciona al costo total por cada unidad producida</p>
     </div>
 
     <!-- Tarjeta Principal de Información -->
