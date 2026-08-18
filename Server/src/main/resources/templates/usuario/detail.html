@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
+<main>
+    <div class="w-full md:ml-64 p-md lg:p-lg min-h-screen flex flex-col items-center pt-20 md:pt-lg">
+        <div class="w-full lg:w-[70%] max-w-container-max card">
+            <div class="mb-lg border-b border-outline-variant pb-md flex justify-between items-center">
+                <div>
+                    <h2 class="page-title" th:text="'Detalle de ' + ${item.nombre}">Detalle</h2>
+                    <p class="page-subtitle" th:text="'Información del usuario ID: ' + ${item.id}"></p>
+                </div>
+                <div>
+                    <span class="px-md py-xs rounded-full font-label-md uppercase tracking-wider border border-outline-variant text-[13px]"
+                          th:classappend="${item.rol?.descripcion == 'ADMIN'} ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface'"
+                          th:text="${item.rol?.descripcion}">ROL</span>
+                </div>
+            </div>
+
+            <div class="bg-surface-container-low rounded-lg p-md mb-xl font-code-md text-body-md text-on-surface whitespace-pre-wrap border border-outline-variant">
+<p><strong>ID:</strong> <span th:text="${item.id}"></span></p>
+<p><strong>Nombre:</strong> <span th:text="${item.nombre}"></span></p>
+<p><strong>Correo Electrónico:</strong> <span th:text="${item.email}"></span></p>
+<p><strong>Estado:</strong> <span th:class="${item.eliminado ? 'text-error' : 'text-primary'}" th:text="${item.eliminado ? 'Inactivo (Desactivado)' : 'Activo'}"></span></p>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex justify-end gap-md pt-lg border-t border-outline-variant">
+                <a th:href="${basePath}" class="btn-secondary">
+                    <span class="material-symbols-outlined text-[18px] mr-xs">arrow_back</span>
+                    Volver
+                </a>
+                <a th:href="${basePath + '/' + item.id + '/editar'}" class="btn-primary">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                    Editar
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+</html>

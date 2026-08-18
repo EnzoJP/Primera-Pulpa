@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
+<main>
+    <div class="p-md lg:p-lg max-w-container-max mx-auto w-full flex flex-col gap-lg pb-3xl">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md">
+            <div>
+                <h2 class="page-title">Gestión de Usuarios</h2>
+                <p class="page-subtitle">Administra los usuarios y sus accesos al sistema.</p>
+            </div>
+            <a th:href="${basePath + '/nuevo'}" class="btn-primary">
+                <span class="material-symbols-outlined">person_add</span>
+                Nuevo Usuario
+            </a>
+        </div>
+
+        <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+        <div class="table-card">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="table-header">
+                            <th class="table-th w-16">ID</th>
+                            <th class="table-th">Nombre</th>
+                            <th class="table-th">Email</th>
+                            <th class="table-th">Rol</th>
+                            <th class="table-th">Estado</th>
+                            <th class="table-th text-right w-48">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="font-body-md text-body-md text-on-surface">
+                        <tr th:each="item : ${items}" class="table-row">
+                            <td class="table-td-id" th:text="${item.id}">#1</td>
+                            <td class="table-td font-title-lg" th:text="${item.nombre}">Nombre</td>
+                            <td class="table-td" th:text="${item.email}">email@example.com</td>
+                            <td class="table-td">
+                                <span class="px-sm py-xs rounded-full font-label-sm uppercase tracking-wider border border-outline-variant text-[11px]"
+                                      th:classappend="${item.rol != null and item.rol.descripcion == 'ADMIN'} ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container-high text-on-surface'"
+                                      th:text="${item.rol != null ? item.rol.descripcion : 'SIN ROL'}">ROL</span>
+                            </td>
+                            <td class="table-td">
+                                <span class="px-sm py-xs rounded-full font-label-sm uppercase text-[11px]"
+                                      th:classappend="${item.eliminado == true} ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'"
+                                      th:text="${item.eliminado == true ? 'Inactivo' : 'Activo'}">ESTADO</span>
+                            </td>
+                            <td class="table-td text-right">
+                                <div class="flex items-center justify-end gap-xs">
+                                    <button type="button" class="btn-icon" title="Restablecer Contraseña" th:onclick="'openResetPasswordModal(' + ${item.id} + ')'">
+                                        <span class="material-symbols-outlined text-[20px]">key</span>
+                                    </button>
+                                    <a th:href="${basePath + '/' + item.id}" class="btn-icon" title="Ver">
+                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                    </a>
+                                    <a th:href="${basePath + '/' + item.id + '/editar'}" class="btn-icon" title="Editar">
+                                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                                    </a>
+                                    <form th:if="${item.eliminado != true}" th:action="${basePath + '/' + item.id + '/eliminar'}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-icon-danger" title="Desactivar Usuario" onclick="return confirm('¿Está seguro de desactivar este usuario?');">
+                                            <span class="material-symbols-outlined text-[20px]">person_off</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(items)}">
+                            <td colspan="6" class="py-lg px-md text-center text-on-surface-variant font-body-md">No hay usuarios registrados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Modal for Reset Password -->
+        <div id="resetPasswordModal" class="hidden fixed inset-0 bg-surface/50 backdrop-blur-sm z-50 flex items-center justify-center p-md">
+            <div class="card w-full max-w-sm">
+                <h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Restablecer Contraseña</h3>
+                <form id="resetPasswordForm" method="post" action="">
+                    <div class="flex flex-col gap-xs mb-md">
+                        <label for="newPassword" class="form-label">Nueva Contraseña</label>
+                        <input type="password" id="newPassword" name="newPassword" required class="form-input" placeholder="Ingrese la nueva contraseña" />
+                    </div>
+                    <div class="flex justify-end gap-sm mt-lg">
+                        <button type="button" onclick="closeResetPasswordModal()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <script>
+            function openResetPasswordModal(id) {
+                const modal = document.getElementById('resetPasswordModal');
+                const form = document.getElementById('resetPasswordForm');
+                form.action = '/usuarios/' + id + '/reset-password';
+                document.getElementById('newPassword').value = '';
+                modal.classList.remove('hidden');
+            }
+            function closeResetPasswordModal() {
+                const modal = document.getElementById('resetPasswordModal');
+                modal.classList.add('hidden');
+            }
+        </script>
+    </div>
+</main>
+</html>

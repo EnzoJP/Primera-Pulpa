@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
+<main>
+    <div class="w-full md:ml-64 p-md lg:p-lg min-h-screen flex flex-col items-center pt-20 md:pt-lg">
+        <div class="w-full lg:w-[70%] max-w-container-max card">
+            <div class="mb-lg border-b border-outline-variant pb-md flex justify-between items-center">
+                <div>
+                    <h2 class="page-title" th:text="${formTitle}">Usuario</h2>
+                    <p class="page-subtitle">Complete los datos del usuario.</p>
+                </div>
+            </div>
+            
+            <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+            <form th:object="${item}" th:action="${formAction}" method="post">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-lg mb-xl">
+                    
+                    <div class="flex flex-col gap-xs md:col-span-2">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input id="nombre" type="text" th:field="*{nombre}" placeholder="Ej: Juan Perez" required
+                               class="form-input"/>
+                    </div>
+                    
+                    <div class="flex flex-col gap-xs">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input id="email" type="email" th:field="*{email}" placeholder="correo@ejemplo.com" required
+                               class="form-input"/>
+                    </div>
+                    
+                    <div class="flex flex-col gap-xs">
+                        <label for="rol" class="form-label">Rol del Sistema</label>
+                        <select id="rol" name="rol" class="form-input text-on-surface-variant" required>
+                            <option value="">Seleccione un rol...</option>
+                            <option th:each="r : ${roles}" th:value="${r.id}"
+                                    th:selected="${item.rol != null and item.rol.id == r.id}"
+                                    th:text="${r.descripcion}">Rol</option>
+                        </select>
+                    </div>
+
+                    <!-- Solo mostrar campo de contraseña si es un usuario NUEVO -->
+                    <div class="flex flex-col gap-xs md:col-span-2" th:if="${item.id == null}">
+                        <label for="passwordHash" class="form-label">Contraseña Temporal</label>
+                        <input id="passwordHash" type="password" th:field="*{passwordHash}" placeholder="Deje en blanco si no desea cambiar" required
+                               class="form-input font-code-md"/>
+                        <p class="text-on-surface-variant text-[12px] mt-xs">Esta contraseña se encriptará automáticamente al guardar.</p>
+                    </div>
+
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-end gap-md pt-lg border-t border-outline-variant">
+                    <a th:href="${basePath}" class="btn-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-primary">
+                        <span class="material-symbols-outlined text-[18px]">save</span>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</html>
