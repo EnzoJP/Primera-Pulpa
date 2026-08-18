@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
+<main>
+    <div class="p-md lg:p-lg max-w-container-max mx-auto w-full flex flex-col gap-lg pb-3xl">
+
+        <div>
+            <h2 class="page-title">Nuevo Ingreso de Materia Prima</h2>
+            <p class="page-subtitle">Registrá las materias primas recibidas. El stock se actualizará automáticamente al confirmar.</p>
+        </div>
+
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+        <form th:action="@{/ingresos-mp/confirmar}" method="post">
+
+            <!-- Tabla de ítems -->
+            <div class="table-card mb-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[700px]" id="tablaDetalles">
+                        <thead>
+                            <tr class="table-header">
+                                <th class="table-th">Materia Prima</th>
+                                <th class="table-th text-right w-40">Cantidad</th>
+                                <th class="table-th text-right w-40">Costo Unitario ($)</th>
+                                <th class="table-th text-right w-20"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="filas">
+                            <!-- fila inicial -->
+                            <tr class="table-row" id="fila-0">
+                                <td class="table-td">
+                                    <select name="materiaPrimaId" required class="form-input text-on-surface-variant">
+                                        <option value="">Seleccione...</option>
+                                        <option th:each="mp : ${materiaPrimas}"
+                                                th:value="${mp.id}"
+                                                th:text="${mp.nombre + ' (' + mp.unidadMedida?.descripcion + ')'}">MP</option>
+                                    </select>
+                                </td>
+                                <td class="table-td">
+                                    <input type="number" name="cantidad" min="0.001" step="0.001" required placeholder="0.000"
+                                           class="form-input text-right font-code-md"/>
+                                </td>
+                                <td class="table-td">
+                                    <input type="number" name="costoUnitario" min="0" step="0.01" required placeholder="0.00"
+                                           class="form-input text-right font-code-md"/>
+                                </td>
+                                <td class="table-td text-right">
+                                    <button type="button" onclick="quitarFila(this)" title="Quitar fila"
+                                            class="btn-icon-danger opacity-0 pointer-events-none" id="btn-quitar-0">
+                                        <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Botón agregar fila -->
+                <div class="p-md border-t border-outline-variant">
+                    <button type="button" onclick="agregarFila()"
+                            class="flex items-center gap-xs text-primary font-label-md text-label-md hover:opacity-75 transition-opacity">
+                        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                        Agregar materia prima
+                    </button>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex justify-end gap-md">
+                <a th:href="@{/ingresos-mp}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-primary">
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                    Confirmar Ingreso
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script th:inline="javascript">
+        // Opciones de materia prima para clonar en nuevas filas
+        const materiaPrimas = /*[[${materiaPrimas}]]*/ [];
+
+        let contadorFilas = 0;
+
+        function buildSelect() {
+            let opts = '<option value="">Seleccione...</option>';
+            materiaPrimas.forEach(mp => {
+                const unidad = mp.unidadMedida ? mp.unidadMedida.descripcion : '';
+                opts += `<option value="${mp.id}">${mp.nombre} (${unidad})</option>`;
+            });
+            return opts;
+        }
+
+        function agregarFila() {
+            contadorFilas++;
+            const tbody = document.getElementById('filas');
+            const tr = document.createElement('tr');
+            tr.className = 'table-row';
+            tr.id = `fila-${contadorFilas}`;
+            tr.innerHTML = `
+                <td class="table-td">
+                    <select name="materiaPrimaId" required class="form-input text-on-surface-variant">
+                        ${buildSelect()}
+                    </select>
+                </td>
+                <td class="table-td">
+                    <input type="number" name="cantidad" min="0.001" step="0.001" required placeholder="0.000"
+                           class="form-input text-right font-code-md"/>
+                </td>
+                <td class="table-td">
+                    <input type="number" name="costoUnitario" min="0" step="0.01" required placeholder="0.00"
+                           class="form-input text-right font-code-md"/>
+                </td>
+                <td class="table-td text-right">
+                    <button type="button" onclick="quitarFila(this)" title="Quitar fila"
+                            class="btn-icon-danger">
+                        <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+                    </button>
+                </td>`;
+            tbody.appendChild(tr);
+            actualizarBotonesQuitar();
+        }
+
+        function quitarFila(btn) {
+            const tr = btn.closest('tr');
+            if (document.querySelectorAll('#filas tr').length > 1) {
+                tr.remove();
+                actualizarBotonesQuitar();
+            }
+        }
+
+        function actualizarBotonesQuitar() {
+            const filas = document.querySelectorAll('#filas tr');
+            filas.forEach(fila => {
+                const btn = fila.querySelector('button[title="Quitar fila"]');
+                if (btn) {
+                    if (filas.length === 1) {
+                        btn.classList.add('opacity-0', 'pointer-events-none');
+                    } else {
+                        btn.classList.remove('opacity-0', 'pointer-events-none');
+                    }
+                }
+            });
+        }
+    </script>
+</main>
+</html>

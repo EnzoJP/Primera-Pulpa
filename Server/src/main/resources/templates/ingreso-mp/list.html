@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/app-layout :: layout(~{::main})}">
+<main>
+    <div class="p-md lg:p-lg max-w-container-max mx-auto w-full flex flex-col gap-lg pb-3xl">
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md">
+            <div>
+                <h2 class="page-title">Ingresos de Materia Prima</h2>
+                <p class="page-subtitle">Historial de ingresos y actualizaciones de stock.</p>
+            </div>
+            <a th:href="@{/ingresos-mp/nuevo}" class="btn-primary">
+                <span class="material-symbols-outlined">add</span>
+                Nuevo Ingreso
+            </a>
+        </div>
+
+        <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+        <div class="table-card">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="table-header">
+                            <th class="table-th w-16">ID</th>
+                            <th class="table-th">Fecha y Hora</th>
+                            <th class="table-th text-right">Ítems</th>
+                            <th class="table-th text-right">Total ($)</th>
+                            <th class="table-th text-right w-32">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="font-body-md text-body-md text-on-surface">
+                        <tr th:each="item : ${items}" class="table-row">
+                            <td class="table-td-id" th:text="${item.id}">1</td>
+                            <td class="table-td" th:text="${#temporals.format(item.fechaHora, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                            <td class="table-td text-right font-code-md" th:text="${item.cantidadItems}">0</td>
+                            <td class="table-td text-right font-code-md text-primary" th:text="'$' + ${#numbers.formatDecimal(item.totalCosto, 1, 2)}">$0.00</td>
+                            <td class="table-td text-right">
+                                <a th:href="@{/ingresos-mp/{id}(id=${item.id})}" class="btn-icon" title="Ver detalle">
+                                    <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(items)}">
+                            <td colspan="5" class="py-lg px-md text-center text-on-surface-variant font-body-md">No hay ingresos registrados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</html>

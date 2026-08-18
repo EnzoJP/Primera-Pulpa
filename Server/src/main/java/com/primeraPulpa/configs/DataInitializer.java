@@ -37,19 +37,33 @@ public class DataInitializer {
         logger.info("Unidades de medida iniciales creadas");
       }
 
+      // Roles iniciales
+      Rol rolAdmin = null;
+      Rol rolEmpleado = null;
+
+      for (Rol r : rolService.listarActivos()) {
+          if ("ADMIN".equals(r.getDescripcion())) rolAdmin = r;
+          if ("EMPLEADO".equals(r.getDescripcion())) rolEmpleado = r;
+      }
+
+      if (rolAdmin == null) {
+          rolAdmin = rolService.alta(Rol.builder().descripcion("ADMIN").build());
+          logger.info("Rol ADMIN creado");
+      }
+      if (rolEmpleado == null) {
+          rolEmpleado = rolService.alta(Rol.builder().descripcion("EMPLEADO").build());
+          logger.info("Rol EMPLEADO creado");
+      }
+
       // Check if the admin user already exists
       if (usuarioRepository.findByEmail("admin@example.com").isEmpty()) {
-          final Rol rol = rolService.alta(Rol.builder()
-                  .descripcion("ADMIN")
-                  .build());
           usuarioService.alta(Usuario.builder()
               .nombre("admin")
               .email("admin@example.com")
               .passwordHash("admin123")
-              .rol(rol)
+              .rol(rolAdmin)
               .build());
           logger.info("Admin user created successfully");
-        // Create the admin user
       }
     };
   }

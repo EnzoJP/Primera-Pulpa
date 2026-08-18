@@ -16,29 +16,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final UsuarioRepository usuarioRepository;
+  private final UsuarioRepository usuarioRepository;
 
-    public SecurityConfig(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+  public SecurityConfig(UsuarioRepository usuarioRepository) {
+    this.usuarioRepository = usuarioRepository;
+  }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
+  @Bean
+  public UserDetailsService userDetailsService() {
 
-        return email -> usuarioRepository.findByEmail(email)
-                .filter(u -> !Boolean.TRUE.equals(u.getEliminado()))
-                .map(usuario -> User
-                        .withUsername(usuario.getEmail())
-                        .password(usuario.getPasswordHash())
-                        .roles(usuario.getRol().getDescripcion())
-                        .build()
-                )
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                "Usuario no encontrado"
-                        )
-                );
-    }
+    return email -> usuarioRepository.findByEmail(email)
+        .filter(u -> !Boolean.TRUE.equals(u.getEliminado()))
+        .map(usuario -> User
+            .withUsername(usuario.getEmail())
+            .password(usuario.getPasswordHash())
+            .roles(usuario.getRol().getDescripcion())
+            .build())
+        .orElseThrow(() -> new UsernameNotFoundException(
+            "Usuario no encontrado"));
+  }
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -51,22 +47,18 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/error/**").permitAll()
             .requestMatchers("/materias-primas/**", "/unidades-medida/**", "/costos-adicionales/**").hasRole("ADMIN")
-            .anyRequest().authenticated()
-        )
+            .anyRequest().hasAnyRole("ADMIN", "EMPLEADO"))
         .formLogin(form -> form
             .loginPage("/login")
             .usernameParameter("username")
             .passwordParameter("password")
-            .defaultSuccessUrl("/usuarios", true)
-            .permitAll()
-        )
+            .defaultSuccessUrl("/dashboard", true)
+            .permitAll())
         .logout(logout -> logout
             .logoutSuccessUrl("/login?logout")
-            .permitAll()
-        );
+            .permitAll());
 
     return http.build();
   }
-
 
 }
