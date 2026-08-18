@@ -40,4 +40,8 @@ public class IngresoMP extends BaseEntity<Long> {
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
     }
+
+    public double getCantidadIngresda(){
+        return detalles.stream().mapToDouble(DetalleIngresoMP::getCantidad).sum();
+    }
 }

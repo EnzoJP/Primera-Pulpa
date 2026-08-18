@@ -14,17 +14,12 @@ public class IngresoMPMapper {
      */
     public IngresoResumenDTO toResumen(IngresoMP ingreso) {
         int cantidadItems = ingreso.getDetalles() != null ? ingreso.getDetalles().size() : 0;
-        double totalCosto = ingreso.getDetalles() != null
-                ? ingreso.getDetalles().stream()
-                    .mapToDouble(d -> d.getCantidad() * d.getCostoUnitario())
-                    .sum()
-                : 0.0;
+
 
         return new IngresoResumenDTO(
                 ingreso.getId(),
                 ingreso.getFechaHora(),
-                cantidadItems,
-                totalCosto
+                cantidadItems
         );
     }
 

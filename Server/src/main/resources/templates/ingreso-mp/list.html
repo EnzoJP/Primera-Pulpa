@@ -43,7 +43,7 @@
                     <th class="py-3 px-4 font-normal w-20 text-center">ID</th>
                     <th class="py-3 px-4 font-normal w-auto">Fecha y Hora</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Cant. Ítems</th>
-                    <th class="py-3 px-4 font-normal w-40 text-right">Total ($)</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Total</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
@@ -70,8 +70,8 @@
 
                     <!-- Total -->
                     <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary">
-                        <span class="text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(item.totalCosto, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        <span class="text-xs mr-0.5"></span>
+                        <span th:text="${cantidadIngresada}">0,00</span>
                     </td>
 
                     <!-- Acciones -->

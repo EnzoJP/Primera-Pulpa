@@ -45,18 +45,10 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
             if (detalle.getCantidad() <= 0) {
                 throw new ErrorServiceException("La cantidad debe ser mayor a cero.");
             }
-            if (detalle.getCostoUnitario() < 0) {
-                throw new ErrorServiceException("El costo unitario no puede ser negativo.");
-            }
 
             MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId())
                     .orElseThrow(() -> new ErrorServiceException("Materia prima no encontrada."));
 
-            if (detalle.getCantidad() < mp.getCantidadMinima()) {
-                String unidad = mp.getUnidadMedida() != null ? (" " + mp.getUnidadMedida().getDescripcion()) : "";
-                throw new ErrorServiceException("La cantidad ingresada para '" + mp.getNombre() + "' (" + detalle.getCantidad() + unidad +
-                        ") no puede ser menor al stock mínimo establecido (" + mp.getCantidadMinima() + unidad + ").");
-            }
         }
 
         // 2. Guardar cabecera de ingreso

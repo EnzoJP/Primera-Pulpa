@@ -45,6 +45,7 @@ public class IngresoMPController {
                 .toList();
         List<IngresoResumenDTO> resumenes = ingresoMPMapper.toResumenList(ingresos);
         model.addAttribute("items", resumenes);
+        model.addAttribute("cantidadIngresada",ingresos.stream().mapToDouble(IngresoMP::getCantidadIngresda).sum());
         model.addAttribute("currentUri", request.getRequestURI());
         return "ingreso-mp/list";
     }
@@ -65,7 +66,6 @@ public class IngresoMPController {
     public String confirmar(
             @RequestParam("materiaPrimaId") List<Long> mpIds,
             @RequestParam("cantidad") List<Double> cantidades,
-            @RequestParam("costoUnitario") List<Double> costos,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request) {
 
@@ -81,7 +81,6 @@ public class IngresoMPController {
                 DetalleIngresoMP detalle = new DetalleIngresoMP();
                 detalle.setMateriaPrima(mp);
                 detalle.setCantidad(cantidades.get(i));
-                detalle.setCostoUnitario(costos.get(i));
                 detalles.add(detalle);
             }
 

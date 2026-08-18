@@ -18,7 +18,6 @@ public class DetalleIngresoMP extends BaseEntity<Long> {
     private MateriaPrima materiaPrima;
 
     private double cantidad;
-    private double costoUnitario;
 
     @Override
     public Long getId() {

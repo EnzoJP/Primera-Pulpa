@@ -13,7 +13,7 @@
                 <span>Registro de Stock</span>
             </div>
             <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Nuevo Ingreso de Materia Prima</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Registrá los insumos recibidos. La cantidad a ingresar debe ser mayor o igual al stock mínimo configurado para cada materia prima.</p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Registrá los insumos recibidos</p>
         </div>
 
         <a th:href="@{/ingresos-mp}"
@@ -44,7 +44,6 @@
                     <tr>
                         <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
                         <th class="py-3 px-4 font-normal w-52 text-right">Cantidad</th>
-                        <th class="py-3 px-4 font-normal w-48 text-right">Costo Unitario ($)</th>
                         <th class="py-3 px-4 font-normal w-20 text-center"></th>
                     </tr>
                     </thead>
@@ -56,15 +55,11 @@
                                     <option value="">Seleccione materia prima...</option>
                                     <option th:each="mp : ${materiaPrimas}"
                                             th:value="${mp.id}"
-                                            th:text="${mp.nombre + ' (Mínimo: ' + mp.cantidadMinima + ' ' + (mp.unidadMedida != null ? mp.unidadMedida.descripcion : 'kg') + ')'}">MP</option>
+                                            th:text="${mp.nombre}">MP</option>
                                 </select>
                             </td>
                             <td class="py-3 px-4">
-                                <input type="number" name="cantidad" min="0.001" step="0.001" required placeholder="0.000"
-                                       class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
-                            </td>
-                            <td class="py-3 px-4">
-                                <input type="number" name="costoUnitario" min="0" step="0.01" required placeholder="0.00"
+                                <input type="number" name="cantidad" min="0.0" step="1.0" required placeholder="0.000"
                                        class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                             </td>
                             <td class="py-3 px-4 text-center">
@@ -110,7 +105,7 @@
             let opts = '<option value="">Seleccione materia prima...</option>';
             materiaPrimas.forEach(mp => {
                 const unidad = mp.unidadMedida ? mp.unidadMedida.descripcion : 'kg';
-                opts += `<option value="${mp.id}">${mp.nombre} (Mínimo: ${mp.cantidadMinima} ${unidad})</option>`;
+                opts += `<option value="${mp.id}">${mp.nombre} (${unidad})</option>`;
             });
             return opts;
         }
@@ -122,20 +117,14 @@
             const selectedId = selectElem.value;
 
             if (!selectedId) {
-                cantidadInput.min = "0.001";
-                cantidadInput.placeholder = "0.000";
+                cantidadInput.min = "1.00";
+                cantidadInput.placeholder = "0.00";
+                costoInput.placeholder = "0.00";
                 return;
             }
 
             const mp = materiaPrimas.find(item => item.id == selectedId);
-            if (mp) {
-                const min = mp.cantidadMinima || 0.001;
-                cantidadInput.min = min;
-                cantidadInput.placeholder = `Mín: ${min}`;
-                if (!costoInput.value && mp.precio) {
-                    costoInput.placeholder = mp.precio.toFixed(2);
-                }
-            }
+
         }
 
         function agregarFila() {
@@ -152,11 +141,7 @@
                     </select>
                 </td>
                 <td class="py-3 px-4">
-                    <input type="number" name="cantidad" min="0.001" step="0.001" required placeholder="0.000"
-                           class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
-                </td>
-                <td class="py-3 px-4">
-                    <input type="number" name="costoUnitario" min="0" step="0.01" required placeholder="0.00"
+                    <input type="number" name="cantidad" min="0.00" step="1.00" required placeholder="0.00"
                            class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                 </td>
                 <td class="py-3 px-4 text-center">
