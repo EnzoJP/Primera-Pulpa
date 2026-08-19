@@ -1,6 +1,7 @@
 package com.primeraPulpa.Services;
 
 import com.primeraPulpa.entities.CostoAdicional;
+import com.primeraPulpa.entities.DetalleFormula;
 import com.primeraPulpa.entities.Formula;
 import com.primeraPulpa.entities.Mix;
 import com.primeraPulpa.exceptions.ErrorServiceException;
@@ -88,5 +89,64 @@ public class MixService extends BaseService<Mix, Long> {
         repository.findAll().stream()
                 .filter(m -> !Boolean.TRUE.equals(m.getEliminado()))
                 .forEach(m -> recalcularCosto(m.getId()));
+    }
+
+    // Actualiza el stock al registrar una elaboración:
+    //  - valida que el mix tenga fórmula y que haya stock de materia prima suficiente
+    //  - descuenta de cada materia prima lo necesario según la fórmula (managed → dirty checking)
+    //  - suma la cantidad elaborada al stock del mix (detached → save hace merge)
+    @Transactional
+    public void actualizarStockMixElaboracion(Mix mix, Double cantidad) throws ErrorServiceException {
+        if (mix == null || mix.getId() == null) {
+            throw new ErrorServiceException("Debe indicar el mix elaborado.");
+        }
+        if (cantidad == null || cantidad <= 0) {
+            throw new ErrorServiceException("La cantidad elaborada debe ser mayor a cero.");
+        }
+
+        Formula formula = formulaRepository.findByMixId(mix.getId()).stream()
+                .filter(f -> !Boolean.TRUE.equals(f.getEliminado()))
+                .findFirst()
+                .orElse(null);
+
+        if (formula == null) {
+            throw new ErrorServiceException("El mix no tiene una fórmula asociada. Registre la fórmula antes de elaborar.");
+        }
+        if (formula.getCantidad() <= 0) {
+            throw new ErrorServiceException("La fórmula del mix no tiene un rendimiento válido.");
+        }
+
+        // 1) Validar stock de todas las materias primas ANTES de descontar nada
+        for (DetalleFormula detalle : formula.getDetalles()) {
+            if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
+                continue;
+            }
+            double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
+            double disponible = detalle.getMateriaPrima().getCantidadActual();
+            if (disponible < necesario) {
+                throw new ErrorServiceException(
+                        "Stock insuficiente de '" + detalle.getMateriaPrima().getNombre()
+                        + "': se necesitan " + necesario + " kg y hay " + disponible + " kg.");
+            }
+        }
+
+        // 2) Descontar de cada materia prima (entidades managed en esta transacción)
+        for (DetalleFormula detalle : formula.getDetalles()) {
+            if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
+                continue;
+            }
+            double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
+            detalle.getMateriaPrima().actualizarStock(-necesario);
+        }
+
+        // 3) Aumentar el stock del mix (el mix llega detached → save hace merge)
+        mix.actualizarStock(cantidad);
+        repository.save(mix);
+    }
+
+    // Elimina el ruido del punto flotante: redondea a 6 decimales (0,000001 kg = 1 mg).
+    // Conserva cantidades chicas como 0,325 g (= 0,000325 kg) sin dejar 7.000000000000001.
+    private static double redondear(double valor) {
+        return Math.round(valor * 1_000_000.0) / 1_000_000.0;
     }
 }

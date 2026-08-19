@@ -24,6 +24,9 @@ public class Mix extends BaseEntity<Long> {
     // costos adicionales del catálogo (bolsa, etiqueta, etc.).
     private double costo;
 
+    //stock actual del mix. Se actualiza cada vez que se registra una elaboración o venta.
+    private double stock;
+
     // Usuario que realizó la elaboración de este mix. INNCESARIO
     //@ManyToOne
     //private Usuario usuario;
@@ -46,5 +49,9 @@ public class Mix extends BaseEntity<Long> {
     @Override
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
+    }
+
+    public void actualizarStock(double cantidad) {
+        this.stock += cantidad;
     }
 }

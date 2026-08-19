@@ -44,4 +44,8 @@ public class MateriaPrima extends BaseEntity<Long> {
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
     }
+
+    public void actualizarStock(double cantidad) {
+        this.cantidadActual += cantidad;
+    }
 }

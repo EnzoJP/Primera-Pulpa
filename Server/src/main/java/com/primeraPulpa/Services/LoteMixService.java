@@ -5,6 +5,7 @@ import com.primeraPulpa.entities.LoteMix;
 import com.primeraPulpa.entities.Mix;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.LoteMixRepository;
+import com.primeraPulpa.repositories.MixRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +19,14 @@ import java.util.stream.Collectors;
 public class LoteMixService extends BaseService<LoteMix, Long> {
 
     private final LoteMixRepository loteMixRepository;
+    private final MixRepository mixRepository;
+    private final MixService mixService;
 
-    public LoteMixService(LoteMixRepository repository) {
+    public LoteMixService(LoteMixRepository repository, MixRepository mixRepository, MixService mixService) {
         super(repository);
         this.loteMixRepository = repository;
+        this.mixRepository = mixRepository;
+        this.mixService = mixService;
     }
 
     /**
@@ -31,6 +36,7 @@ public class LoteMixService extends BaseService<LoteMix, Long> {
      */
     @Transactional
     public LoteMix registrarElaboracion(Mix mix, LocalDate fecha, Double cantidad) throws ErrorServiceException {
+        System.out.println("Registrando elaboración: mix=" + mix + ", fecha=" + fecha + ", cantidad=" + cantidad);
         if (mix == null || mix.getId() == null) {
             throw new ErrorServiceException("Debe indicar el mix elaborado.");
         }
@@ -40,6 +46,10 @@ public class LoteMixService extends BaseService<LoteMix, Long> {
         if (cantidad == null || cantidad <= 0) {
             throw new ErrorServiceException("La cantidad elaborada debe ser mayor a cero.");
         }
+
+        // Verifica stock de materia prima y actualiza stock del mix y de las materias primas.
+        // Si no alcanza el stock, lanza ErrorServiceException y se revierte todo (transaccional).
+        mixService.actualizarStockMixElaboracion(mix, cantidad);
 
         Optional<LoteMix> loteExistente = loteMixRepository
                 .findByMixAndFechaElaboracionAndEliminadoFalse(mix, fecha);
