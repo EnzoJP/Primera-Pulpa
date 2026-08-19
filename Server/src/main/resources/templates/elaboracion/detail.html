@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Lote del Día - Primera Pulpa', 'elaboracion', ~{::#elaboracion-detail-content})}">
+<body>
+
+<div id="elaboracion-detail-content" class="max-w-4xl mx-auto space-y-md">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <a th:href="@{/elaboracion}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver a elaboraciones</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Lote del Día</h1>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5"
+               th:text="${#temporals.format(fecha, 'EEEE d MMM yyyy')}">
+                miércoles 19 ago 2026
+            </p>
+        </div>
+
+        <a th:href="@{/elaboracion/nuevo}"
+           class="inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            <span>Cargar Elaboración</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
+
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+            <div class="flex justify-between items-start mb-xs">
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Fecha del Lote</p>
+                <span class="material-symbols-outlined text-outline">event</span>
+            </div>
+            <p class="font-headline-md text-headline-md text-primary font-semibold"
+               th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">
+                19/08/2026
+            </p>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">Lote acumulado del día</p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+            <div class="flex justify-between items-start mb-xs">
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Elaborado</p>
+                <span class="material-symbols-outlined text-outline">scale</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+                <span class="font-display text-[32px] leading-tight text-primary font-bold"
+                      th:text="${#numbers.formatDecimal(totalDia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                <span class="font-label-caps text-xs text-on-surface-variant">kg</span>
+            </div>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">Suma de todos los mixes del día</p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+            <div class="flex justify-between items-start mb-xs">
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Mixes Elaborados</p>
+                <span class="material-symbols-outlined text-outline">inventory_2</span>
+            </div>
+            <p class="font-headline-md text-headline-md text-primary font-semibold"
+               th:text="${#lists.size(loteDelDia)}">2</p>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">Productos terminados en el lote</p>
+        </div>
+
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="p-md bg-surface-container/40 border-b border-outline-variant/20">
+            <h2 class="font-headline-md text-headline-md text-primary">Mixes del Lote</h2>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-base font-normal w-16 text-center">ID</th>
+                    <th class="py-3 px-base font-normal">Mix Elaborado</th>
+                    <th class="py-3 px-base font-normal w-44 text-right">Cantidad (kg)</th>
+                    <th class="py-3 px-base font-normal w-24 text-right pr-6">Acciones</th>
+                </tr>
+                </thead>
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="el : ${loteDelDia}" class="hover:bg-surface-container-low transition-colors">
+                    <td class="py-3.5 px-base text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
+                        th:text="${el.id}">#1</td>
+                    <td class="py-3.5 px-base font-medium text-primary">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-outline text-[20px]">inventory_2</span>
+                            <span th:text="${el.mix.nombre}">Mix Frutos Secos Clásico</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-base text-right font-data-tabular text-data-tabular">
+                        <span th:text="${#numbers.formatDecimal(el.cantidadElaborada ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        <span class="text-on-surface-variant text-xs ml-0.5">kg</span>
+                    </td>
+                    <td class="py-3.5 px-base pr-6 text-right whitespace-nowrap">
+                        <div class="inline-flex items-center justify-end gap-1">
+                            <a th:href="@{|/elaboracion/${el.id}/editar|}"
+                               title="Editar"
+                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">edit</span>
+                            </a>
+                            <form th:action="@{|/elaboracion/${el.id}/eliminar|}"
+                                  method="post"
+                                  class="inline m-0"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar esta elaboración?');">
+                                <button type="submit"
+                                        title="Eliminar"
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

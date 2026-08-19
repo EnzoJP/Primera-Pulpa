@@ -17,4 +17,7 @@ public interface MateriaPrimaRepository extends BaseRepository<MateriaPrima, Lon
            "WHERE m.eliminado = false " +
            "AND m.cantidadActual < m.cantidadMinima")
     List<MateriaPrima> findConStockBajo();
+
+    @Query("SELECT CASE WHEN COUNT(df) > 0 THEN true ELSE false END FROM DetalleFormula df WHERE df.materiaPrima.id = :id AND df.eliminado = false")
+    Boolean findInFormulaById(Long id);
 }

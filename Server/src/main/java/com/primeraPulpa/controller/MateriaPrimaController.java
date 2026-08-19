@@ -2,6 +2,7 @@ package com.primeraPulpa.controller;
 
 import com.primeraPulpa.entities.MateriaPrima;
 import com.primeraPulpa.entities.UnidadMedida;
+import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.MateriaPrimaRepository;
 import com.primeraPulpa.repositories.UnidadMedidaRepository;
 import com.primeraPulpa.Services.MateriaPrimaService;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.beans.PropertyEditorSupport;
 
@@ -74,5 +76,34 @@ public class MateriaPrimaController extends BaseController<MateriaPrima, Long> {
     @Override
     protected String vistaDetalle() {
         return "materia-prima/detail";
+    }
+
+    @PostMapping("/{id}/eliminar")
+    @Override
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes, Model model) {
+        try {
+            preDelete(id);
+            boolean enFormula = materiaPrimaRepository.findInFormulaById(id);
+            if(enFormula) {
+                redirectAttributes.addFlashAttribute("error", "No se puede eliminar la materia prima porque está asociada a una fórmula");
+                return "redirect:/materias-primas";
+            }
+            boolean eliminado = service.bajaLogica(id);
+
+            if (eliminado) {
+                postDelete(id);
+                redirectAttributes.addFlashAttribute("success", "materia prima" + " eliminada correctamente");
+                return "redirect:/materias-primas";
+            } else {
+                model.addAttribute("error", "Entidad no encontrada");
+                return "error/404";
+            }
+        } catch (ErrorServiceException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/materias-primas";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al eliminar la entidad");
+            return "error/500";
+        }
     }
 }

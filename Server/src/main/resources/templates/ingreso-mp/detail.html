@@ -29,14 +29,14 @@
     <!-- Tabla de Detalles -->
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse table-fixed">
+            <table class="w-full text-left border-collapse">
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
                 <tr>
                     <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
                     <th class="py-3 px-4 font-normal w-36 text-center">Unidad</th>
                     <th class="py-3 px-4 font-normal w-40 text-right">Cantidad</th>
-                    <th class="py-3 px-4 font-normal w-40 text-right">Costo Unitario ($)</th>
-                    <th class="py-3 px-4 font-normal w-40 text-right pr-6">Subtotal ($)</th>
+                    <!-- <th class="py-3 px-4 font-normal w-40 text-right">Costo Unitario ($)</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right pr-6">Subtotal ($)</th>-->
                 </tr>
                 </thead>
 
@@ -60,17 +60,17 @@
                     <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface"
                         th:text="${det.cantidad}">0</td>
 
-                    <!-- Costo Unitario -->
+                    <!-- Costo Unitario
                     <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
                         <span class="text-xs mr-0.5">$</span>
                         <span th:text="${#numbers.formatDecimal(det.costoUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
+                    </td>-->
 
-                    <!-- Subtotal -->
+                    <!-- Subtotal
                     <td class="py-3.5 px-4 pr-6 text-right font-data-tabular text-data-tabular font-bold text-primary">
                         <span class="text-xs mr-0.5">$</span>
                         <span th:text="${#numbers.formatDecimal(det.cantidad * det.costoUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
+                    </td>-->
                 </tr>
                 </tbody>
 
