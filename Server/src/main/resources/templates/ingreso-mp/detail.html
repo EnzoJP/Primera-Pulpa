@@ -88,7 +88,7 @@
                         Cantidad Total del Ingreso:
                     </td>
                     <td class="py-4 px-4 pr-6 text-right font-data-tabular text-body-lg font-bold text-primary">
-                        <span th:text="${#numbers.formatDecimal(ingreso.detalles.stream().mapToDouble(d -> d.cantidad).sum(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        <span th:text="${#numbers.formatDecimal(#aggregates.sum(ingreso.detalles.![cantidad]), 1, 'POINT', 2, 'COMMA')}">0,00</span>
                     </td>
                 </tr>
                 </tfoot>
