@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public record IngresoResumenDTO(
                 Long id,
                 LocalDateTime fechaHora,
-                int cantidadItems
+                int cantidadItems,
+                double cantidadTotal
                 ) {
 }

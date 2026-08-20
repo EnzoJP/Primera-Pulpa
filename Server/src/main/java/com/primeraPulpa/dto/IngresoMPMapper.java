@@ -10,16 +10,16 @@ public class IngresoMPMapper {
 
     /**
      * Mapea un IngresoMP a su resumen para el listado.
-     * Calcula cantidadItems y totalCosto en el servidor para no exponer la colección completa a la vista.
+     * Calcula cantidadItems y cantidadTotal en el servidor para no exponer la colección completa a la vista.
      */
     public IngresoResumenDTO toResumen(IngresoMP ingreso) {
         int cantidadItems = ingreso.getDetalles() != null ? ingreso.getDetalles().size() : 0;
 
-
         return new IngresoResumenDTO(
                 ingreso.getId(),
                 ingreso.getFechaHora(),
-                cantidadItems
+                cantidadItems,
+                ingreso.getCantidadIngresda()
         );
     }
 

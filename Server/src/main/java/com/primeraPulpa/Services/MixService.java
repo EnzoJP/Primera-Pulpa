@@ -2,15 +2,20 @@ package com.primeraPulpa.Services;
 
 import com.primeraPulpa.entities.CostoAdicional;
 import com.primeraPulpa.entities.DetalleFormula;
+import com.primeraPulpa.entities.DetalleIngresoMP;
 import com.primeraPulpa.entities.Formula;
+import com.primeraPulpa.entities.MateriaPrima;
 import com.primeraPulpa.entities.Mix;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.CostoAdicionalRepository;
+import com.primeraPulpa.repositories.DetalleIngresoMPRepository;
 import com.primeraPulpa.repositories.DetallePedidoRepository;
 import com.primeraPulpa.repositories.FormulaRepository;
 import com.primeraPulpa.repositories.MixRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class MixService extends BaseService<Mix, Long> {
@@ -18,13 +23,16 @@ public class MixService extends BaseService<Mix, Long> {
     private final DetallePedidoRepository detallePedidoRepository;
     private final FormulaRepository formulaRepository;
     private final CostoAdicionalRepository costoAdicionalRepository;
+    private final DetalleIngresoMPRepository detalleIngresoMPRepository;
 
     public MixService(MixRepository repository, DetallePedidoRepository detallePedidoRepository,
-                      FormulaRepository formulaRepository, CostoAdicionalRepository costoAdicionalRepository) {
+                      FormulaRepository formulaRepository, CostoAdicionalRepository costoAdicionalRepository,
+                      DetalleIngresoMPRepository detalleIngresoMPRepository) {
         super(repository);
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
         this.costoAdicionalRepository = costoAdicionalRepository;
+        this.detalleIngresoMPRepository = detalleIngresoMPRepository;
     }
 
     @Override
@@ -130,18 +138,39 @@ public class MixService extends BaseService<Mix, Long> {
             }
         }
 
-        // 2) Descontar de cada materia prima (entidades managed en esta transacción)
+        // 2) Descontar de cada materia prima: stock global + desglose FIFO por lote
         for (DetalleFormula detalle : formula.getDetalles()) {
             if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
                 continue;
             }
             double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
-            detalle.getMateriaPrima().actualizarStock(-necesario);
+            MateriaPrima materiaPrima = detalle.getMateriaPrima();
+            materiaPrima.actualizarStock(-necesario);
+            consumirLotesFEFO(materiaPrima, necesario);
         }
 
         // 3) Aumentar el stock del mix (el mix llega detached → save hace merge)
         mix.actualizarStock(cantidad);
         repository.save(mix);
+    }
+
+    // Descuenta la cantidad necesaria de los lotes de la materia prima en orden FEFO
+    // (vence antes primero). Los lotes están dentro de la transacción → dirty checking.
+    private void consumirLotesFEFO(MateriaPrima materiaPrima, double necesario) {
+        List<DetalleIngresoMP> lotes = detalleIngresoMPRepository.findLotesDisponiblesFEFO(materiaPrima.getId());
+        double pendiente = necesario;
+        for (DetalleIngresoMP lote : lotes) {
+            if (pendiente <= 0) {
+                break;
+            }
+            double restante = lote.getRestante();
+            if (restante <= 0) {
+                continue;
+            }
+            double aDescontar = Math.min(restante, pendiente);
+            lote.setCantidadRestante(restante - aDescontar);
+            pendiente -= aDescontar;
+        }
     }
 
     // Elimina el ruido del punto flotante: redondea a 6 decimales (0,000001 kg = 1 mg).

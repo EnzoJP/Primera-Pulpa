@@ -10,17 +10,21 @@ import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.IngresoMPRepository;
 import com.primeraPulpa.repositories.MateriaPrimaRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
 @RequestMapping("/ingresos-mp")
 public class IngresoMPController {
+
+    private static final int PAGE_SIZE = 30;
 
     private final IngresoMPService ingresoMPService;
     private final IngresoMPRepository ingresoMPRepository;
@@ -37,15 +41,30 @@ public class IngresoMPController {
         this.ingresoMPMapper = ingresoMPMapper;
     }
 
-    // ── Listado ──────────────────────────────────────────────────────────────
+    // ── Listado con filtro por fecha y paginación ─────────────────────────────
     @GetMapping("")
-    public String listado(Model model, HttpServletRequest request) {
-        List<IngresoMP> ingresos = ingresoMPRepository.findAll().stream()
-                .filter(i -> !Boolean.TRUE.equals(i.getEliminado()))
+    public String listado(@RequestParam(value = "fecha", required = false)
+                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+                          @RequestParam(value = "page", defaultValue = "0") int page,
+                          Model model, HttpServletRequest request) {
+        List<IngresoMP> todos = ingresoMPRepository.findAllByEliminadoFalseOrderByFechaHoraDescIdDesc().stream()
+                .filter(i -> fecha == null || i.getFechaHora() != null && i.getFechaHora().toLocalDate().equals(fecha))
                 .toList();
-        List<IngresoResumenDTO> resumenes = ingresoMPMapper.toResumenList(ingresos);
-        model.addAttribute("items", resumenes);
-        model.addAttribute("cantidadIngresada",ingresos.stream().mapToDouble(IngresoMP::getCantidadIngresda).sum());
+
+        List<IngresoResumenDTO> resumenes = ingresoMPMapper.toResumenList(todos);
+
+        int total = resumenes.size();
+        int totalPages = Math.max(1, (int) Math.ceil(total / (double) PAGE_SIZE));
+        int paginaActual = Math.max(0, Math.min(page, totalPages - 1));
+        int desde = paginaActual * PAGE_SIZE;
+        int hasta = Math.min(desde + PAGE_SIZE, total);
+        List<IngresoResumenDTO> pagina = desde < total ? resumenes.subList(desde, hasta) : List.of();
+
+        model.addAttribute("items", pagina);
+        model.addAttribute("cantidadIngresada", todos.stream().mapToDouble(IngresoMP::getCantidadIngresda).sum());
+        model.addAttribute("fechaFiltro", fecha);
+        model.addAttribute("page", paginaActual);
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("currentUri", request.getRequestURI());
         return "ingreso-mp/list";
     }
@@ -66,6 +85,7 @@ public class IngresoMPController {
     public String confirmar(
             @RequestParam("materiaPrimaId") List<Long> mpIds,
             @RequestParam("cantidad") List<Double> cantidades,
+            @RequestParam(value = "fechaVencimiento", required = false) List<String> vencimientos,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request) {
 
@@ -81,6 +101,7 @@ public class IngresoMPController {
                 DetalleIngresoMP detalle = new DetalleIngresoMP();
                 detalle.setMateriaPrima(mp);
                 detalle.setCantidad(cantidades.get(i));
+                detalle.setFechaVencimiento(parseFechaVencimiento(vencimientos, i));
                 detalles.add(detalle);
             }
 
@@ -106,6 +127,21 @@ public class IngresoMPController {
         } catch (Exception e) {
             model.addAttribute("error", "Ingreso no encontrado");
             return "error/500";
+        }
+    }
+
+    private LocalDate parseFechaVencimiento(List<String> vencimientos, int index) {
+        if (vencimientos == null || index >= vencimientos.size()) {
+            return null;
+        }
+        String valor = vencimientos.get(index);
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(valor.trim());
+        } catch (Exception e) {
+            return null;
         }
     }
 }

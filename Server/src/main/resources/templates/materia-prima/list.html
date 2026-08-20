@@ -21,6 +21,14 @@
             <span>Nueva Materia Prima</span>
         </a>
     </header>
+    <div class="flex items-center gap-sm">
+        <input id="filtroNombre" type="text" placeholder="Buscar por nombre..."
+               class="w-full sm:w-80 bg-white border border-outline-variant/40 rounded-lg px-md py-2 font-data-tabular text-data-tabular text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+        <button id="limpiarFiltro" type="button" title="Limpiar búsqueda"
+                class="inline-flex items-center justify-center shrink-0 px-3 py-2 border border-transparent bg-surface-container-highest text-on-surface-variant rounded-lg hover:bg-surface-container-high hover:cursor-pointer transition-colors">
+            <span class="material-symbols-outlined leading-none" style="font-size: 1.2rem">clear</span>
+        </button>
+    </div>
 
     <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
         <span class="material-symbols-outlined text-secondary fill">check_circle</span>
@@ -44,13 +52,13 @@
                     <th class="py-3 px-4 font-normal w-32 text-right">Precio</th>
                     <th class="py-3 px-4 font-normal w-32 text-right">Stock Actual</th>
                     <th class="py-3 px-4 font-normal w-32 text-right">Stock Mínimo</th>
-                    <th class="py-3 px-4 font-normal w-36 text-center">Fecha Ingreso</th>
+                    <th class="py-3 px-4 font-normal w-36 text-center">Último Ingreso</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
 
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+                <tr th:each="item : ${items}" class="mp-row hover:bg-surface-container-low transition-colors group">
 
                     <!-- ID -->
                     <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
@@ -137,10 +145,47 @@
                         </div>
                     </td>
                 </tr>
+                <!-- Sin coincidencias en la búsqueda (oculta por defecto) -->
+                <tr id="fila-vacia" class="hidden">
+                    <td colspan="8" class="py-12 px-4 text-center">
+                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[36px]">search</span>
+                            <p class="font-body-md text-body-md">No se encontraron materias primas que coincidan con la búsqueda.</p>
+                        </div>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        const inputFiltro = document.getElementById('filtroNombre');
+        const filasMateriaPrima = document.querySelectorAll('#mp-list-content tbody tr.mp-row');
+        const filaSinCoincidencias = document.getElementById('fila-vacia');
+
+        function aplicarFiltro() {
+            const termino = inputFiltro.value.trim().toLowerCase();
+            let visibles = 0;
+            filasMateriaPrima.forEach(row => {
+                const nombre = row.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
+                const coincide = nombre.includes(termino);
+                row.style.display = coincide ? '' : 'none';
+                if (coincide) visibles++;
+            });
+            if (filaSinCoincidencias) {
+                filaSinCoincidencias.classList.toggle('hidden', !(termino && visibles === 0));
+            }
+        }
+
+        inputFiltro.addEventListener('input', aplicarFiltro);
+
+        const botonLimpiar = document.getElementById('limpiarFiltro');
+        botonLimpiar.addEventListener('click', () => {
+            inputFiltro.value = '';
+            aplicarFiltro();
+        });
+    </script>
 </div>
 
 </body>

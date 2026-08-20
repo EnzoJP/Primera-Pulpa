@@ -1,5 +1,7 @@
 package com.primeraPulpa.Services;
 
+import com.primeraPulpa.dto.LoteDiarioDTO;
+import com.primeraPulpa.entities.LoteMix;
 import com.primeraPulpa.entities.MateriaPrima;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.DetalleFormulaRepository;
@@ -7,16 +9,22 @@ import com.primeraPulpa.repositories.MateriaPrimaRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
 
+    private final MateriaPrimaRepository repository;
     private final DetalleFormulaRepository detalleFormulaRepository;
     private final MixService mixService;
 
     public MateriaPrimaService(MateriaPrimaRepository repository, DetalleFormulaRepository detalleFormulaRepository,
                                MixService mixService) {
         super(repository);
+        this.repository = repository;
         this.detalleFormulaRepository = detalleFormulaRepository;
         this.mixService = mixService;
     }
@@ -46,6 +54,27 @@ public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
         }
     }
 
+    // El formulario de edición no incluye stock, fecha de ingreso ni estado de baja:
+    // se conservan los valores persistidos para que la edición no los pise (ej. el stock pasaba a 0).
+    @Override
+    public Optional<MateriaPrima> modificar(Long id, MateriaPrima entidadNueva) throws ErrorServiceException {
+        try {
+            validar(entidadNueva);
+            entidadNueva.setId(id);
+            preModificacion(entidadNueva);
+            return repository.findById(id).map(entidad -> {
+                entidadNueva.setCantidadActual(entidad.getCantidadActual());
+                entidadNueva.setFechaIngreso(entidad.getFechaIngreso());
+                entidadNueva.setEliminado(entidad.getEliminado());
+                MateriaPrima actualizado = repository.save(entidadNueva);
+                postModificacion(actualizado);
+                return actualizado;
+            });
+        } catch (Exception e) {
+            throw new ErrorServiceException("Error de Sistemas");
+        }
+    }
+
     // Si cambia el precio, se recalculan los costos de los mixes que la usan
     @Override
     protected void postModificacion(MateriaPrima materiaPrima) throws ErrorServiceException {
@@ -63,4 +92,5 @@ public class MateriaPrimaService extends BaseService<MateriaPrima, Long> {
             throw new ErrorServiceException("No se puede dar de baja una materia prima utilizada en una fórmula");
         }
     }
+
 }

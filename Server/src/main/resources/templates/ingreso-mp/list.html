@@ -34,6 +34,22 @@
         <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
     </div>
 
+    <form th:action="@{/ingresos-mp}" method="get" class="flex items-center gap-2 flex-wrap">
+        <label for="filtroFecha" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Fecha</label>
+        <input id="filtroFecha" type="date" name="fecha"
+               th:value="${fechaFiltro != null ? #temporals.format(fechaFiltro, 'yyyy-MM-dd') : ''}"
+               class="bg-surface border border-outline-variant/40 rounded-lg px-md py-2 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+        <button type="submit"
+                class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-[18px]">search</span>
+            Buscar
+        </button>
+        <a th:if="${fechaFiltro != null}" th:href="@{/ingresos-mp}"
+           class="inline-flex items-center gap-xs px-md py-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors">
+            Limpiar
+        </a>
+    </form>
+
     <!-- Tabla -->
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
@@ -69,10 +85,8 @@
                     </td>
 
                     <!-- Total -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary">
-                        <span class="text-xs mr-0.5"></span>
-                        <span th:text="${cantidadIngresada}">0,00</span>
-                    </td>
+                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary"
+                        th:text="${item.cantidadTotal}">0</td>
 
                     <!-- Acciones -->
                     <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
@@ -84,8 +98,8 @@
                     </td>
                 </tr>
 
-                <!-- Estado Vacío -->
-                <tr th:if="${#lists.isEmpty(items)}">
+                <!-- Estado Vacío: no hay ingresos en general -->
+                <tr th:if="${#lists.isEmpty(items) and fechaFiltro == null}">
                     <td colspan="5" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">move_to_inbox</span>
@@ -96,8 +110,42 @@
                         </div>
                     </td>
                 </tr>
+
+                <!-- Estado Vacío: el filtro por fecha no devolvió resultados -->
+                <tr th:if="${#lists.isEmpty(items) and fechaFiltro != null}">
+                    <td colspan="5" class="py-12 px-4 text-center">
+                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[36px]">event_busy</span>
+                            <p class="font-body-md text-body-md">No hay ingresos registrados para el
+                                <span class="font-data-tabular" th:text="${#temporals.format(fechaFiltro, 'dd/MM/yyyy')}">01/01/2026</span>.</p>
+                            <a th:href="@{/ingresos-mp}" class="font-label-caps text-label-caps text-secondary hover:underline mt-0.5">
+                                Ver todos los ingresos
+                            </a>
+                        </div>
+                    </td>
+                </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    <div th:if="${totalPages > 1}" class="flex items-center justify-between pt-1">
+        <span class="font-body-sm text-body-sm text-on-surface-variant"
+              th:text="'Página ' + ${page + 1} + ' de ' + ${totalPages}"></span>
+        <div class="flex items-center gap-sm">
+            <a th:if="${page > 0}"
+               th:href="@{/ingresos-mp(page=${page - 1}, fecha=${fechaFiltro})}"
+               class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                Anterior
+            </a>
+            <a th:if="${page < totalPages - 1}"
+               th:href="@{/ingresos-mp(page=${page + 1}, fecha=${fechaFiltro})}"
+               class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                Siguiente
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
         </div>
     </div>
 </div>

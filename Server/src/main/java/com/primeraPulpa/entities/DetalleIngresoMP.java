@@ -3,6 +3,8 @@ package com.primeraPulpa.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Setter
@@ -18,6 +20,12 @@ public class DetalleIngresoMP extends BaseEntity<Long> {
     private MateriaPrima materiaPrima;
 
     private double cantidad;
+
+    // Stock restante de este lote. Null en lotes creados antes del FIFO: se interpreta como la cantidad completa.
+    private Double cantidadRestante;
+
+    // Vencimiento del lote/cosecha recibida. Null si no aplica (ej. insumos sin vencimiento).
+    private LocalDate fechaVencimiento;
 
     @Override
     public Long getId() {
@@ -37,5 +45,9 @@ public class DetalleIngresoMP extends BaseEntity<Long> {
     @Override
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
+    }
+
+    public double getRestante() {
+        return cantidadRestante != null ? cantidadRestante : cantidad;
     }
 }

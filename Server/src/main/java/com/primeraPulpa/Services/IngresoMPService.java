@@ -10,6 +10,7 @@ import com.primeraPulpa.repositories.MateriaPrimaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -59,15 +60,20 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
         IngresoMP ingresoGuardado = repository.save(ingreso);
 
         // 3. Guardar detalles y actualizar stock
+        // La fecha del ingreso pasa a ser la última fecha de ingreso de cada materia prima.
+        // El histórico de cada recepción (con su propio vencimiento) queda en IngresoMP/DetalleIngresoMP.
+        LocalDate fechaIngreso = ingresoGuardado.getFechaHora().toLocalDate();
         for (DetalleIngresoMP detalle : detalles) {
             MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId()).get();
 
             detalle.setIngresoMP(ingresoGuardado);
             detalle.setEliminado(false);
+            detalle.setCantidadRestante(detalle.getCantidad());
             detalleRepository.save(detalle);
 
             // Actualizar stock de la materia prima
             mp.setCantidadActual(mp.getCantidadActual() + detalle.getCantidad());
+            mp.setFechaIngreso(fechaIngreso);
             materiaPrimaRepository.save(mp);
         }
 
