@@ -95,6 +95,23 @@ public class UsuarioService extends BaseService<Usuario, Long> {
         usuarioRepository.save(usuario);
     }
 
+    public List<Usuario> listarTodos() {
+        return usuarioRepository.findAll();
+    }
+
+    @Transactional
+    public boolean reactivar(Long id) throws ErrorServiceException {
+        try {
+            return usuarioRepository.findById(id).map(usuario -> {
+                usuario.setEliminado(false);
+                usuarioRepository.save(usuario);
+                return true;
+            }).orElse(false);
+        } catch (Exception e) {
+            throw new ErrorServiceException("Error al reactivar el usuario");
+        }
+    }
+
     public Optional<Usuario> findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
