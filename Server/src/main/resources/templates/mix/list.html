@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/main-layout :: layout('Listado de Mixes - Primera Pulpa', 'mixes', ~{::#mixes-list-content})}">
+      th:replace="~{layouts/main-layout :: layout('Stock de ' + ${entityName} + ' - Primera Pulpa', 'mixes', ~{::#stock-mixes-content})}">
 <body>
 
-<div id="mixes-list-content" class="space-y-md">
+<div id="stock-mixes-content" class="space-y-md">
 
+    <!-- Encabezado -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
             <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
-                <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                <span>Catálogo de Producción</span>
+                <span class="material-symbols-outlined text-[18px]">inventory</span>
+                <span>Disponibilidad de Despacho</span>
             </div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Listado de Mixes</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Control de mezclas finales, costos de producción y margen de ganancia.</p>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Stock Actual de Mixes</h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Control de existencias para expedición con priorización visual de quiebres de stock.</p>
         </div>
 
         <a th:href="@{|${basePath}/nuevo|}"
@@ -22,6 +23,7 @@
         </a>
     </header>
 
+    <!-- Notificaciones Flash -->
     <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
         <span class="material-symbols-outlined text-secondary fill">check_circle</span>
         <span class="font-body-sm text-body-sm font-medium" th:text="${success}">Operación exitosa.</span>
@@ -32,66 +34,124 @@
         <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
     </div>
 
+    <!-- Barra de Búsqueda -->
+    <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+        <form th:action="@{|${basePath}|}" method="get" class="flex flex-col sm:flex-row items-center gap-sm">
+            <div class="relative flex-1 w-full">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+                <input id="input-buscador"
+                       type="text"
+                       name="nombre"
+                       th:value="${param.nombre}"
+                       placeholder="Buscar por nombre de mix..."
+                       autocomplete="off"
+                       class="w-full bg-surface border border-outline-variant/40 rounded-lg pl-10 pr-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline" />
+            </div>
+            <div class="flex items-center gap-xs w-full sm:w-auto">
+                <button type="submit"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                    <span>Buscar</span>
+                </button>
+                <a th:href="@{|${basePath}|}"
+                   id="btn-limpiar"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-surface-container text-on-surface-variant hover:text-primary font-label-caps text-label-caps rounded-lg transition-colors border border-outline-variant/30">
+                    <span class="material-symbols-outlined text-[18px]">backspace</span>
+                    <span>Limpiar</span>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de Existencias -->
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse table-fixed">
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
                 <tr>
                     <th class="py-3 px-4 font-normal w-16 text-center">ID</th>
                     <th class="py-3 px-4 font-normal w-auto">Nombre del Mix</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Precio de Venta</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Costo (kg)</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Margen / Ganancia</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Cantidad en Stock</th>
+                    <th class="py-3 px-4 font-normal w-32 text-center">Estado</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
 
-                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+                <tbody id="tabla-mixes-body" class="font-body-sm text-body-sm divide-y divide-outline-variant/10">
+                <tr th:each="item : ${items}"
+                    th:data-stock="${item.stock}"
+                    th:data-nombre="${#strings.toLowerCase(item.nombre)}"
+                    class="mix-fila transition-colors"
+                    th:classappend="${item.stock < 0} ? 'bg-error-container/20 text-on-error-container font-medium' : (${item.stock == 0} ? 'bg-surface-container/60 text-outline' : 'hover:bg-surface-container-low text-on-surface')">
 
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
-                        th:text="${item.id}">#1</td>
+                    <!-- ID -->
+                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular"
+                        th:classappend="${item.stock < 0} ? 'text-error font-bold' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')"
+                        th:text="'#' + ${item.id}">#1</td>
 
-                    <td class="py-3.5 px-4 font-medium text-primary">
-                        <div class="flex items-center gap-2 truncate">
-                            <span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0">inventory_2</span>
-                            <span class="truncate" th:text="${item.nombre}">Mix Frutos Secos Clásico</span>
+                    <!-- Nombre -->
+                    <td class="py-3.5 px-4 font-medium truncate">
+                        <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[20px] flex-shrink-0"
+                                      th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-primary')">
+                                    blender
+                                </span>
+                            <span class="truncate"
+                                  th:classappend="${item.stock < 0} ? 'text-error font-bold' : (${item.stock == 0} ? 'text-outline' : 'text-primary')"
+                                  th:text="${item.nombre}">Mix Frutos Secos</span>
                         </div>
                     </td>
 
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
-                            <span th:if="${item.precioVenta != null}">
-                                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
-                                <span th:text="${#numbers.formatDecimal(item.precioVenta, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    <!-- Cantidad -->
+                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-base font-semibold">
+                        <!-- Negativo -->
+                        <span th:if="${item.stock < 0}" class="text-error font-bold inline-flex items-center justify-end gap-1">
+                                <span class="material-symbols-outlined text-[16px]">priority_high</span>
+                                <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">-12,50</span>
+                                <span class="text-xs text-error/80 ml-0.5">kg</span>
                             </span>
-                        <span th:unless="${item.precioVenta != null}" class="text-on-surface-variant">—</span>
-                    </td>
 
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
-                        <span class="text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(item.costo ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
-
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
-                            <span th:if="${item.precioVenta != null}"
-                                  th:with="ganancia=${item.precioVenta - (item.costo ?: 0)}"
-                                  th:class="${ganancia >= 0} ? 'inline-flex items-center gap-0.5 text-secondary font-semibold' : 'inline-flex items-center gap-0.5 text-error font-semibold'">
-                                <span class="text-xs mr-0.5">$</span>
-                                <span th:text="${#numbers.formatDecimal(ganancia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        <!-- Cero -->
+                        <span th:if="${item.stock == 0}" class="text-outline">
+                                <span>0,00</span>
+                                <span class="text-xs ml-0.5">kg</span>
                             </span>
-                        <span th:unless="${item.precioVenta != null}" class="text-on-surface-variant">—</span>
+
+                        <!-- Positivo -->
+                        <span th:if="${item.stock > 0}" class="text-primary font-bold">
+                                <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">150,00</span>
+                                <span class="text-xs text-on-surface-variant ml-0.5">kg</span>
+                            </span>
                     </td>
 
+                    <!-- Estado -->
+                    <td class="py-3.5 px-4 text-center">
+                            <span th:if="${item.stock < 0}"
+                                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-error text-on-error font-bold tracking-wider">
+                                Negativo
+                            </span>
+                        <span th:if="${item.stock == 0}"
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-outline-variant/30 text-outline font-medium tracking-wider">
+                                Sin Stock
+                            </span>
+                        <span th:if="${item.stock > 0}"
+                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-secondary-container text-on-secondary-container font-semibold tracking-wider">
+                                Disponible
+                            </span>
+                    </td>
+
+                    <!-- Acciones estándar BaseController -->
                     <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
                             <a th:href="@{|${basePath}/${item.id}|}"
                                title="Ver Detalle"
-                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                               class="p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+                               th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')">
                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                             </a>
                             <a th:href="@{|${basePath}/${item.id}/editar|}"
                                title="Editar"
-                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                               class="p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+                               th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')">
                                 <span class="material-symbols-outlined text-[20px]">edit</span>
                             </a>
                             <form th:action="@{|${basePath}/${item.id}/eliminar|}"
@@ -100,22 +160,32 @@
                                   onsubmit="return confirm('¿Seguro que deseas eliminar este mix?');">
                                 <button type="submit"
                                         title="Eliminar"
-                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                        class="p-1.5 hover:text-error hover:bg-error-container/30 rounded-lg transition-colors"
+                                        th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')">
                                     <span class="material-symbols-outlined text-[20px]">delete</span>
                                 </button>
                             </form>
                         </div>
                     </td>
+
                 </tr>
 
-                <tr th:if="${#lists.isEmpty(items)}">
-                    <td colspan="6" class="py-12 px-4 text-center">
+                <!-- Estado Vacío desde Backend -->
+                <tr th:if="${#lists.isEmpty(items)}" id="fila-vacia-backend">
+                    <td colspan="5" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">inventory_2</span>
-                            <p class="font-body-md text-body-md">No hay mixes registrados en el sistema.</p>
-                            <a th:href="@{|${basePath}/nuevo|}" class="font-label-caps text-label-caps text-secondary hover:underline mt-0.5">
-                                Crear el primer mix
-                            </a>
+                            <p class="font-body-md text-body-md">No hay mixes registrados en el catálogo.</p>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Estado Sin Coincidencias en Filtro JS -->
+                <tr id="fila-sin-resultados" class="hidden">
+                    <td colspan="5" class="py-12 px-4 text-center">
+                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[36px]">search_off</span>
+                            <p class="font-body-md text-body-md">No se encontraron mixes que coincidan con el término buscado.</p>
                         </div>
                     </td>
                 </tr>
@@ -123,7 +193,58 @@
             </table>
         </div>
     </div>
+
 </div>
+
+<!-- Script de Ordenamiento y Búsqueda Reactiva -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tbody = document.getElementById('tabla-mixes-body');
+        const inputBuscar = document.getElementById('input-buscador');
+        const filaSinResultados = document.getElementById('fila-sin-resultados');
+        const filas = Array.from(tbody.querySelectorAll('.mix-fila'));
+
+        // Criterio de ordenamiento:
+        // 1. Negativos (del más negativo al más cercano a 0: -20, -10, -1)
+        // 2. Positivos (de mayor stock a menor: 100, 50, 10)
+        // 3. Ceros al final (0)
+        filas.sort((a, b) => {
+            const stockA = parseFloat(a.dataset.stock) || 0;
+            const stockB = parseFloat(b.dataset.stock) || 0;
+
+            const grupo = (s) => (s < 0 ? 1 : (s > 0 ? 2 : 3));
+
+            if (grupo(stockA) !== grupo(stockB)) {
+                return grupo(stockA) - grupo(stockB);
+            }
+
+            if (stockA < 0) return stockA - stockB;
+            return stockB - stockA;
+        });
+
+        // Reinsertar ordenados en el DOM
+        filas.forEach(fila => tbody.appendChild(fila));
+
+        // Filtrado en vivo mientras se escribe
+        function filtrar() {
+            const query = inputBuscar.value.toLowerCase().trim();
+            let visibles = 0;
+
+            filas.forEach(fila => {
+                const nombre = fila.dataset.nombre || '';
+                const coincide = nombre.includes(query);
+                fila.style.display = coincide ? '' : 'none';
+                if (coincide) visibles++;
+            });
+
+            if (filaSinResultados) {
+                filaSinResultados.classList.toggle('hidden', visibles > 0 || filas.length === 0);
+            }
+        }
+
+        inputBuscar.addEventListener('input', filtrar);
+    });
+</script>
 
 </body>
 </html>
