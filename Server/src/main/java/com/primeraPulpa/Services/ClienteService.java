@@ -6,13 +6,17 @@ import com.primeraPulpa.repositories.ClienteRepository;
 import com.primeraPulpa.repositories.PedidoRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ClienteService extends BaseService<Cliente, Long> {
 
+    private final ClienteRepository clienteRepository;
     private final PedidoRepository pedidoRepository;
 
     public ClienteService(ClienteRepository repository, PedidoRepository pedidoRepository) {
         super(repository);
+        this.clienteRepository = repository;
         this.pedidoRepository = pedidoRepository;
     }
 
@@ -33,5 +37,32 @@ public class ClienteService extends BaseService<Cliente, Long> {
         if (tienePedidos) {
             throw new ErrorServiceException("No se puede eliminar un cliente con pedidos asociados");
         }
+    }
+
+    public List<Cliente> buscar(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return listarActivos();
+        }
+        return clienteRepository
+                .findByNombreContainingIgnoreCaseOrContactoContainingIgnoreCase(query.trim(), query.trim())
+                .stream()
+                .filter(c -> !Boolean.TRUE.equals(c.getEliminado()))
+                .toList();
+    }
+
+    @Override
+    public java.util.Optional<Cliente> modificar(Long id, Cliente entidadNueva) throws ErrorServiceException {
+        validar(entidadNueva);
+        preModificacion(entidadNueva);
+        return clienteRepository.findById(id).map(existente -> {
+            existente.setNombre(entidadNueva.getNombre());
+            existente.setCuit(entidadNueva.getCuit());
+            existente.setContacto(entidadNueva.getContacto());
+            Cliente guardado = clienteRepository.save(existente);
+            try {
+                postModificacion(guardado);
+            } catch (ErrorServiceException ignored) {}
+            return guardado;
+        });
     }
 }

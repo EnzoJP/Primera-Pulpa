@@ -1,6 +1,5 @@
 package com.primeraPulpa.configs;
 
-import com.primeraPulpa.Services.ClienteService;
 import com.primeraPulpa.Services.RolService;
 import com.primeraPulpa.Services.UsuarioService;
 import com.primeraPulpa.entities.Rol;
@@ -26,7 +25,8 @@ public class DataInitializer {
                                         PasswordEncoder passwordEncoder,
                                         UsuarioService usuarioService,
                                         RolService rolService,
-                                        UnidadMedidaRepository unidadMedidaRepository) {
+                                        UnidadMedidaRepository unidadMedidaRepository,
+                                        ClienteRepository clienteRepository) {
 
     return args -> {
       // Unidades de medida iniciales
@@ -64,6 +64,24 @@ public class DataInitializer {
               .rol(rolAdmin)
               .build());
           logger.info("Admin user created successfully");
+      }
+
+      // Clientes iniciales
+      if (clienteRepository.count() == 0) {
+          com.primeraPulpa.entities.Cliente c1 = new com.primeraPulpa.entities.Cliente();
+          c1.setNombre("Panadería La Argentina");
+          c1.setCuit("30-71458963-2");
+          c1.setContacto("+54 9 11 4321-8765");
+          c1.setEliminado(false);
+          clienteRepository.save(c1);
+
+          com.primeraPulpa.entities.Cliente c2 = new com.primeraPulpa.entities.Cliente();
+          c2.setNombre("Distribuidora El Sol");
+          c2.setCuit("30-68954123-8");
+          c2.setContacto("compras@elsol.com.ar");
+          c2.setEliminado(false);
+          clienteRepository.save(c2);
+          logger.info("Clientes iniciales creados");
       }
     };
   }

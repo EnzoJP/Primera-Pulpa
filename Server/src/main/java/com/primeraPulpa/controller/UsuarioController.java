@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +34,7 @@ public class UsuarioController extends BaseController<Usuario, Long> {
     public String getAll(@RequestParam Map<String, String> params, Model model) {
         try {
             List<Usuario> todos = usuarioService.listarTodos().stream()
-                    .sorted(Comparator.comparing(Usuario::getId))
+                    .sorted((u1, u2) -> Long.compare(u1.getId() != null ? u1.getId() : 0L, u2.getId() != null ? u2.getId() : 0L))
                     .toList();
 
             if (!params.isEmpty()) {
