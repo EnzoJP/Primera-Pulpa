@@ -177,9 +177,12 @@
             if (stock > 0) {
                 stockBadge.textContent = stock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
                 stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-primary';
+            } else if (stock < 0) {
+                stockBadge.textContent = stock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+                stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-error';
             } else {
                 stockBadge.textContent = 'Sin stock';
-                stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-error';
+                stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-outline';
             }
 
             // Pre-llenar precio de venta si existe
@@ -302,19 +305,9 @@
                     alert('Fila ' + (i + 1) + ': el precio unitario no puede ser negativo.');
                     return false;
                 }
-
-                // Validar stock vs cantidad solicitada
-                const option = fila.querySelector('select[name="mixId"]').options[fila.querySelector('select[name="mixId"]').selectedIndex];
-                const stock = parseFloat(option.dataset.stock) || 0;
-                if (stock < cantidad) {
-                    const nombre = option.textContent;
-                    if (!confirm(`El mix "${nombre}" tiene ${stock.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg en stock pero se solicitan ${cantidad.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg.\n\n¿Desea confirmar el pedido de todas formas? (El servidor rechazará si no hay stock suficiente)`)) {
-                        return false;
-                    }
-                }
             }
 
-            return confirm('¿Confirmar este pedido? El stock de los mixes se descontará automáticamente.');
+            return true;
         }
     </script>
 </div>

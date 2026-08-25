@@ -81,7 +81,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
             pedido.setFecha(LocalDate.now());
         }
 
-        // 3. Validar stock de cada mix antes de descontar nada (all-or-nothing)
+        // 3. Validar que cada detalle tenga mix y cantidad válida
         for (DetallePedido detalle : pedido.getDetalles()) {
             if (detalle.getMix() == null) {
                 throw new ErrorServiceException("Cada detalle debe indicar el mix solicitado");
@@ -89,16 +89,8 @@ public class PedidoService extends BaseService<Pedido, Long> {
             if (detalle.getCantidad() <= 0) {
                 throw new ErrorServiceException("La cantidad del mix '" + detalle.getMix().getNombre() + "' debe ser mayor a cero");
             }
-
-            Mix mix = mixRepository.findById(detalle.getMix().getId())
+            mixRepository.findById(detalle.getMix().getId())
                     .orElseThrow(() -> new ErrorServiceException("Mix no encontrado: " + detalle.getMix().getNombre()));
-
-            if (mix.getStock() < detalle.getCantidad()) {
-                throw new ErrorServiceException(
-                        "Stock insuficiente de '" + mix.getNombre()
-                        + "': se solicitan " + redondear(detalle.getCantidad()) + " kg pero hay "
-                        + redondear(mix.getStock()) + " kg disponibles");
-            }
         }
 
         // 4. Persistir cabecera (sin detalles para evitar cascade con referencias nulas)

@@ -41,6 +41,18 @@
         <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
     </div>
 
+    <!-- Alerta de stock insuficiente para pedidos pendientes -->
+    <div th:if="${#maps.size(cantidadesPendientes) > 0}"
+         class="flex items-start gap-sm p-base bg-amber-50 border border-amber-300 rounded-lg">
+        <span class="material-symbols-outlined text-amber-600 text-[22px] mt-0.5">warning</span>
+        <div>
+            <p class="font-body-sm text-body-sm font-semibold text-amber-800">Se necesita producción para cubrir pedidos pendientes</p>
+            <p class="font-body-sm text-xs text-amber-700 mt-0.5">
+                Hay mixes con stock insuficiente para los pedidos en estado PENDIENTE. Registrá elaboraciones para reponer.
+            </p>
+        </div>
+    </div>
+
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
@@ -59,6 +71,7 @@
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                 <tr th:each="item : ${items}"
                     th:data-stock="${item.stock}"
+                    th:data-pendiente="${cantidadesPendientes[item.id] ?: 0}"
                     class="mix-row transition-colors group"
                     th:classappend="${item.stock < 0} ? 'bg-error-container/20 text-on-error-container font-medium' : (${item.stock == 0} ? 'bg-surface-container/60 text-outline' : 'hover:bg-surface-container-low')">
 
@@ -92,6 +105,12 @@
                             <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">20,00</span>
                             <span class="text-xs text-on-surface-variant font-normal">kg</span>
                         </span>
+                        <div th:if="${cantidadesPendientes[item.id] != null and cantidadesPendientes[item.id] > 0}"
+                             class="flex items-center justify-end gap-1 mt-0.5">
+                            <span class="material-symbols-outlined text-amber-600" style="font-size: 14px">shopping_cart</span>
+                            <span class="text-[11px] text-amber-700 font-medium"
+                                  th:text="${#numbers.formatDecimal(cantidadesPendientes[item.id], 1, 'POINT', 2, 'COMMA') + ' kg pendientes'}">0,00 kg pendientes</span>
+                        </div>
                     </td>
 
                     <!-- Estado -->

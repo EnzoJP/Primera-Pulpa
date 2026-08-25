@@ -15,7 +15,9 @@ import com.primeraPulpa.repositories.MixRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MixService extends BaseService<Mix, Long> {
@@ -177,5 +179,23 @@ public class MixService extends BaseService<Mix, Long> {
     // Conserva cantidades chicas como 0,325 g (= 0,000325 kg) sin dejar 7.000000000000001.
     private static double redondear(double valor) {
         return Math.round(valor * 1_000_000.0) / 1_000_000.0;
+    }
+
+    /**
+     * Devuelve un mapa mixId → cantidad pendiente de despacho (solo pedidos PENDIENTE).
+     * Se usa en el listado de mixes para indicar cuánto falta cubrir.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, Double> cantidadesPendientesPorMix() {
+        List<Object[]> resultados = detallePedidoRepository.sumCantidadPendienteByMixId();
+        Map<Long, Double> mapa = new HashMap<>();
+        for (Object[] fila : resultados) {
+            Long mixId = (Long) fila[0];
+            Double total = (Double) fila[1];
+            if (mixId != null && total != null && total > 0) {
+                mapa.put(mixId, redondear(total));
+            }
+        }
+        return mapa;
     }
 }
