@@ -5,6 +5,17 @@
 
 <div id="pedido-detail-content" class="space-y-md">
 
+    <!-- Mensajes flash -->
+    <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
+        <span class="material-symbols-outlined text-secondary fill">check_circle</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${success}">Operación exitosa.</span>
+    </div>
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
+    </div>
+
+    <!-- Cabecera -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
             <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
@@ -37,7 +48,7 @@
         </div>
 
         <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
-            <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Estado</span>
+            <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Estado Actual</span>
             <div class="mt-1">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-label-caps uppercase tracking-wider font-semibold"
                       th:classappend="${pedido.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${pedido.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${pedido.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
@@ -52,6 +63,47 @@
                 <span class="font-data-tabular text-headline-md text-primary font-bold"
                       th:text="${#numbers.formatDecimal(totalPedido, 1, 'POINT', 2, 'COMMA')}">0,00</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Acciones: Cambio de Estado (HU-14) -->
+    <div th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}"
+         class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
+        <h3 class="font-headline-md text-headline-md text-primary mb-3">Acciones del Pedido</h3>
+        <div class="flex flex-wrap gap-sm">
+
+            <!-- PENDIENTE → PREPARADO -->
+            <form th:if="${pedido.estadoPedido?.descripcion == 'PENDIENTE'}"
+                  th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="inline">
+                <input type="hidden" name="nuevoEstado" value="PREPARADO"/>
+                <button type="submit"
+                        class="inline-flex items-center gap-xs px-md py-sm bg-blue-600 text-white font-label-caps text-label-caps rounded-lg hover:bg-blue-700 transition-colors soft-shadow">
+                    <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                    <span>Marcar como PREPARADO</span>
+                </button>
+            </form>
+
+            <!-- PREPARADO → ENTREGADO -->
+            <form th:if="${pedido.estadoPedido?.descripcion == 'PREPARADO'}"
+                  th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="inline">
+                <input type="hidden" name="nuevoEstado" value="ENTREGADO"/>
+                <button type="submit"
+                        class="inline-flex items-center gap-xs px-md py-sm bg-emerald-600 text-white font-label-caps text-label-caps rounded-lg hover:bg-emerald-700 transition-colors soft-shadow">
+                    <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                    <span>Marcar como ENTREGADO</span>
+                </button>
+            </form>
+
+            <!-- CANCELAR (desde PENDIENTE o PREPARADO) -->
+            <form th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="inline"
+                  onsubmit="return confirm('¿Está seguro que desea cancelar este pedido? Se restaurará el stock de los mixes involucrados.');">
+                <input type="hidden" name="nuevoEstado" value="CANCELADO"/>
+                <button type="submit"
+                        class="inline-flex items-center gap-xs px-md py-sm bg-error text-on-error font-label-caps text-label-caps rounded-lg hover:bg-error/80 transition-colors soft-shadow">
+                    <span class="material-symbols-outlined text-[20px]">cancel</span>
+                    <span>Cancelar Pedido</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -96,7 +148,6 @@
                 </tr>
                 </tbody>
 
-                <!-- Total -->
                 <tfoot>
                 <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
                     <td colspan="3" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
@@ -111,6 +162,45 @@
             </table>
         </div>
     </div>
+
+    <!-- Historial de Estados (HU-14) -->
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden"
+         th:if="${historial != null and !historial.isEmpty()}">
+        <div class="p-md border-b border-outline-variant/20 bg-surface-container-low">
+            <h3 class="font-headline-md text-headline-md text-primary">Historial de Estados</h3>
+        </div>
+
+        <div class="p-md">
+            <div class="relative">
+                <!-- Línea vertical conectora -->
+                <div class="absolute left-[19px] top-0 bottom-0 w-0.5 bg-outline-variant/30"></div>
+
+                <div th:each="h, stat : ${historial}" class="relative flex items-start gap-3 pb-4 last:pb-0">
+                    <!-- Ícono del estado -->
+                    <div class="relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                         th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-emerald-100' : 'bg-error-container/40'))">
+                        <span class="material-symbols-outlined text-[20px]"
+                              th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'text-amber-700' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'text-blue-700' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'text-emerald-700' : 'text-error'))"
+                              th:text="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'receipt_long' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'inventory_2' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'local_shipping' : 'cancel'))">icon</span>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
+                                  th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-emerald-100 text-emerald-800' : 'bg-error-container/40 text-on-error-container'))"
+                                  th:text="${h.estadoPedido?.descripcion}">Estado</span>
+                            <span class="font-body-sm text-xs text-on-surface-variant"
+                                  th:text="${#temporals.format(h.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                        </div>
+                        <p class="font-body-sm text-xs text-on-surface-variant mt-0.5"
+                           th:text="'Por: ' + (${h.usuario?.nombre} ?: '—')">Usuario</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 </body>

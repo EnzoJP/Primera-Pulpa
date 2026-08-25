@@ -42,7 +42,7 @@
     </div>
 
     <!-- Alerta de stock insuficiente para pedidos pendientes -->
-    <div th:if="${#maps.size(cantidadesPendientes) > 0}"
+    <div th:if="${hayStockInsuficiente}"
          class="flex items-start gap-sm p-base bg-amber-50 border border-amber-300 rounded-lg">
         <span class="material-symbols-outlined text-amber-600 text-[22px] mt-0.5">warning</span>
         <div>

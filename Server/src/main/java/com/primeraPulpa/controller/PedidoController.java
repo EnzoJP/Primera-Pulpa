@@ -3,13 +3,10 @@ package com.primeraPulpa.controller;
 import com.primeraPulpa.Services.ClienteService;
 import com.primeraPulpa.Services.MixService;
 import com.primeraPulpa.Services.PedidoService;
-import com.primeraPulpa.entities.Cliente;
-import com.primeraPulpa.entities.DetallePedido;
-import com.primeraPulpa.entities.Mix;
-import com.primeraPulpa.entities.Pedido;
-import com.primeraPulpa.entities.Usuario;
+import com.primeraPulpa.entities.*;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.DetallePedidoRepository;
+import com.primeraPulpa.repositories.EstadoPedidoRepository;
 import com.primeraPulpa.repositories.PedidoRepository;
 import com.primeraPulpa.repositories.UsuarioRepository;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,6 +30,7 @@ public class PedidoController {
     private final PedidoService pedidoService;
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
+    private final EstadoPedidoRepository estadoPedidoRepository;
     private final ClienteService clienteService;
     private final MixService mixService;
     private final UsuarioRepository usuarioRepository;
@@ -40,21 +38,24 @@ public class PedidoController {
     public PedidoController(PedidoService pedidoService,
                             PedidoRepository pedidoRepository,
                             DetallePedidoRepository detallePedidoRepository,
+                            EstadoPedidoRepository estadoPedidoRepository,
                             ClienteService clienteService,
                             MixService mixService,
                             UsuarioRepository usuarioRepository) {
         this.pedidoService = pedidoService;
         this.pedidoRepository = pedidoRepository;
         this.detallePedidoRepository = detallePedidoRepository;
+        this.estadoPedidoRepository = estadoPedidoRepository;
         this.clienteService = clienteService;
         this.mixService = mixService;
         this.usuarioRepository = usuarioRepository;
     }
 
-    // ── Listado con filtro por fecha y paginación ─────────────────────────────
+    // ── Listado con filtro por fecha, estado y paginación ────────────────────
     @GetMapping("")
     public String listado(@RequestParam(value = "fecha", required = false)
                           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+                          @RequestParam(value = "estado", required = false) String estado,
                           @RequestParam(value = "page", defaultValue = "0") int page,
                           Model model) {
         List<Pedido> todos = pedidoRepository.findAll().stream()
@@ -64,6 +65,9 @@ public class PedidoController {
                     return cmp != 0 ? cmp : Long.compare(b.getId(), a.getId());
                 })
                 .filter(p -> fecha == null || p.getFecha().equals(fecha))
+                .filter(p -> estado == null || estado.isBlank()
+                        || (p.getEstadoPedido() != null && p.getEstadoPedido().getDescripcion() != null
+                            && p.getEstadoPedido().getDescripcion().equalsIgnoreCase(estado)))
                 .toList();
 
         int total = todos.size();
@@ -75,6 +79,8 @@ public class PedidoController {
 
         model.addAttribute("items", pagina);
         model.addAttribute("fechaFiltro", fecha);
+        model.addAttribute("estadoFiltro", estado);
+        model.addAttribute("estadosPosibles", List.of("PENDIENTE", "PREPARADO", "ENTREGADO", "CANCELADO"));
         model.addAttribute("page", paginaActual);
         model.addAttribute("totalPages", totalPages);
         return "pedidos/list";
@@ -103,14 +109,10 @@ public class PedidoController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            // 1. Buscar cliente
             Cliente cliente = clienteService.getOne(clienteId);
-
-            // 2. Buscar usuario autenticado
             Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
                     .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
 
-            // 3. Construir detalles
             List<DetallePedido> detalles = new ArrayList<>();
             for (int i = 0; i < mixIds.size(); i++) {
                 if (mixIds.get(i) == null || mixIds.get(i) == 0) continue;
@@ -128,7 +130,6 @@ public class PedidoController {
                 throw new ErrorServiceException("El pedido debe incluir al menos un mix");
             }
 
-            // 4. Construir pedido y registrar
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
             pedido.setUsuario(usuario);
@@ -153,14 +154,40 @@ public class PedidoController {
             double total = detalles.stream()
                     .mapToDouble(d -> d.getCantidad() * d.getPrecioUnitario())
                     .sum();
+
+            // Historial de cambios de estado (HU-14)
+            List<HistorialEstadoPedido> historial = pedidoService.obtenerHistorial(id);
+
             model.addAttribute("pedido", pedido);
             model.addAttribute("detalles", detalles);
             model.addAttribute("totalPedido", total);
+            model.addAttribute("historial", historial);
             return "pedidos/detail";
         } catch (ErrorServiceException e) {
             model.addAttribute("error", "Pedido no encontrado");
             return "error/404";
         }
+    }
+
+    // ── Cambiar estado del pedido (HU-14) ────────────────────────────────────
+    @PostMapping("/{id}/cambiar-estado")
+    public String cambiarEstado(@PathVariable Long id,
+                                @RequestParam("nuevoEstado") String nuevoEstado,
+                                @AuthenticationPrincipal User user,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
+
+            pedidoService.cambiarEstado(id, nuevoEstado, usuario);
+            redirectAttributes.addFlashAttribute("success",
+                    "Estado actualizado correctamente a " + nuevoEstado.toUpperCase());
+        } catch (ErrorServiceException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al cambiar el estado: " + e.getMessage());
+        }
+        return "redirect:/pedidos/" + id;
     }
 
     // ── Eliminar pedido ─────────────────────────────────────────────────────
@@ -188,7 +215,7 @@ public class PedidoController {
         }
     }
 
-    // ── API: Stock actual de un mix (para validación en JS) ──────────────────
+    // ── API: Stock actual de un mix ──────────────────────────────────────────
     @ResponseBody
     @GetMapping("/mix/{mixId}/stock")
     public java.util.Map<String, Object> getStockMix(@PathVariable Long mixId) {
