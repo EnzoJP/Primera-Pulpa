@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Pedidos - Primera Pulpa', 'pedidos', ~{::#pedidos-list-content})}">
+<body>
+
+<div id="pedidos-list-content" class="space-y-md">
+
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                <span>Ventas</span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Pedidos de Clientes</h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Registro de pedidos y despachos. El stock de mixes se descuenta al confirmar.</p>
+        </div>
+
+        <a th:href="@{/pedidos/nuevo}"
+           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            <span>Nuevo Pedido</span>
+        </a>
+    </header>
+
+    <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
+        <span class="material-symbols-outlined text-secondary fill">check_circle</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${success}">Operación exitosa.</span>
+    </div>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
+    </div>
+
+    <form th:action="@{/pedidos}" method="get" class="flex items-center gap-2 flex-wrap">
+        <label for="filtroFecha" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Fecha</label>
+        <input id="filtroFecha" type="date" name="fecha"
+               th:value="${fechaFiltro != null ? #temporals.format(fechaFiltro, 'yyyy-MM-dd') : ''}"
+               class="bg-surface border border-outline-variant/40 rounded-lg px-md py-2 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+        <button type="submit"
+                class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-[18px]">search</span>
+            Buscar
+        </button>
+        <a th:if="${fechaFiltro != null}" th:href="@{/pedidos}"
+           class="inline-flex items-center gap-xs px-md py-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors">
+            Limpiar
+        </a>
+    </form>
+
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-4 font-normal w-20 text-center">ID</th>
+                    <th class="py-3 px-4 font-normal w-auto">Cliente</th>
+                    <th class="py-3 px-4 font-normal w-32 text-center">Fecha</th>
+                    <th class="py-3 px-4 font-normal w-36 text-center">Estado</th>
+                    <th class="py-3 px-4 font-normal w-32 text-center">Items</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Registrado por</th>
+                    <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+                    <!-- ID -->
+                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
+                        th:text="'#' + ${item.id}">#1</td>
+
+                    <!-- Cliente -->
+                    <td class="py-3.5 px-4 font-medium text-primary">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-outline text-[20px]">storefront</span>
+                            <span th:text="${item.cliente?.nombre ?: '—'}">Cliente</span>
+                        </div>
+                    </td>
+
+                    <!-- Fecha -->
+                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant">
+                        <span th:text="${#temporals.format(item.fecha, 'dd/MM/yyyy')}">01/01/2026</span>
+                    </td>
+
+                    <!-- Estado -->
+                    <td class="py-3.5 px-4 text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
+                              th:classappend="${item.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${item.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${item.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
+                              th:text="${item.estadoPedido?.descripcion ?: '—'}">PENDIENTE</span>
+                    </td>
+
+                    <!-- Items (cantidad de detalles) -->
+                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant">
+                        <span class="inline-block px-2.5 py-0.5 rounded bg-surface-container text-xs font-semibold"
+                              th:text="${item.detalles != null ? item.detalles.size() + ' mix(es)' : '0 mixes'}">0 mixes</span>
+                    </td>
+
+                    <!-- Registrado por -->
+                    <td class="py-3.5 px-4 text-right text-on-surface-variant">
+                        <span th:text="${item.usuario?.nombre ?: '—'}">Usuario</span>
+                    </td>
+
+                    <!-- Acciones -->
+                    <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                        <div class="inline-flex items-center justify-end gap-1">
+                            <a th:href="@{/pedidos/{id}(id=${item.id})}"
+                               title="Ver Detalle"
+                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">visibility</span>
+                            </a>
+                            <form th:action="@{/pedidos/{id}/eliminar(id=${item.id})}"
+                                  method="post"
+                                  class="inline m-0"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar este pedido?');">
+                                <button type="submit"
+                                        title="Eliminar"
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Estado Vacío: no hay pedidos en general -->
+                <tr th:if="${#lists.isEmpty(items) and fechaFiltro == null}">
+                    <td colspan="7" class="py-12 px-4 text-center">
+                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[36px]">shopping_cart</span>
+                            <p class="font-body-md text-body-md">No hay pedidos registrados.</p>
+                            <a th:href="@{/pedidos/nuevo}" class="font-label-caps text-label-caps text-secondary hover:underline mt-0.5">
+                                Registrar el primer pedido
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Estado Vacío: el filtro por fecha no devolvió resultados -->
+                <tr th:if="${#lists.isEmpty(items) and fechaFiltro != null}">
+                    <td colspan="7" class="py-12 px-4 text-center">
+                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[36px]">event_busy</span>
+                            <p class="font-body-md text-body-md">No hay pedidos para el
+                                <span class="font-data-tabular" th:text="${#temporals.format(fechaFiltro, 'dd/MM/yyyy')}">01/01/2026</span>.</p>
+                            <a th:href="@{/pedidos}" class="font-label-caps text-label-caps text-secondary hover:underline mt-0.5">
+                                Ver todos los pedidos
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    <div th:if="${totalPages > 1}" class="flex items-center justify-between pt-1">
+        <span class="font-body-sm text-body-sm text-on-surface-variant"
+              th:text="'Página ' + ${page + 1} + ' de ' + ${totalPages}"></span>
+        <div class="flex items-center gap-sm">
+            <a th:if="${page > 0}"
+               th:href="@{/pedidos(page=${page - 1}, fecha=${fechaFiltro})}"
+               class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                Anterior
+            </a>
+            <a th:if="${page < totalPages - 1}"
+               th:href="@{/pedidos(page=${page + 1}, fecha=${fechaFiltro})}"
+               class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                Siguiente
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

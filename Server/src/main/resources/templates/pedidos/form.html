@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout(${formTitle} + ' - Primera Pulpa', 'pedidos', ~{::#pedido-form-content})}">
+<body>
+
+<div id="pedido-form-content" class="max-w-4xl mx-auto space-y-md">
+
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                <span>Venta</span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${formTitle}">
+                Nuevo Pedido
+            </h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Seleccioná el cliente y los mixes a despachar. El stock se descontará automáticamente al confirmar.</p>
+        </div>
+
+        <a th:href="@{/pedidos}"
+           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span>Volver al Listado</span>
+        </a>
+    </header>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
+    </div>
+
+    <form th:action="${formAction}" method="post" class="space-y-md" id="pedidoForm">
+
+        <!-- Cliente -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg">
+            <div class="flex items-center gap-2 text-primary font-headline-md text-[18px] mb-md">
+                <span class="material-symbols-outlined text-[22px]">person</span>
+                <span>Cliente</span>
+            </div>
+            <div class="space-y-1.5">
+                <label for="cliente" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    Seleccionar Cliente <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                    <select id="cliente" name="clienteId" required
+                            class="w-full appearance-none bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-10">
+                        <option value="">Seleccione un cliente...</option>
+                        <option th:each="c : ${clientes}"
+                                th:value="${c.id}"
+                                th:text="${c.nombre} + ' (' + ${c.contacto} + ')'">Cliente</option>
+                    </select>
+                    <span class="material-symbols-outlined text-on-surface-variant absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[20px]">
+                        expand_more
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles del pedido -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+            <div class="p-md border-b border-outline-variant/20 bg-surface-container-low flex justify-between items-center">
+                <h3 class="font-headline-md text-headline-md text-primary">Mixes a Despachar</h3>
+                <span class="font-body-sm text-body-sm text-on-surface-variant">Agregá uno o más mixes al pedido</span>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse" id="tablaDetalles">
+                    <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                    <tr>
+                        <th class="py-3 px-4 font-normal w-auto">Mix</th>
+                        <th class="py-3 px-4 font-normal w-32 text-center">Stock Disponible</th>
+                        <th class="py-3 px-4 font-normal w-32 text-right">Cantidad (kg)</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Precio Unitario ($/kg)</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
+                        <th class="py-3 px-4 font-normal w-20 text-center"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="filas" class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                        <tr class="hover:bg-surface-container-low transition-colors" id="fila-0">
+                            <td class="py-3 px-4">
+                                <select name="mixId" required onchange="onMixChange(this)"
+                                        class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
+                                    <option value="">Seleccione un mix...</option>
+                                    <option th:each="m : ${mixes}"
+                                            th:value="${m.id}"
+                                            th:data-stock="${m.stock}"
+                                            th:data-precio="${m.precioVenta}"
+                                            th:text="${m.nombre}">Mix</option>
+                                </select>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="stock-badge font-data-tabular text-data-tabular text-sm text-outline">—</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="0.00"
+                                       oninput="actualizarSubtotal(this)"
+                                       class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                            </td>
+                            <td class="py-3 px-4">
+                                <input type="number" name="precioUnitario" min="0" step="0.01" required placeholder="0.00"
+                                       oninput="actualizarSubtotal(this)"
+                                       class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                            </td>
+                            <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface">
+                                <span class="subtotal">$0,00</span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <button type="button" onclick="quitarFila(this)" title="Quitar fila"
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors opacity-0 pointer-events-none">
+                                    <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-md border-t border-outline-variant/20 bg-surface-container-low/50 flex justify-between items-center">
+                <button type="button" onclick="agregarFila()"
+                        class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-primary font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors border border-outline-variant/30">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    <span>Agregar otro mix</span>
+                </button>
+                <div class="text-right">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Total del Pedido: </span>
+                    <span class="font-data-tabular text-headline-md text-primary font-bold" id="totalPedido">$0,00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex items-center justify-end gap-sm pt-sm">
+            <a th:href="@{/pedidos}"
+               class="px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                Cancelar
+            </a>
+            <button type="submit"
+                    onclick="return confirmarPedido()"
+                    class="inline-flex items-center gap-xs px-lg py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                <span>Confirmar Pedido</span>
+            </button>
+        </div>
+    </form>
+
+    <script th:inline="javascript">
+        const mixes = /*[[${mixes}]]*/ [];
+        let contadorFilas = 0;
+
+        function buildSelect() {
+            let opts = '<option value="">Seleccione un mix...</option>';
+            mixes.forEach(m => {
+                opts += `<option value="${m.id}" data-stock="${m.stock}" data-precio="${m.precioVenta || ''}">${m.nombre}</option>`;
+            });
+            return opts;
+        }
+
+        function onMixChange(selectElem) {
+            const row = selectElem.closest('tr');
+            const selectedId = selectElem.value;
+            const stockBadge = row.querySelector('.stock-badge');
+            const precioInput = row.querySelector('input[name="precioUnitario"]');
+
+            if (!selectedId) {
+                stockBadge.textContent = '—';
+                stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm text-outline';
+                precioInput.value = '';
+                actualizarSubtotal(precioInput);
+                return;
+            }
+
+            const option = selectElem.options[selectElem.selectedIndex];
+            const stock = parseFloat(option.dataset.stock) || 0;
+            const precio = option.dataset.precio;
+
+            // Mostrar stock disponible
+            if (stock > 0) {
+                stockBadge.textContent = stock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+                stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-primary';
+            } else {
+                stockBadge.textContent = 'Sin stock';
+                stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-error';
+            }
+
+            // Pre-llenar precio de venta si existe
+            if (precio && precio !== '' && precio !== 'null') {
+                precioInput.value = precio;
+            }
+            actualizarSubtotal(precioInput);
+        }
+
+        function actualizarSubtotal(input) {
+            const row = input.closest('tr');
+            const cantidad = parseFloat(row.querySelector('input[name="cantidad"]').value) || 0;
+            const precio = parseFloat(row.querySelector('input[name="precioUnitario"]').value) || 0;
+            const subtotal = cantidad * precio;
+            row.querySelector('.subtotal').textContent = '$' + subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            document.querySelectorAll('#filas tr').forEach(row => {
+                const cantidad = parseFloat(row.querySelector('input[name="cantidad"]').value) || 0;
+                const precio = parseFloat(row.querySelector('input[name="precioUnitario"]').value) || 0;
+                total += cantidad * precio;
+            });
+            document.getElementById('totalPedido').textContent = '$' + total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function agregarFila() {
+            contadorFilas++;
+            const tbody = document.getElementById('filas');
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-surface-container-low transition-colors';
+            tr.id = `fila-${contadorFilas}`;
+            tr.innerHTML = `
+                <td class="py-3 px-4">
+                    <select name="mixId" required onchange="onMixChange(this)"
+                            class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
+                        ${buildSelect()}
+                    </select>
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <span class="stock-badge font-data-tabular text-data-tabular text-sm text-outline">—</span>
+                </td>
+                <td class="py-3 px-4">
+                    <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="0.00"
+                           oninput="actualizarSubtotal(this)"
+                           class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                </td>
+                <td class="py-3 px-4">
+                    <input type="number" name="precioUnitario" min="0" step="0.01" required placeholder="0.00"
+                           oninput="actualizarSubtotal(this)"
+                           class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                </td>
+                <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface">
+                    <span class="subtotal">$0,00</span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <button type="button" onclick="quitarFila(this)" title="Quitar fila"
+                            class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+                    </button>
+                </td>`;
+            tbody.appendChild(tr);
+            actualizarBotonesQuitar();
+        }
+
+        function quitarFila(btn) {
+            const tr = btn.closest('tr');
+            if (document.querySelectorAll('#filas tr').length > 1) {
+                tr.remove();
+                actualizarBotonesQuitar();
+                calcularTotal();
+            }
+        }
+
+        function actualizarBotonesQuitar() {
+            const filas = document.querySelectorAll('#filas tr');
+            filas.forEach(fila => {
+                const btn = fila.querySelector('button[title="Quitar fila"]');
+                if (btn) {
+                    if (filas.length === 1) {
+                        btn.classList.add('opacity-0', 'pointer-events-none');
+                    } else {
+                        btn.classList.remove('opacity-0', 'pointer-events-none');
+                    }
+                }
+            });
+        }
+
+        function confirmarPedido() {
+            const cliente = document.getElementById('cliente').value;
+            if (!cliente) {
+                alert('Debe seleccionar un cliente.');
+                return false;
+            }
+
+            const filas = document.querySelectorAll('#filas tr');
+            if (filas.length === 0) {
+                alert('Debe agregar al menos un mix al pedido.');
+                return false;
+            }
+
+            // Validar que cada fila tenga mix, cantidad y precio
+            for (let i = 0; i < filas.length; i++) {
+                const fila = filas[i];
+                const mix = fila.querySelector('select[name="mixId"]').value;
+                const cantidad = parseFloat(fila.querySelector('input[name="cantidad"]').value) || 0;
+                const precio = parseFloat(fila.querySelector('input[name="precioUnitario"]').value) || 0;
+
+                if (!mix) {
+                    alert('Fila ' + (i + 1) + ': debe seleccionar un mix.');
+                    return false;
+                }
+                if (cantidad <= 0) {
+                    alert('Fila ' + (i + 1) + ': la cantidad debe ser mayor a cero.');
+                    return false;
+                }
+                if (precio < 0) {
+                    alert('Fila ' + (i + 1) + ': el precio unitario no puede ser negativo.');
+                    return false;
+                }
+
+                // Validar stock vs cantidad solicitada
+                const option = fila.querySelector('select[name="mixId"]').options[fila.querySelector('select[name="mixId"]').selectedIndex];
+                const stock = parseFloat(option.dataset.stock) || 0;
+                if (stock < cantidad) {
+                    const nombre = option.textContent;
+                    if (!confirm(`El mix "${nombre}" tiene ${stock.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg en stock pero se solicitan ${cantidad.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg.\n\n¿Desea confirmar el pedido de todas formas? (El servidor rechazará si no hay stock suficiente)`)) {
+                        return false;
+                    }
+                }
+            }
+
+            return confirm('¿Confirmar este pedido? El stock de los mixes se descontará automáticamente.');
+        }
+    </script>
+</div>
+
+</body>
+</html>

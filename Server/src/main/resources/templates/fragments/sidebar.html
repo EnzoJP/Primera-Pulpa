@@ -64,6 +64,14 @@
             <span class="font-label-caps text-label-caps">Elaboraciones</span>
         </a>
 
+        <a th:href="@{/pedidos}"
+           th:class="${activePage == 'pedidos' or activeMenu == 'pedidos'} ?
+                     'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
+                     'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">shopping_cart</span>
+            <span class="font-label-caps text-label-caps">Pedidos</span>
+        </a>
+
         <a th:href="@{/clientes}"
            th:class="${activePage == 'clientes' or activeMenu == 'clientes'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
