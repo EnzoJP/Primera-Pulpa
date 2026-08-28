@@ -3,6 +3,7 @@ package com.primeraPulpa.Services;
 import com.primeraPulpa.dto.LoteDiarioDTO;
 import com.primeraPulpa.entities.LoteMix;
 import com.primeraPulpa.entities.Mix;
+import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.LoteMixRepository;
 import com.primeraPulpa.repositories.MixRepository;
@@ -35,7 +36,7 @@ public class LoteMixService extends BaseService<LoteMix, Long> {
      * se suma la cantidad al existente; si no, se crea uno nuevo.
      */
     @Transactional
-    public LoteMix registrarElaboracion(Mix mix, LocalDate fecha, Double cantidad) throws ErrorServiceException {
+    public LoteMix registrarElaboracion(Mix mix, LocalDate fecha, Double cantidad, Usuario usuario) throws ErrorServiceException {
         System.out.println("Registrando elaboración: mix=" + mix + ", fecha=" + fecha + ", cantidad=" + cantidad);
         if (mix == null || mix.getId() == null) {
             throw new ErrorServiceException("Debe indicar el mix elaborado.");
@@ -64,6 +65,7 @@ public class LoteMixService extends BaseService<LoteMix, Long> {
             lote.setMix(mix);
             lote.setFechaElaboracion(fecha);
             lote.setCantidadElaborada(cantidad);
+            lote.setUsuario(usuario);
             lote.setEliminado(false);
             return loteMixRepository.save(lote);
         }

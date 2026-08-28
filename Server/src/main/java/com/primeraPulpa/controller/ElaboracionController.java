@@ -5,8 +5,12 @@ import com.primeraPulpa.Services.MixService;
 import com.primeraPulpa.dto.LoteDiarioDTO;
 import com.primeraPulpa.entities.LoteMix;
 import com.primeraPulpa.entities.Mix;
+import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.exceptions.ErrorServiceException;
+import com.primeraPulpa.repositories.UsuarioRepository;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +31,13 @@ public class ElaboracionController {
 
     private final LoteMixService loteMixService;
     private final MixService mixService;
+    private final UsuarioRepository usuarioRepository;
 
-    public ElaboracionController(LoteMixService loteMixService, MixService mixService) {
+    public ElaboracionController(LoteMixService loteMixService, MixService mixService,
+                                 UsuarioRepository usuarioRepository) {
         this.loteMixService = loteMixService;
         this.mixService = mixService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // ── Listado paginado de lotes por día, con búsqueda por fecha ────────────
@@ -75,10 +82,13 @@ public class ElaboracionController {
     public String registrar(@RequestParam("mixId") Long mixId,
                             @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
                             @RequestParam("cantidad") Double cantidad,
+                            @AuthenticationPrincipal User user,
                             RedirectAttributes redirectAttributes) {
         try {
             Mix mix = mixService.getOne(mixId);
-            loteMixService.registrarElaboracion(mix, fecha, cantidad);
+            Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
+            loteMixService.registrarElaboracion(mix, fecha, cantidad, usuario);
             redirectAttributes.addFlashAttribute("success", "Elaboración registrada correctamente.");
         } catch (ErrorServiceException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

@@ -17,6 +17,10 @@ public class IngresoMP extends BaseEntity<Long> {
 
     private LocalDateTime fechaHora;
 
+    // Usuario que registró el ingreso de materia prima
+    @ManyToOne
+    private Usuario usuario;
+
     @OneToMany(mappedBy = "ingresoMP", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<DetalleIngresoMP> detalles = new ArrayList<>();

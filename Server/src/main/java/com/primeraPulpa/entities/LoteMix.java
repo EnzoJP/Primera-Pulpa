@@ -19,6 +19,10 @@ public class LoteMix extends BaseEntity<Long> {
     @ManyToOne
     private Mix mix;
 
+    // Usuario que registró la elaboración
+    @ManyToOne
+    private Usuario usuario;
+
     private LocalDate fechaElaboracion;
     //private Double cantidadInicial; No se si nos interesa
     private Double cantidadElaborada;

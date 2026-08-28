@@ -3,6 +3,7 @@ package com.primeraPulpa.Services;
 import com.primeraPulpa.entities.DetalleIngresoMP;
 import com.primeraPulpa.entities.IngresoMP;
 import com.primeraPulpa.entities.MateriaPrima;
+import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.DetalleIngresoMPRepository;
 import com.primeraPulpa.repositories.IngresoMPRepository;
@@ -34,6 +35,15 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
      */
     @Transactional
     public IngresoMP registrar(List<DetalleIngresoMP> detalles) throws ErrorServiceException {
+        return registrar(detalles, null);
+    }
+
+    /**
+     * Registra un ingreso con sus detalles y actualiza el stock de cada materia prima.
+     * Una vez confirmado no puede modificarse (HU-04).
+     */
+    @Transactional
+    public IngresoMP registrar(List<DetalleIngresoMP> detalles, Usuario usuario) throws ErrorServiceException {
         if (detalles == null || detalles.isEmpty()) {
             throw new ErrorServiceException("El ingreso debe tener al menos una materia prima.");
         }
@@ -55,6 +65,7 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
         // 2. Guardar cabecera de ingreso
         IngresoMP ingreso = IngresoMP.builder()
                 .fechaHora(LocalDateTime.now())
+                .usuario(usuario)
                 .build();
         ingreso.setEliminado(false);
         IngresoMP ingresoGuardado = repository.save(ingreso);

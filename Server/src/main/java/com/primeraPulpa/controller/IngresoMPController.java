@@ -6,11 +6,15 @@ import com.primeraPulpa.Services.IngresoMPService;
 import com.primeraPulpa.entities.DetalleIngresoMP;
 import com.primeraPulpa.entities.IngresoMP;
 import com.primeraPulpa.entities.MateriaPrima;
+import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.IngresoMPRepository;
 import com.primeraPulpa.repositories.MateriaPrimaRepository;
+import com.primeraPulpa.repositories.UsuarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,15 +34,18 @@ public class IngresoMPController {
     private final IngresoMPRepository ingresoMPRepository;
     private final MateriaPrimaRepository materiaPrimaRepository;
     private final IngresoMPMapper ingresoMPMapper;
+    private final UsuarioRepository usuarioRepository;
 
     public IngresoMPController(IngresoMPService ingresoMPService,
                                IngresoMPRepository ingresoMPRepository,
                                MateriaPrimaRepository materiaPrimaRepository,
-                               IngresoMPMapper ingresoMPMapper) {
+                               IngresoMPMapper ingresoMPMapper,
+                               UsuarioRepository usuarioRepository) {
         this.ingresoMPService = ingresoMPService;
         this.ingresoMPRepository = ingresoMPRepository;
         this.materiaPrimaRepository = materiaPrimaRepository;
         this.ingresoMPMapper = ingresoMPMapper;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // ── Listado con filtro por fecha y paginación ─────────────────────────────
@@ -86,10 +93,14 @@ public class IngresoMPController {
             @RequestParam("materiaPrimaId") List<Long> mpIds,
             @RequestParam("cantidad") List<Double> cantidades,
             @RequestParam(value = "fechaVencimiento", required = false) List<String> vencimientos,
+            @AuthenticationPrincipal User user,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request) {
 
         try {
+            Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
+
             List<DetalleIngresoMP> detalles = new ArrayList<>();
             for (int i = 0; i < mpIds.size(); i++) {
                 // Omitir filas donde la materia prima no fue seleccionada
@@ -105,7 +116,7 @@ public class IngresoMPController {
                 detalles.add(detalle);
             }
 
-            ingresoMPService.registrar(detalles);
+            ingresoMPService.registrar(detalles, usuario);
             redirectAttributes.addFlashAttribute("success", "Ingreso registrado correctamente. El stock fue actualizado.");
         } catch (ErrorServiceException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
