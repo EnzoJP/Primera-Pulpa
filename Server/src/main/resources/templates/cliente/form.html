@@ -59,6 +59,10 @@
                     CUIT / Identificación Tributaria
                 </label>
                 <input type="text" id="cuit" th:field="*{cuit}" placeholder="Ej. 30-71234567-8"
+                       inputmode="numeric"
+                       pattern="[0-9\- ]+"
+                       title="El CUIT solo puede contener números y guiones"
+                       oninput="this.value = this.value.replace(/[^0-9\-]/g, '')"
                        class="w-full px-md py-2.5 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md font-data-tabular transition-all"/>
                 <p class="font-body-sm text-xs text-on-surface-variant">Número de CUIT o documento fiscal.</p>
             </div>

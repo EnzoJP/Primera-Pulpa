@@ -1,17 +1,8 @@
 package com.primeraPulpa.Services;
 
-import com.primeraPulpa.entities.CostoAdicional;
-import com.primeraPulpa.entities.DetalleFormula;
-import com.primeraPulpa.entities.DetalleIngresoMP;
-import com.primeraPulpa.entities.Formula;
-import com.primeraPulpa.entities.MateriaPrima;
-import com.primeraPulpa.entities.Mix;
+import com.primeraPulpa.entities.*;
 import com.primeraPulpa.exceptions.ErrorServiceException;
-import com.primeraPulpa.repositories.CostoAdicionalRepository;
-import com.primeraPulpa.repositories.DetalleIngresoMPRepository;
-import com.primeraPulpa.repositories.DetallePedidoRepository;
-import com.primeraPulpa.repositories.FormulaRepository;
-import com.primeraPulpa.repositories.MixRepository;
+import com.primeraPulpa.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,15 +17,18 @@ public class MixService extends BaseService<Mix, Long> {
     private final FormulaRepository formulaRepository;
     private final CostoAdicionalRepository costoAdicionalRepository;
     private final DetalleIngresoMPRepository detalleIngresoMPRepository;
+    private final HistorialPrecioMixRepository historialPrecioRepository;
 
     public MixService(MixRepository repository, DetallePedidoRepository detallePedidoRepository,
                       FormulaRepository formulaRepository, CostoAdicionalRepository costoAdicionalRepository,
-                      DetalleIngresoMPRepository detalleIngresoMPRepository) {
+                      DetalleIngresoMPRepository detalleIngresoMPRepository,
+                      HistorialPrecioMixRepository historialPrecioRepository) {
         super(repository);
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
         this.costoAdicionalRepository = costoAdicionalRepository;
         this.detalleIngresoMPRepository = detalleIngresoMPRepository;
+        this.historialPrecioRepository = historialPrecioRepository;
     }
 
     @Override
@@ -47,12 +41,15 @@ public class MixService extends BaseService<Mix, Long> {
         }
     }
 
-    // HU-08: no se puede dar de baja un mix con pedidos asociados
+    // HU-08: no se puede dar de baja un mix con pedidos pendientes asociados
     @Override
     protected void preBaja(Long id) throws ErrorServiceException {
-        boolean tienePedidos = !detallePedidoRepository.findByMixId(id).isEmpty();
-        if (tienePedidos) {
-            throw new ErrorServiceException("No se puede dar de baja un mix con pedidos asociados");
+        Map<Long, Double> pendientes = cantidadesPendientesPorMix();
+        double cantidadPendiente = pendientes.getOrDefault(id, 0.0);
+        if (cantidadPendiente > 0) {
+            throw new ErrorServiceException(
+                    "No se puede dar de baja este mix porque tiene " +
+                    redondear(cantidadPendiente) + " kg pendientes de despacho en pedidos activos.");
         }
     }
 
@@ -197,5 +194,30 @@ public class MixService extends BaseService<Mix, Long> {
             }
         }
         return mapa;
+    }
+
+    /**
+     * Registra un cambio de precio de venta en el historial (HU-8).
+     */
+    @Transactional
+    public void registrarCambioPrecio(Mix mix, Double precioAnterior, Double precioNuevo, Usuario usuario) {
+        if (precioAnterior == null && precioNuevo == null) return;
+        if (precioAnterior != null && precioNuevo != null && Math.abs(precioAnterior - precioNuevo) < 0.001) return;
+
+        HistorialPrecioMix registro = new HistorialPrecioMix();
+        registro.setMix(mix);
+        registro.setPrecioAnterior(precioAnterior);
+        registro.setPrecioNuevo(precioNuevo);
+        registro.setFechaHora(java.time.LocalDateTime.now());
+        registro.setUsuario(usuario);
+        registro.setEliminado(false);
+        historialPrecioRepository.save(registro);
+    }
+
+    /**
+     * Obtiene el historial de precios de un mix.
+     */
+    public List<HistorialPrecioMix> obtenerHistorialPrecio(Long mixId) {
+        return historialPrecioRepository.findByMixIdOrderByFechaHoraDesc(mixId);
     }
 }

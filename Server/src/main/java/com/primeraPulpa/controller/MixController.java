@@ -1,9 +1,13 @@
 package com.primeraPulpa.controller;
 
 import com.primeraPulpa.entities.Mix;
+import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.Services.MixService;
 import com.primeraPulpa.exceptions.ErrorServiceException;
+import com.primeraPulpa.repositories.UsuarioRepository;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,10 +28,12 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/mixes")
 public class MixController extends BaseController<Mix, Long> {
     private final MixService service;
+    private final UsuarioRepository usuarioRepository;
 
-    public MixController(MixService service) {
+    public MixController(MixService service, UsuarioRepository usuarioRepository) {
         super(service, Mix.class, "/mixes", "mix");
         this.service = service;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -75,6 +81,23 @@ public class MixController extends BaseController<Mix, Long> {
         return "mix/detail";
     }
 
+    @Override
+    public String getOne(@PathVariable Long id, Model model) {
+        try {
+            Mix entidad = service.getOne(id);
+            cargarAtributosBase(model);
+            model.addAttribute("item", entidad);
+            model.addAttribute("historialPrecios", service.obtenerHistorialPrecio(id));
+            return vistaDetalle();
+        } catch (ErrorServiceException e) {
+            model.addAttribute("error", e.getMessage());
+            return "error/404";
+        } catch (Exception e) {
+            model.addAttribute("error", "Entidad no encontrada");
+            return "error/404";
+        }
+    }
+
     protected List<Mix> filtrarPorNombre(List<Mix> lista, Map<String, String> params) {
         if (params.containsKey("nombre") && params.get("nombre") != null && !params.get("nombre").trim().isEmpty()) {
             String termino = params.get("nombre").toLowerCase().trim();
@@ -86,7 +109,7 @@ public class MixController extends BaseController<Mix, Long> {
     }
 
 
-    @PostMapping("/{id}")
+    @Override
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("item") Mix entidad,
                          BindingResult bindingResult,
@@ -103,9 +126,18 @@ public class MixController extends BaseController<Mix, Long> {
         }
 
         try {
+            // Obtener precio anterior antes de actualizar
+            Mix mixAnterior = service.getOne(id);
+            Double precioAnterior = mixAnterior != null ? mixAnterior.getPrecioVenta() : null;
+
             preUpdate(entidad);
             Optional<Mix> actualizado = service.modificar(id, entidad);
             if (actualizado.isPresent()) {
+                // Registrar cambio de precio si cambió (HU-8)
+                Double precioNuevo = actualizado.get().getPrecioVenta();
+                Usuario usuario = obtenerUsuarioActual();
+                service.registrarCambioPrecio(actualizado.get(), precioAnterior, precioNuevo, usuario);
+
                 postUpdate(actualizado.get());
                 redirectAttributes.addFlashAttribute("success", entityName + " actualizado correctamente");
                 service.recalcularCosto(actualizado.get().getId());
@@ -129,5 +161,16 @@ public class MixController extends BaseController<Mix, Long> {
             model.addAttribute("formTitle", "Editar " + entityName);
             return vistaFormulario();
         }
+    }
+
+    private Usuario obtenerUsuarioActual() {
+        try {
+            var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof User u) {
+                return usuarioRepository.findByEmail(u.getUsername()).orElse(null);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 }

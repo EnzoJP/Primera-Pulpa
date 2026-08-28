@@ -69,6 +69,7 @@ public class IngresoMPService extends BaseService<IngresoMP, Long> {
             detalle.setIngresoMP(ingresoGuardado);
             detalle.setEliminado(false);
             detalle.setCantidadRestante(detalle.getCantidad());
+            detalle.setCostoUnitario(mp.getPrecio());
             detalleRepository.save(detalle);
 
             // Actualizar stock de la materia prima

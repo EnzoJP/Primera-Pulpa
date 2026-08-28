@@ -21,6 +21,9 @@ public class DetalleIngresoMP extends BaseEntity<Long> {
 
     private double cantidad;
 
+    // Costo unitario de la materia prima al momento de la recepción del lote.
+    private double costoUnitario;
+
     // Stock restante de este lote. Null en lotes creados antes del FIFO: se interpreta como la cantidad completa.
     private Double cantidadRestante;
 

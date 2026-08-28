@@ -125,6 +125,63 @@
         </div>
     </div>
 
+    <!-- Historial de Cambios de Precio (HU-8) -->
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden"
+         th:if="${historialPrecios != null and !historialPrecios.isEmpty()}">
+        <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
+            <h2 class="font-headline-md text-headline-md text-primary">Historial de Cambios de Precio</h2>
+            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Trazabilidad</span>
+        </div>
+
+        <div class="p-md">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                    <tr>
+                        <th class="py-3 px-4 font-normal w-40 text-left">Fecha</th>
+                        <th class="py-3 px-4 font-normal w-40 text-right">Precio Anterior</th>
+                        <th class="py-3 px-4 font-normal w-40 text-right">Precio Nuevo</th>
+                        <th class="py-3 px-4 font-normal w-40 text-center">Variación</th>
+                        <th class="py-3 px-4 font-normal w-auto text-left">Usuario</th>
+                    </tr>
+                    </thead>
+                    <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                    <tr th:each="h : ${historialPrecios}" class="hover:bg-surface-container-low transition-colors">
+                        <td class="py-3.5 px-4 font-data-tabular text-data-tabular text-on-surface-variant"
+                            th:text="${#temporals.format(h.fechaHora, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                        <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                            <span th:if="${h.precioAnterior != null}">
+                                <span class="text-xs">$ </span><span th:text="${#numbers.formatDecimal(h.precioAnterior, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                            </span>
+                            <span th:unless="${h.precioAnterior != null}" class="text-on-surface-variant">—</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary">
+                            <span class="text-xs">$ </span><span th:text="${#numbers.formatDecimal(h.precioNuevo, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular"
+                            th:with="variacion=${h.precioAnterior != null and h.precioAnterior != 0 ? ((h.precioNuevo - h.precioAnterior) / h.precioAnterior) * 100 : null}">
+                            <span th:if="${variacion != null}"
+                                  th:classappend="${variacion >= 0} ? 'text-secondary font-semibold' : 'text-error font-semibold'"
+                                  th:text="${variacion >= 0 ? '+' : ''} + ${#numbers.formatDecimal(variacion, 1, 'POINT', 1, 'COMMA')} + '%'">+0%</span>
+                            <span th:unless="${variacion != null}" class="text-on-surface-variant">—</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-on-surface" th:text="${h.usuario?.nombre ?: '—'}">Usuario</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso si no hay historial -->
+    <div th:if="${historialPrecios == null or historialPrecios.isEmpty()}"
+         class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+            <span class="material-symbols-outlined text-outline">history</span>
+            <p class="font-body-sm text-body-sm">No se registraron cambios de precio para este mix.</p>
+        </div>
+    </div>
+
 </div>
 
 </body>

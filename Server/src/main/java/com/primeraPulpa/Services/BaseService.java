@@ -47,6 +47,8 @@ public abstract class BaseService<T extends BaseEntity<ID>, ID> {
                 return actualizado;
             });
 
+        }catch(ErrorServiceException e) {
+            throw e;
         }catch(Exception e) {
             throw new ErrorServiceException("Error de Sistemas");
         }
@@ -64,6 +66,8 @@ public abstract class BaseService<T extends BaseEntity<ID>, ID> {
                 return true;
             }).orElse(false);
 
+        }catch(ErrorServiceException e) {
+            throw e;
         }catch(Exception e) {
             throw new ErrorServiceException("Error de Sistemas");
         }

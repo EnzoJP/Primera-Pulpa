@@ -28,6 +28,12 @@ public class ClienteService extends BaseService<Cliente, Long> {
         if (cliente.getContacto() == null || cliente.getContacto().trim().isEmpty()) {
             throw new ErrorServiceException("Debe indicar un contacto del cliente");
         }
+        if (cliente.getCuit() != null && !cliente.getCuit().trim().isEmpty()) {
+            String cuit = cliente.getCuit().replaceAll("[^0-9]", "");
+            if (cuit.isEmpty() || cuit.length() < 3) {
+                throw new ErrorServiceException("El CUIT solo puede contener números (y separadores como guiones o espacios).");
+            }
+        }
     }
 
     // HU-12: no se puede eliminar un cliente con pedidos asociados
