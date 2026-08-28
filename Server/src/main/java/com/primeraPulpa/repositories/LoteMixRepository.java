@@ -15,4 +15,6 @@ public interface LoteMixRepository extends BaseRepository<LoteMix, Long> {
     List<LoteMix> findAllByEliminadoFalseOrderByFechaElaboracionDescIdDesc();
 
     List<LoteMix> findAllByEliminadoFalseAndFechaElaboracionOrderByIdAsc(LocalDate fecha);
+
+    List<LoteMix> findAllByEliminadoFalseAndFechaElaboracionBetweenOrderByFechaElaboracionAscIdAsc(LocalDate desde, LocalDate hasta);
 }

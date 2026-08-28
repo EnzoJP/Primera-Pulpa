@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Pedidos - Primera Pulpa', 'pedidos', ~{::#pedidos-list-content})}">
 <body>
 
@@ -68,12 +68,14 @@
                     <th class="py-3 px-4 font-normal w-36 text-center">Estado</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Items</th>
                     <th class="py-3 px-4 font-normal w-40 text-right">Registrado por</th>
+                    <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-32 text-right">Total</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
 
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+                <th:block th:each="item, st : ${items}">
+                <tr class="hover:bg-surface-container-low transition-colors group">
                     <!-- ID -->
                     <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
                         th:text="'#' + ${item.id}">#1</td>
@@ -109,9 +111,21 @@
                         <span th:text="${item.usuario?.nombre ?: '—'}">Usuario</span>
                     </td>
 
+                    <!-- Total (solo ADMIN) -->
+                    <td sec:authorize="hasRole('ADMIN')" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-on-surface">
+                        <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(totalPorPedido[item.id], 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+
                     <!-- Acciones -->
                     <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
+                            <button type="button"
+                                    th:onclick="'togglePedido(this, ' + ${st.index} + ')'"
+                                    title="Desplegar desglose"
+                                    class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+                                <span class="material-symbols-outlined chevron transition-transform duration-200">chevron_right</span>
+                            </button>
                             <a th:href="@{/pedidos/{id}(id=${item.id})}"
                                title="Ver Detalle"
                                class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
@@ -131,9 +145,56 @@
                     </td>
                 </tr>
 
+                <!-- Desglose desplegable del pedido -->
+                <tr th:id="'pedido-detalle-' + ${st.index}" class="bg-surface-container-low" hidden>
+                    <td colspan="8" class="px-4 py-2.5">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="text-on-surface-variant font-label-caps text-label-caps border-b border-outline-variant/20">
+                            <tr>
+                                <th class="py-1.5 pr-4 font-normal">Mix</th>
+                                <th class="py-1.5 px-4 font-normal w-32 text-right">Cantidad (kg)</th>
+                                <th sec:authorize="hasRole('ADMIN')" class="py-1.5 px-4 font-normal w-40 text-right">Precio unit.</th>
+                                <th sec:authorize="hasRole('ADMIN')" class="py-1.5 pl-4 font-normal w-36 text-right">Subtotal</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/10">
+                            <tr th:each="d : ${item.detalles}">
+                                <td class="py-2 pr-4 font-medium text-primary">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-outline text-[18px]">inventory_2</span>
+                                        <span th:text="${d.mix?.nombre ?: '—'}">Mix Frutos Secos Clásico</span>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-4 text-right font-data-tabular text-data-tabular">
+                                    <span th:text="${#numbers.formatDecimal(d.cantidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                                </td>
+                                <td sec:authorize="hasRole('ADMIN')" class="py-2 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                                    <span class="text-xs mr-0.5">$</span>
+                                    <span th:text="${#numbers.formatDecimal(d.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                                </td>
+                                <td sec:authorize="hasRole('ADMIN')" class="py-2 pl-4 text-right font-data-tabular text-data-tabular font-medium">
+                                    <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                                    <span th:text="${#numbers.formatDecimal(d.cantidad * d.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot sec:authorize="hasRole('ADMIN')">
+                            <tr class="border-t border-outline-variant/20">
+                                <td class="pt-2 font-label-caps text-label-caps text-on-surface-variant uppercase" colspan="3">Total a pagar</td>
+                                <td class="pt-2 text-right font-data-tabular text-data-tabular font-bold text-primary">
+                                    <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                                    <span th:text="${#numbers.formatDecimal(totalPorPedido[item.id], 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </td>
+                </tr>
+                </th:block>
+
                 <!-- Estado Vacío: no hay pedidos en general -->
                 <tr th:if="${#lists.isEmpty(items) and fechaFiltro == null and (estadoFiltro == null or estadoFiltro.isBlank())}">
-                    <td colspan="7" class="py-12 px-4 text-center">
+                    <td colspan="8" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">shopping_cart</span>
                             <p class="font-body-md text-body-md">No hay pedidos registrados.</p>
@@ -146,7 +207,7 @@
 
                 <!-- Estado Vacío: el filtro no devolvió resultados -->
                 <tr th:if="${#lists.isEmpty(items) and (fechaFiltro != null or (estadoFiltro != null and !estadoFiltro.isBlank()))}">
-                    <td colspan="7" class="py-12 px-4 text-center">
+                    <td colspan="8" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">event_busy</span>
                             <p class="font-body-md text-body-md">No se encontraron pedidos con los filtros seleccionados.</p>
@@ -180,6 +241,20 @@
             </a>
         </div>
     </div>
+
+    <script>
+        function togglePedido(btn, index) {
+            const detalle = document.getElementById('pedido-detalle-' + index);
+            const chevron = btn.querySelector('.chevron');
+            if (detalle.hidden) {
+                detalle.hidden = false;
+                chevron.style.transform = 'rotate(90deg)';
+            } else {
+                detalle.hidden = true;
+                chevron.style.transform = '';
+            }
+        }
+    </script>
 </div>
 
 </body>

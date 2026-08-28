@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/pedidos")
@@ -77,7 +78,21 @@ public class PedidoController {
         int hasta = Math.min(desde + PAGE_SIZE, total);
         List<Pedido> pagina = desde < total ? todos.subList(desde, hasta) : List.of();
 
+        Map<Long, Double> totalPorPedido = new java.util.HashMap<>();
+        for (Pedido p : pagina) {
+            double suma = 0;
+            if (p.getDetalles() != null) {
+                for (DetallePedido d : p.getDetalles()) {
+                    if (d != null) {
+                        suma += d.getCantidad() * d.getPrecioUnitario();
+                    }
+                }
+            }
+            totalPorPedido.put(p.getId(), suma);
+        }
+
         model.addAttribute("items", pagina);
+        model.addAttribute("totalPorPedido", totalPorPedido);
         model.addAttribute("fechaFiltro", fecha);
         model.addAttribute("estadoFiltro", estado);
         model.addAttribute("estadosPosibles", List.of("PENDIENTE", "PREPARADO", "ENTREGADO", "CANCELADO"));

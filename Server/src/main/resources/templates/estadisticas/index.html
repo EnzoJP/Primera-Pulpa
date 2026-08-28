@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Estadísticas - Primera Pulpa', 'estadisticas', ~{::#stats-content})}">
+<body>
+
+<div id="stats-content" class="space-y-md">
+
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+                <span>Producción &amp; Ventas</span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Estadísticas</h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Resumen mensual de ventas, costos, rentabilidad e ingresos de mercadería.</p>
+        </div>
+
+        <!-- Selector mes / año -->
+        <div class="flex items-end gap-sm">
+            <form th:action="@{/estadisticas}" method="get"
+                  class="flex items-end gap-sm">
+                <label class="flex flex-col gap-1">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant">Mes</span>
+                    <select name="mes"
+                            class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-md py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                        <option th:each="m : ${meses}"
+                                th:value="${m.numero()}"
+                                th:selected="${m.numero() == mes}"
+                                th:text="${m.nombre()}">Enero</option>
+                    </select>
+                </label>
+                <label class="flex flex-col gap-1">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant">Año</span>
+                    <input type="number" name="anio" min="2000" max="2100"
+                           th:value="${anio}"
+                           class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-md py-2 w-28 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                </label>
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity hover:cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">search</span>
+                    <span>Ver</span>
+                </button>
+            </form>
+            <a th:href="@{|/estadisticas/anual/${anio}|}"
+               class="inline-flex items-center justify-center gap-xs px-md py-2 bg-surface-container-highest text-on-surface font-label-caps text-label-caps rounded-lg border border-outline-variant/20 hover:bg-surface-container-high transition-colors hover:cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                <span th:text="'Resumen Anual ' + ${anio}">Resumen Anual 2026</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Tarjetas resumen del mes seleccionado -->
+    <div th:if="${actual != null}" class="grid grid-cols-2 lg:grid-cols-4 gap-md">
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
+            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
+                <span class="material-symbols-outlined text-[16px]">shopping_cart</span>
+                <span>Kg vendidos</span>
+            </div>
+            <p class="font-headline-md text-headline-md text-primary font-bold"
+               th:text="${#numbers.formatDecimal(actual.kgVendidos, 1, 'POINT', 1, 'COMMA')}">0,0</p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
+            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
+                <span class="material-symbols-outlined text-[16px]">payments</span>
+                <span>Facturado</span>
+            </div>
+            <p class="font-headline-md text-headline-md text-primary font-bold">
+                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                <span th:text="${#numbers.formatDecimal(actual.facturado, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+            </p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
+            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
+                <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+                <span>Costo producción</span>
+            </div>
+            <p class="font-headline-md text-headline-md text-primary font-bold">
+                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                <span th:text="${#numbers.formatDecimal(actual.costoProduccion, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+            </p>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
+            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
+                <span class="material-symbols-outlined text-[16px]">trending_up</span>
+                <span>Rentabilidad</span>
+            </div>
+            <p class="font-headline-md text-headline-md font-bold"
+               th:classappend="${actual.rentabilidad >= 0} ? 'text-primary' : 'text-error'">
+                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                <span th:text="${#numbers.formatDecimal(actual.rentabilidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                <span class="text-sm font-semibold"
+                      th:classappend="${actual.rentabilidad >= 0} ? 'text-secondary' : 'text-error'"
+                      th:text="(${#numbers.formatDecimal(actual.margenPorcentaje, 1, 'POINT', 1, 'COMMA')} + '%')">0%</span>
+            </p>
+        </div>
+    </div>
+
+    <div th:if="${actual == null}"
+         class="flex items-center gap-xs p-base bg-surface-container rounded-lg border border-outline-variant/20">
+        <span class="material-symbols-outlined text-on-surface-variant">info</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Sin datos para el periodo seleccionado.</span>
+    </div>
+
+    <!-- Tabla de evolución mensual -->
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-4 font-normal">Periodo</th>
+                    <th class="py-3 px-4 font-normal text-right">Kg vendidos</th>
+                    <th class="py-3 px-4 font-normal text-right">Facturado</th>
+                    <th class="py-3 px-4 font-normal text-right">Costo produc.</th>
+                    <th class="py-3 px-4 font-normal text-right">Rentabilidad</th>
+                    <th class="py-3 px-4 font-normal text-right">% Margen</th>
+                    <th class="py-3 px-4 font-normal text-right">Kg ingresados</th>
+                    <th class="py-3 px-4 font-normal text-right">Kg elaborados</th>
+                    <th class="py-3 px-4 font-normal text-center">Detalle</th>
+                </tr>
+                </thead>
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="m : ${mensuales}"
+                    th:classappend="${m.anio() == anio and m.mes() == mes} ? 'bg-secondary-container/60' : 'hover:bg-surface-container-low transition-colors'">
+                    <td class="py-3 px-4 font-medium text-primary" th:text="${m.nombreMes() + ' ' + m.anio()}">Ene 2026</td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular"
+                        th:text="${#numbers.formatDecimal(m.kgVendidos(), 1, 'POINT', 1, 'COMMA')}">0,0</td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular">
+                        <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(m.facturado(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular">
+                        <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(m.costoProduccion(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-semibold"
+                        th:classappend="${m.rentabilidad() >= 0} ? 'text-on-surface' : 'text-error'">
+                        <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                        <span th:text="${#numbers.formatDecimal(m.rentabilidad(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular"
+                        th:classappend="${m.margenPorcentaje() >= 0} ? 'text-secondary' : 'text-error'"
+                        th:text="${#numbers.formatDecimal(m.margenPorcentaje(), 1, 'POINT', 1, 'COMMA') + '%'}">0%</td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant"
+                        th:text="${#numbers.formatDecimal(m.kgIngresados(), 1, 'POINT', 1, 'COMMA')}">0,0</td>
+                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant"
+                        th:text="${#numbers.formatDecimal(m.kgElaborados(), 1, 'POINT', 1, 'COMMA')}">0,0</td>
+                    <td class="py-3 px-4 text-center whitespace-nowrap">
+                        <a th:href="@{|/estadisticas/mes/${m.anio()}/${m.mes()}|}"
+                           title="Ver desglose del mes"
+                           class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-flex">
+                            <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

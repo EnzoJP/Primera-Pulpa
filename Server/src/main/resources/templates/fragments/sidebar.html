@@ -100,6 +100,14 @@
         <div sec:authorize="hasRole('ADMIN')" class="pt-sm mt-xs border-t border-outline-variant/20 flex flex-col gap-xs">
             <p class="px-md text-[11px] font-bold text-on-surface-variant/70 uppercase tracking-wider mb-xs">Administración</p>
 
+            <a th:href="@{/estadisticas}"
+               th:class="${activePage == 'estadisticas' or activeMenu == 'estadisticas'} ?
+                     'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
+                     'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">bar_chart</span>
+                <span class="font-label-caps text-label-caps">Estadísticas</span>
+            </a>
+
             <a th:href="@{/materias-primas}"
                th:class="${activePage == 'materias-primas' or activeMenu == 'materias-primas'} ?
                          'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
