@@ -44,6 +44,10 @@ public class DataInitializer {
             LoteMixRepository loteMixRepository) {
 
         return args -> {
+            if (usuarioRepository.count() > 0) {
+                logger.info("Base de datos ya inicializada. Omitiendo seed.");
+                return;
+            }
             logger.info("--- INICIALIZANDO DATOS DE PRUEBA EN PRIMERA PULPA ---");
 
             // 1. Unidades de Medida
@@ -210,10 +214,11 @@ public class DataInitializer {
             mixClasico.setEliminado(false);
             mixRepository.save(mixClasico);
 
-            // Mix Premium: 35 kg elaborados - 10 kg preparados (10kg Ped1) = 25 kg stock
+            // Mix Premium:
             Mix mixPremium = new Mix();
             mixPremium.setNombre("Mix Frutos Secos Premium");
-            mixPremium.setPrecioVenta(22000.0);
+            mixPremium.setPrecioVenta(11000.0);
+            mixPremium.setCantidadPorUnidad(5.0); // Presentación 5 kg
             mixPremium.setStock(25.0);
             mixPremium.setEliminado(false);
             mixRepository.save(mixPremium);
@@ -406,7 +411,7 @@ public class DataInitializer {
                     .pedido(p1)
                     .mix(mixPremium)
                     .cantidad(10.0)
-                    .precioUnitario(22000.0)
+                    .precioUnitario(55000.0)
                     .preparado(true)
                     .build();
             dp1P1.setEliminado(false);
