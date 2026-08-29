@@ -42,17 +42,31 @@
             </div>
 
             <div class="space-y-1.5">
-                <label for="precioVenta" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                    Precio de Venta Sugerido (por kg)
+                <label for="cantidadPorUnidad" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    Tamaño de presentación (kg por unidad)
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-label-caps text-label-caps text-on-surface-variant">kg</span>
+                    <input id="cantidadPorUnidad" type="number" step="0.01" min="0.01" th:field="*{cantidadPorUnidad}"
+                           placeholder="1.0"
+                           class="w-full bg-surface border border-outline-variant/40 rounded-lg pl-8 pr-md py-2.5 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                </div>
+                <p class="font-body-sm text-xs text-on-surface-variant">Cantidad en kg de cada paquete/unidad comercial (ej: 1 kg o 5 kg). Todo el stock se maneja por kg internamente. Los costos de empaque del catálogo aplican según esta presentación.</p>
+                <p th:if="${#fields.hasErrors('cantidadPorUnidad')}" th:errors="*{cantidadPorUnidad}" class="text-error font-body-sm text-xs mt-1"></p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="precioVentaUnidad" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    Precio de Venta Sugerido (por unidad/paquete)
                 </label>
                 <div class="relative">
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 font-label-caps text-label-caps text-on-surface-variant">$</span>
-                    <input id="precioVenta" type="number" step="0.01" min="0" th:field="*{precioVenta}"
+                    <input id="precioVentaUnidad" type="number" step="0.01" min="0" th:field="*{precioVentaUnidad}"
                            placeholder="0.00"
                            class="w-full bg-surface border border-outline-variant/40 rounded-lg pl-8 pr-md py-2.5 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
                 </div>
-                <p class="font-body-sm text-xs text-on-surface-variant">Valor unitario al público o distribuidor por kilogramo de producto terminado.</p>
-                <p th:if="${#fields.hasErrors('precioVenta')}" th:errors="*{precioVenta}" class="text-error font-body-sm text-xs mt-1"></p>
+                <p class="font-body-sm text-xs text-on-surface-variant">Valor unitario al público/distribuidor por paquete. Se convierte automáticamente a precio por kg.</p>
+                <p th:if="${#fields.hasErrors('precioVentaUnidad')}" th:errors="*{precioVentaUnidad}" class="text-error font-body-sm text-xs mt-1"></p>
             </div>
 
             <div class="bg-surface-container rounded-xl p-md border border-outline-variant/20 space-y-sm">
@@ -64,22 +78,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-md pt-xs">
 
                     <div class="bg-surface-container-lowest rounded-lg p-sm border border-outline-variant/20">
-                        <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Costo Base de Producción</span>
+                        <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Costo por unidad</span>
                         <div class="flex items-baseline gap-1 mt-0.5">
                             <span class="text-on-surface-variant text-xs">$</span>
-                            <span class="font-data-tabular text-headline-md text-primary font-semibold"
-                                  th:text="${#numbers.formatDecimal(item.costo ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                            <span class="text-on-surface-variant text-xs">/ kg</span>
+                            <span id="costo-unidad" class="font-data-tabular text-headline-md text-primary font-semibold">-</span>
                         </div>
-                        <span class="text-[11px] text-on-surface-variant">Calculado según materias primas</span>
+                        <span class="text-[11px] text-on-surface-variant">MP + costos adicionales (por paquete)</span>
                     </div>
 
                     <div class="bg-surface-container-lowest rounded-lg p-sm border border-outline-variant/20">
-                        <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Margen / Ganancia Estimada</span>
+                        <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Margen / Ganancia por unidad</span>
                         <div class="flex items-baseline gap-1 mt-0.5 font-data-tabular text-headline-md font-bold" id="ganancia-container">
                             <span class="text-xs mr-0.5">$</span>
                             <span id="ganancia" class="text-primary">-</span>
-                            <span class="text-on-surface-variant text-xs">/ kg</span>
                         </div>
                         <span id="porcentaje-margen" class="text-[11px] text-on-surface-variant font-medium">Margen no determinado</span>
                     </div>
@@ -103,36 +114,48 @@
     </div>
 
     <script th:inline="javascript">
-        /* Thymeleaf parsea el costo del mix o asigna 0 por defecto */
-        const costo = /*[[${item.costo != null ? item.costo : 0}]]*/ 0;
+        // Costo por kg del mix (ya incluye los costos adicionales que aplican
+        // según la presentación, recalculados en el backend).
+        const costoBlendKg = /*[[${item.costo != null ? item.costo : 0}]]*/ 0;
 
-        const inputPrecio = document.getElementById('precioVenta');
+        const inputPrecio = document.getElementById('precioVentaUnidad');
+        const inputUnidad = document.getElementById('cantidadPorUnidad');
         const spanGanancia = document.getElementById('ganancia');
         const spanPorcentaje = document.getElementById('porcentaje-margen');
+        const spanCostoUnidad = document.getElementById('costo-unidad');
 
-        function actualizarRentabilidad() {
-            const precio = parseFloat(inputPrecio.value);
+        function leerNumero(el) {
+            const v = parseFloat(el.value);
+            return isNaN(v) ? 0 : v;
+        }
 
-            if (isNaN(precio) || precio <= 0) {
+        function calcular() {
+            const precio = leerNumero(inputPrecio);
+            const u = leerNumero(inputUnidad);
+
+            // Costo por unidad = costo por kg del mix * presentación en kg.
+            const costoPorUnidad = u > 0 ? (parseFloat(costoBlendKg) || 0) * u : 0;
+
+            spanCostoUnidad.textContent = costoPorUnidad.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            if (precio <= 0 || u <= 0) {
                 spanGanancia.textContent = '-';
                 spanGanancia.className = 'text-primary';
-                spanPorcentaje.textContent = 'Ingrese un precio para calcular';
+                spanPorcentaje.textContent = 'Ingrese precio y presentación para calcular';
                 spanPorcentaje.className = 'text-[11px] text-on-surface-variant';
                 return;
             }
 
-            const ganancia = precio - costo;
+            const ganancia = precio - costoPorUnidad;
             spanGanancia.textContent = ganancia.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            // Si el costo es mayor a 0, calculamos el porcentaje de margen
-            if (costo > 0) {
+            if (costoPorUnidad > 0) {
                 const margenPct = ((ganancia / precio) * 100).toFixed(1);
                 spanPorcentaje.textContent = `${margenPct}% margen sobre venta`;
             } else {
                 spanPorcentaje.textContent = 'Sin costo de insumos registrado';
             }
 
-            // Clases visuales según el resultado financiero
             if (ganancia >= 0) {
                 spanGanancia.className = 'text-secondary font-bold';
                 spanPorcentaje.className = 'text-[11px] text-secondary font-medium';
@@ -142,9 +165,9 @@
             }
         }
 
-        inputPrecio.addEventListener('input', actualizarRentabilidad);
-        // Ejecución inicial al cargar
-        actualizarRentabilidad();
+        inputPrecio.addEventListener('input', calcular);
+        inputUnidad.addEventListener('input', calcular);
+        calcular();
     </script>
 </div>
 

@@ -1,6 +1,7 @@
 package com.primeraPulpa.Services;
 
 import com.primeraPulpa.entities.CostoAdicional;
+import com.primeraPulpa.entities.PresentacionCosto;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.CostoAdicionalRepository;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class CostoAdicionalService extends BaseService<CostoAdicional, Long> {
         }
         if (costoAdicional.getValor() < 0) {
             throw new ErrorServiceException("El valor no puede ser negativo");
+        }
+        if (costoAdicional.getPresentacion() == null) {
+            costoAdicional.setPresentacion(PresentacionCosto.TODOS);
         }
     }
 

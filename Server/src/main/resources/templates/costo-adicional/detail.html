@@ -76,6 +76,18 @@
                 </div>
 
                 <div class="border-b border-outline-variant/10 pb-3">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Presentación a la que aplica</dt>
+                    <dd>
+                        <span th:if="${item.presentacion != null}"
+                              class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
+                              th:classappend="${item.presentacion.name() == 'TODOS'} ? 'bg-surface-container-highest text-on-surface-variant' : 'bg-secondary-container text-on-secondary-container'"
+                              th:text="${item.presentacion.etiqueta}">Todos</span>
+                        <span th:unless="${item.presentacion != null}"
+                              class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold bg-surface-container-highest text-on-surface-variant">Todos</span>
+                    </dd>
+                </div>
+
+                <div class="border-b border-outline-variant/10 pb-3">
                     <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Estado en el Sistema</dt>
                     <dd>
                         <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container">

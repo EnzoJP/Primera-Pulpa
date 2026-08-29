@@ -62,7 +62,8 @@
                     <th class="py-3 px-4 font-normal w-auto">Nombre del Mix</th>
                     <th class="py-3 px-4 font-normal w-40 text-right">Cantidad en Stock</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Estado</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Precio de Venta</th>
+                    <th class="py-3 px-4 font-normal w-40 text-center">Presentación</th>
+                    <th class="py-3 px-4 font-normal w-36 text-right">Precio x Unidad</th>
                     <th class="py-3 px-4 font-normal w-32 text-right">Rentabilidad</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
@@ -129,18 +130,24 @@
                         </span>
                     </td>
 
-                    <!-- Precio de Venta -->
+                    <!-- Presentación -->
+                    <td class="py-3.5 px-4 text-center font-body-sm text-body-sm text-on-surface-variant"
+                        th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : '')">
+                        <span th:text="${#numbers.formatDecimal(item.cantidadPorUnidadOrDefault, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span>
+                    </td>
+
+                    <!-- Precio de Venta por unidad -->
                     <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span th:if="${item.precioVenta != null}">
                             <span class="text-on-surface-variant text-xs mr-0.5">$</span>
-                            <span th:text="${#numbers.formatDecimal(item.precioVenta, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                            <span th:text="${#numbers.formatDecimal(item.precioVentaPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                         </span>
                         <span th:unless="${item.precioVenta != null}" class="text-on-surface-variant">—</span>
                     </td>
 
                     <!-- Rentabilidad (%) -->
                     <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular"
-                        th:with="rentabilidad=${item.precioVenta != null and item.precioVenta != 0 ? ((item.precioVenta - (item.costo ?: 0)) / item.precioVenta) * 100 : null}">
+                        th:with="precioU=${item.precioVenta != null ? item.precioVentaPorUnidad : null},costoU=${item.costoPorUnidad},rentabilidad=${precioU != null and precioU != 0 ? ((precioU - costoU) / precioU) * 100 : null}">
                         <span th:if="${rentabilidad != null}"
                               th:classappend="${rentabilidad >= 0} ? 'font-semibold text-secondary' : 'font-semibold text-error'"
                               th:text="${#numbers.formatDecimal(rentabilidad, 1, 'POINT', 1, 'COMMA') + '%'}">35%</span>
@@ -179,7 +186,7 @@
 
                 <!-- Estado Vacío del Backend -->
                 <tr th:if="${#lists.isEmpty(items)}">
-                    <td colspan="7" class="py-12 px-4 text-center">
+                    <td colspan="8" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">inventory_2</span>
                             <p class="font-body-md text-body-md">No hay mixes registrados en el catálogo.</p>
@@ -192,7 +199,7 @@
 
                 <!-- Sin coincidencias en la búsqueda -->
                 <tr id="fila-vacia" class="hidden">
-                    <td colspan="7" class="py-12 px-4 text-center">
+                    <td colspan="8" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">search</span>
                             <p class="font-body-md text-body-md">No se encontraron mixes que coincidan con la búsqueda.</p>

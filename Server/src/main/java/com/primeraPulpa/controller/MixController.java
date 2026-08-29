@@ -87,6 +87,7 @@ public class MixController extends BaseController<Mix, Long> {
             Mix entidad = service.getOne(id);
             cargarAtributosBase(model);
             model.addAttribute("item", entidad);
+            model.addAttribute("desglose", service.desgloseCostos(id));
             model.addAttribute("historialPrecios", service.obtenerHistorialPrecio(id));
             return vistaDetalle();
         } catch (ErrorServiceException e) {
@@ -127,6 +128,7 @@ public class MixController extends BaseController<Mix, Long> {
 
         try {
             // Obtener precio anterior antes de actualizar
+            aplicarPrecioPorUnidad(entidad);
             Mix mixAnterior = service.getOne(id);
             Double precioAnterior = mixAnterior != null ? mixAnterior.getPrecioVenta() : null;
 
@@ -161,6 +163,20 @@ public class MixController extends BaseController<Mix, Long> {
             model.addAttribute("formTitle", "Editar " + entityName);
             return vistaFormulario();
         }
+    }
+
+    // Convierte el precio POR UNIDAD (que carga el formulario) a precio por kg
+    // antes de persistir, usando el tamaño de presentación del mix.
+    private void aplicarPrecioPorUnidad(Mix mix) {
+        if (mix.getPrecioVentaUnidad() != null && mix.getCantidadPorUnidadOrDefault() > 0) {
+            double porKg = Math.round((mix.getPrecioVentaUnidad() / mix.getCantidadPorUnidadOrDefault()) * 100.0) / 100.0;
+            mix.setPrecioVenta(porKg);
+        }
+    }
+
+    @Override
+    protected void preCreate(Mix entidad) throws ErrorServiceException {
+        aplicarPrecioPorUnidad(entidad);
     }
 
     private Usuario obtenerUsuarioActual() {

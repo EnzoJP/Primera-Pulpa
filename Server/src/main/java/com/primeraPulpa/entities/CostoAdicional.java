@@ -1,6 +1,8 @@
 package com.primeraPulpa.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +21,16 @@ public class CostoAdicional extends BaseEntity<Long> {
     // Es un catálogo compartido por todos los mixes, no se relaciona con Mix.
     private String descripcion;
     private double valor;
+
+    // Presentación a la que aplica este costo (1 kg, 5 kg o todos).
+    // El valor se interpreta como $ por unidad de esa presentación.
+    @Enumerated(EnumType.STRING)
+    private PresentacionCosto presentacion;
+
+    // Presentación por defecto: "Todos".
+    public PresentacionCosto getPresentacionOrDefault() {
+        return presentacion != null ? presentacion : PresentacionCosto.TODOS;
+    }
 
     @Override
     public Long getId() {

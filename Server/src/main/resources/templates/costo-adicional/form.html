@@ -52,8 +52,28 @@
                            class="w-full bg-surface border border-outline-variant/40 rounded-lg pl-8 pr-16 py-2.5 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 font-label-caps text-label-caps text-on-surface-variant">/ unidad</span>
                 </div>
-                <p class="font-body-sm text-xs text-on-surface-variant">Monto imputable al costo final por cada unidad producida.</p>
+                <p class="font-body-sm text-xs text-on-surface-variant">Monto imputable al costo final por cada unidad producida de la presentación elegida.</p>
                 <p th:if="${#fields.hasErrors('valor')}" th:errors="*{valor}" class="text-error font-body-sm text-xs mt-1"></p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="presentacion" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    Presentación a la que aplica <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                    <select id="presentacion" th:field="*{presentacion}" required
+                            class="w-full appearance-none bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all pr-10">
+                        <option value="">Seleccione la presentación...</option>
+                        <option th:each="p : ${T(com.primeraPulpa.entities.PresentacionCosto).values()}"
+                                th:value="${p}"
+                                th:text="${p.etiqueta}">Todos</option>
+                    </select>
+                    <span class="material-symbols-outlined text-on-surface-variant absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[20px]">
+                        expand_more
+                    </span>
+                </div>
+                <p class="font-body-sm text-xs text-on-surface-variant">Define para qué presentación de mix se suma este costo: una bolsa de 5 kg no vale lo mismo que una de 1 kg. "Todos" aplica a cualquier presentación.</p>
+                <p th:if="${#fields.hasErrors('presentacion')}" th:errors="*{presentacion}" class="text-error font-body-sm text-xs mt-1"></p>
             </div>
 
             <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">

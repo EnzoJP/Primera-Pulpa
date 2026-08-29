@@ -58,9 +58,21 @@
 
         <!-- Detalles del pedido -->
         <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
-            <div class="p-md border-b border-outline-variant/20 bg-surface-container-low flex justify-between items-center">
+            <div class="p-md border-b border-outline-variant/20 bg-surface-container-low flex flex-col sm:flex-row justify-between items-start sm:items-center gap-xs">
                 <h3 class="font-headline-md text-headline-md text-primary">Mixes a Despachar</h3>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">Agregá uno o más mixes al pedido</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant hidden sm:inline">Unidad de ingreso:</span>
+                    <div class="inline-flex bg-surface-container-highest rounded-lg p-0.5 border border-outline-variant/20">
+                        <button type="button" id="btn-paquete" onclick="setModo('paquete')"
+                                class="px-md py-1.5 font-label-caps text-label-caps rounded-md transition-colors bg-primary text-on-primary">
+                            Paquetes
+                        </button>
+                        <button type="button" id="btn-kg" onclick="setModo('kg')"
+                                class="px-md py-1.5 font-label-caps text-label-caps rounded-md transition-colors text-on-surface-variant cursor-pointer">
+                            Kg
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="overflow-x-auto custom-scrollbar">
@@ -69,8 +81,8 @@
                     <tr>
                         <th class="py-3 px-4 font-normal w-auto">Mix</th>
                         <th class="py-3 px-4 font-normal w-32 text-center">Stock Disponible</th>
-                        <th class="py-3 px-4 font-normal w-32 text-right">Cantidad (kg)</th>
-                        <th class="py-3 px-4 font-normal w-36 text-right">Precio Unitario ($/kg)</th>
+                        <th class="py-3 px-4 font-normal w-32 text-right">Cantidad <span id="th-cantidad">(paq)</span></th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Precio Unitario <span id="th-precio">($/paq)</span></th>
                         <th class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
                         <th class="py-3 px-4 font-normal w-20 text-center"></th>
                     </tr>
@@ -85,6 +97,7 @@
                                             th:value="${m.id}"
                                             th:data-stock="${m.stock}"
                                             th:data-precio="${m.precioVenta}"
+                                            th:data-unidad="${m.cantidadPorUnidadOrDefault}"
                                             th:text="${m.nombre}">Mix</option>
                                 </select>
                             </td>
@@ -146,13 +159,58 @@
     <script th:inline="javascript">
         const mixes = /*[[${mixes}]]*/ [];
         let contadorFilas = 0;
+        let modo = 'paquete'; // 'paquete' | 'kg'
+
+        function redondear(num, decimals) {
+            const f = Math.pow(10, decimals);
+            return Math.round(num * f) / f;
+        }
 
         function buildSelect() {
             let opts = '<option value="">Seleccione un mix...</option>';
             mixes.forEach(m => {
-                opts += `<option value="${m.id}" data-stock="${m.stock}" data-precio="${m.precioVenta || ''}">${m.nombre}</option>`;
+                const unidad = (m.cantidadPorUnidadOrDefault && m.cantidadPorUnidadOrDefault > 0) ? m.cantidadPorUnidadOrDefault : 1;
+                opts += `<option value="${m.id}" data-stock="${m.stock}" data-precio="${m.precioVenta || ''}" data-unidad="${unidad}">${m.nombre}</option>`;
             });
             return opts;
+        }
+
+        function setModo(m) {
+            modo = m;
+            const btnPaq = document.getElementById('btn-paquete');
+            const btnKg = document.getElementById('btn-kg');
+            if (m === 'paquete') {
+                btnPaq.className = 'px-md py-1.5 font-label-caps text-label-caps rounded-md transition-colors bg-primary text-on-primary cursor-pointer';
+                btnKg.className = 'px-md py-1.5 font-label-caps text-label-caps rounded-md transition-colors text-on-surface-variant cursor-pointer';
+                document.getElementById('th-cantidad').textContent = '(paq)';
+                document.getElementById('th-precio').textContent = '($/paq)';
+            } else {
+                btnKg.className = 'px-md py-1.5 font-label-caps text-label-caps rounded-md transition-colors bg-primary text-on-primary cursor-pointer';
+                btnPaq.className = 'px-md py-1.5 font-label-caps text-label-caps rounded-md transition-colors text-on-surface-variant cursor-pointer';
+                document.getElementById('th-cantidad').textContent = '(kg)';
+                document.getElementById('th-precio').textContent = '($/kg)';
+            }
+            // Refrescar cada fila (precio según modo)
+            document.querySelectorAll('#filas tr').forEach(row => {
+                const select = row.querySelector('select[name="mixId"]');
+                if (select && select.value) {
+                    const option = select.options[select.selectedIndex];
+                    const precioKg = parseFloat(option.dataset.precio) || 0;
+                    const unidad = parseFloat(option.dataset.unidad) || 1;
+                    const precio = modo === 'paquete' ? redondear(precioKg * unidad, 2) : precioKg;
+                    row.querySelector('input[name="precioUnitario"]').value = precio > 0 ? precio : '';
+                    const cantidadInput = row.querySelector('input[name="cantidad"]');
+                    // Convertir cantidad existente de un modo a otro
+                    if (cantidadInput.value !== '') {
+                        const val = parseFloat(cantidadInput.value);
+                        if (!isNaN(val) && val > 0) {
+                            cantidadInput.value = modo === 'paquete' ? redondear(val / unidad, 3) : redondear(val * unidad, 3);
+                        }
+                    }
+                    onMixChange(select);
+                }
+            });
+            calcularTotal();
         }
 
         function onMixChange(selectElem) {
@@ -171,24 +229,27 @@
 
             const option = selectElem.options[selectElem.selectedIndex];
             const stock = parseFloat(option.dataset.stock) || 0;
-            const precio = option.dataset.precio;
+            const precioKg = parseFloat(option.dataset.precio) || 0;
+            const unidad = (option.dataset.unidad && parseFloat(option.dataset.unidad) > 0) ? parseFloat(option.dataset.unidad) : 1;
+
+            const mostrarStock = modo === 'paquete' ? stock / unidad : stock;
+            const unidadStock = modo === 'paquete' ? ' paq' : ' kg';
+            const mostrarPrecio = modo === 'paquete' ? redondear(precioKg * unidad, 2) : precioKg;
 
             // Mostrar stock disponible
             if (stock > 0) {
-                stockBadge.textContent = stock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+                stockBadge.textContent = mostrarStock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + unidadStock;
                 stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-primary';
             } else if (stock < 0) {
-                stockBadge.textContent = stock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+                stockBadge.textContent = mostrarStock.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + unidadStock;
                 stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-error';
             } else {
                 stockBadge.textContent = 'Sin stock';
                 stockBadge.className = 'stock-badge font-data-tabular text-data-tabular text-sm font-medium text-outline';
             }
 
-            // Pre-llenar precio de venta si existe
-            if (precio && precio !== '' && precio !== 'null') {
-                precioInput.value = precio;
-            }
+            // Pre-llenar precio de venta según modo
+            precioInput.value = mostrarPrecio > 0 ? mostrarPrecio : '';
             actualizarSubtotal(precioInput);
         }
 
@@ -289,7 +350,8 @@
             // Validar que cada fila tenga mix, cantidad y precio
             for (let i = 0; i < filas.length; i++) {
                 const fila = filas[i];
-                const mix = fila.querySelector('select[name="mixId"]').value;
+                const select = fila.querySelector('select[name="mixId"]');
+                const mix = select.value;
                 const cantidad = parseFloat(fila.querySelector('input[name="cantidad"]').value) || 0;
                 const precio = parseFloat(fila.querySelector('input[name="precioUnitario"]').value) || 0;
 
@@ -305,6 +367,20 @@
                     alert('Fila ' + (i + 1) + ': el precio unitario no puede ser negativo.');
                     return false;
                 }
+            }
+
+            // Si se ingresa en paquetes, convertir a kg y a $/kg antes de enviar,
+            // porque el backend trabaja todo por kg internamente.
+            if (modo === 'paquete') {
+                filas.forEach(fila => {
+                    const select = fila.querySelector('select[name="mixId"]');
+                    const option = select.options[select.selectedIndex];
+                    const unidad = (option.dataset.unidad && parseFloat(option.dataset.unidad) > 0) ? parseFloat(option.dataset.unidad) : 1;
+                    const cantPaq = parseFloat(fila.querySelector('input[name="cantidad"]').value) || 0;
+                    const precioPaq = parseFloat(fila.querySelector('input[name="precioUnitario"]').value) || 0;
+                    fila.querySelector('input[name="cantidad"]').value = redondear(cantPaq * unidad, 3);
+                    fila.querySelector('input[name="precioUnitario"]').value = redondear(precioPaq / unidad, 2);
+                });
             }
 
             return true;

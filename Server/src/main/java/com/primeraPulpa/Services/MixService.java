@@ -1,11 +1,13 @@
 package com.primeraPulpa.Services;
 
+import com.primeraPulpa.dto.DesgloseCostoMixDTO;
 import com.primeraPulpa.entities.*;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,20 +17,21 @@ public class MixService extends BaseService<Mix, Long> {
 
     private final DetallePedidoRepository detallePedidoRepository;
     private final FormulaRepository formulaRepository;
-    private final CostoAdicionalRepository costoAdicionalRepository;
     private final DetalleIngresoMPRepository detalleIngresoMPRepository;
     private final HistorialPrecioMixRepository historialPrecioRepository;
+    private final CostoAdicionalRepository costoAdicionalRepository;
 
     public MixService(MixRepository repository, DetallePedidoRepository detallePedidoRepository,
-                      FormulaRepository formulaRepository, CostoAdicionalRepository costoAdicionalRepository,
+                      FormulaRepository formulaRepository,
                       DetalleIngresoMPRepository detalleIngresoMPRepository,
-                      HistorialPrecioMixRepository historialPrecioRepository) {
+                      HistorialPrecioMixRepository historialPrecioRepository,
+                      CostoAdicionalRepository costoAdicionalRepository) {
         super(repository);
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
-        this.costoAdicionalRepository = costoAdicionalRepository;
         this.detalleIngresoMPRepository = detalleIngresoMPRepository;
         this.historialPrecioRepository = historialPrecioRepository;
+        this.costoAdicionalRepository = costoAdicionalRepository;
     }
 
     @Override
@@ -38,6 +41,26 @@ public class MixService extends BaseService<Mix, Long> {
         }
         if (mix.getPrecioVenta() != null && mix.getPrecioVenta() < 0) {
             throw new ErrorServiceException("El precio de venta no puede ser negativo");
+        }
+        if (mix.getCantidadPorUnidad() != null && mix.getCantidadPorUnidad() <= 0) {
+            throw new ErrorServiceException("El tamaño de la unidad (kg por paquete) debe ser mayor a cero");
+        }
+    }
+
+    // Normaliza los campos nuevos a valores por defecto razonables.
+    @Override
+    protected void preAlta(Mix mix) throws ErrorServiceException {
+        normalizarPresentacion(mix);
+    }
+
+    @Override
+    protected void preModificacion(Mix mix) throws ErrorServiceException {
+        normalizarPresentacion(mix);
+    }
+
+    private void normalizarPresentacion(Mix mix) {
+        if (mix.getCantidadPorUnidad() == null || mix.getCantidadPorUnidad() <= 0) {
+            mix.setCantidadPorUnidad(1.0);
         }
     }
 
@@ -54,8 +77,12 @@ public class MixService extends BaseService<Mix, Long> {
     }
 
     // Recalcula el costo por kg del mix:
-    //   costo fórmula = (Σ gramos_materiaPrima / 1000 * precio) / cantidad que produce la fórmula
-    //   costo mix = costo fórmula + Σ valores de costos adicionales (bolsa, etiqueta...)
+    //   costo fórmula = (Σ gramos_materiaPrima / 1000 * precio) / cantidad que produce la fórmula  → costo MP por kg
+    //   costo adicional por kg = Σ (costos adicionales que aplican a la presentación del mix) / cantidadPorUnidad
+    //   costo mix = costo MP por kg + costo adicional por kg
+    // Cada costo adicional tiene una presentación (1 kg, 5 kg o todos) y su valor
+    // es por UNIDAD de esa presentación (una bolsa de 5 kg no vale lo mismo que una de 1 kg).
+    // Se mantiene todo por kg internamente (el stock y las estadísticas trabajan en kg).
     @Transactional
     public void recalcularCosto(Long mixId) {
 
@@ -63,7 +90,6 @@ public class MixService extends BaseService<Mix, Long> {
         if (mix == null) {
             return;
         }
-
 
         double costoFormula = 0;
         Formula formula = formulaRepository.findByMixId(mixId).stream()
@@ -73,22 +99,116 @@ public class MixService extends BaseService<Mix, Long> {
         if (formula != null && formula.getCantidad() > 0) {
             costoFormula = formula.getCosto();
         }
-        /*if (formula != null && formula.getCantidad() > 0) {
-            double costoTotal = formula.getDetalles().stream()
-                    .filter(d -> d.getMateriaPrima() != null && d.getGramos() > 0)
-                    .mapToDouble(d -> (d.getGramos() / 1000.0) * d.getMateriaPrima().getPrecio())
-                    .sum();
-            costoFormula = costoTotal / formula.getCantidad();
-            }*/
 
+        double cantidadPorUnidad = mix.getCantidadPorUnidadOrDefault();
+        PresentacionCosto objetivo = presentacionParaUnidad(cantidadPorUnidad);
 
         double costoAdicional = costoAdicionalRepository.findAll().stream()
                 .filter(c -> !Boolean.TRUE.equals(c.getEliminado()))
-                .mapToDouble(CostoAdicional::getValor)
+                .filter(c -> aplicaPresentacion(c.getPresentacionOrDefault(), objetivo))
+                .mapToDouble(c -> cantidadPorUnidad > 0 ? c.getValor() / cantidadPorUnidad : c.getValor())
                 .sum();
 
-        mix.setCosto(costoFormula + costoAdicional);
+        double costoPorKg = costoFormula + costoAdicional;
+        mix.setCosto(redondear(costoPorKg));
         repository.save(mix);
+    }
+
+    // Desglosa el costo por kg de un mix en: costo de materia prima (fórmula) +
+    // costos adicionales aplicables a la presentación (cada uno es por paquete).
+    @Transactional(readOnly = true)
+    public DesgloseCostoMixDTO desgloseCostos(Long mixId) {
+        Mix mix = repository.findById(mixId).orElse(null);
+        DesgloseCostoMixDTO dto = new DesgloseCostoMixDTO();
+        if (mix == null) {
+            return dto;
+        }
+
+        double cantidadPorUnidad = mix.getCantidadPorUnidadOrDefault();
+        dto.setCantidadPorUnidad(cantidadPorUnidad);
+
+        // 1) Fórmula: detalle por materia prima y costo MP por kg
+        DesgloseCostoMixDTO.FormulaDesglose formulaDto = new DesgloseCostoMixDTO.FormulaDesglose();
+        Formula formula = formulaRepository.findByMixId(mixId).stream()
+                .filter(f -> !Boolean.TRUE.equals(f.getEliminado()))
+                .findFirst()
+                .orElse(null);
+
+        if (formula != null) {
+            formulaDto.setCantidad(formula.getCantidad());
+            double subtotal = 0;
+            List<DetalleFormula> detalles = formula.getDetalles() != null ? formula.getDetalles() : new ArrayList<>();
+            for (DetalleFormula detalle : detalles) {
+                if (detalle.getMateriaPrima() == null) {
+                    continue;
+                }
+                double gramos = detalle.getGramos();
+                double precioPorKg = detalle.getMateriaPrima().getPrecio();
+                double costo = (gramos / 1000.0) * precioPorKg;
+                subtotal += costo;
+
+                DesgloseCostoMixDTO.DetalleDesglose detDto = new DesgloseCostoMixDTO.DetalleDesglose();
+                detDto.setMateriaPrima(detalle.getMateriaPrima().getNombre());
+                detDto.setGramos(gramos);
+                detDto.setPrecioPorKg(precioPorKg);
+                detDto.setCosto(costo);
+                formulaDto.getDetalles().add(detDto);
+            }
+            formulaDto.setSubtotalMateriaPrima(subtotal);
+            double costoPorKg = formula.getCantidad() > 0 ? subtotal / formula.getCantidad() : 0;
+            formulaDto.setCostoPorKg(costoPorKg);
+        }
+        dto.setFormula(formulaDto);
+        dto.setCostoMateriaPrimaPorKg(formulaDto.getCostoPorKg());
+
+        // 2) Costos adicionales que aplican a la presentación del mix
+        PresentacionCosto objetivo = presentacionParaUnidad(cantidadPorUnidad);
+        double totalAdicionalPorKg = 0;
+        List<CostoAdicional> costos = costoAdicionalRepository.findAll();
+        for (CostoAdicional c : costos) {
+            if (Boolean.TRUE.equals(c.getEliminado())) {
+                continue;
+            }
+            PresentacionCosto presentacion = c.getPresentacionOrDefault();
+            if (!aplicaPresentacion(presentacion, objetivo)) {
+                continue;
+            }
+            double valorPorPaquete = redondear(c.getValor());
+            double aportePorKg = cantidadPorUnidad > 0 ? redondear(c.getValor() / cantidadPorUnidad) : redondear(c.getValor());
+
+            DesgloseCostoMixDTO.AdicionalDesglose adv = new DesgloseCostoMixDTO.AdicionalDesglose();
+            adv.setDescripcion(c.getDescripcion());
+            adv.setPresentacion(presentacion != null ? presentacion.getEtiqueta() : "Todos");
+            adv.setValorPorPaquete(valorPorPaquete);
+            adv.setAportePorKg(aportePorKg);
+            dto.getAdicionales().add(adv);
+
+            totalAdicionalPorKg += aportePorKg;
+        }
+        dto.setCostosAdicionalesPorKg(redondear(totalAdicionalPorKg));
+        dto.setCostoFinalPorKg(redondear(dto.getCostoMateriaPrimaPorKg() + totalAdicionalPorKg));
+
+        return dto;
+    }
+
+    // Determina la presentación (1 kg / 5 kg) del mix según su cantidad por unidad.
+    // Si el mix no tiene una presentación reconocida, devuelve null (solo aplican costos "Todos").
+    private PresentacionCosto presentacionParaUnidad(double cantidadPorUnidad) {
+        if (Math.abs(cantidadPorUnidad - 1.0) < 0.05) {
+            return PresentacionCosto.UNO_KG;
+        }
+        if (Math.abs(cantidadPorUnidad - 5.0) < 0.05) {
+            return PresentacionCosto.CINCO_KG;
+        }
+        return null;
+    }
+
+    // Un costo adicional aplica si es para "todos" o si coincide con la presentación del mix.
+    private boolean aplicaPresentacion(PresentacionCosto presentacion, PresentacionCosto objetivo) {
+        if (presentacion == PresentacionCosto.TODOS) {
+            return true;
+        }
+        return objetivo != null && presentacion == objetivo;
     }
 
     @Transactional
