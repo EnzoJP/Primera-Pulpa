@@ -24,7 +24,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
     // Mapa de transiciones válidas: estado actual → estados destino permitidos
     private static final Map<String, List<String>> TRANSICIONES_VALIDAS = Map.of(
             "PENDIENTE", List.of("PREPARADO", "CANCELADO"),
-            "PREPARADO", List.of("ENTREGADO", "CANCELADO"),
+            "PREPARADO", List.of("ENTREGADO", "PENDIENTE", "CANCELADO"),
             "ENTREGADO", List.of(),
             "CANCELADO", List.of()
     );
@@ -63,8 +63,9 @@ public class PedidoService extends BaseService<Pedido, Long> {
     }
 
     /**
-     * Registra un pedido completo con sus detalles, descuenta stock del Mix.
-     * El pedido se crea en estado PENDIENTE (HU-13).
+     * Registra un pedido completo con sus detalles.
+     * El pedido se crea en estado PENDIENTE (HU-13) con los detalles pendientes de preparación.
+     * El stock de Mix se descuenta a medida que se preparan los ítems.
      */
     @Transactional
     public Pedido registrar(Pedido pedido) throws ErrorServiceException {
@@ -100,40 +101,146 @@ public class PedidoService extends BaseService<Pedido, Long> {
                     .orElseThrow(() -> new ErrorServiceException("Mix no encontrado: " + detalle.getMix().getNombre()));
         }
 
-        // 4. Persistir cabecera (sin detalles para evitar cascade con referencias nulas)
+        // 4. Persistir cabecera
         List<DetallePedido> detallesRef = pedido.getDetalles();
         pedido.setDetalles(new ArrayList<>());
         pedido.setEliminado(false);
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
 
-        // 5. Guardar detalles y descontar stock del Mix
+        // 5. Guardar detalles con preparado = false (el stock se descuenta al preparar cada ítem)
         for (DetallePedido detalle : detallesRef) {
-            Mix mix = mixRepository.findById(detalle.getMix().getId()).get();
-
             detalle.setPedido(pedidoGuardado);
+            detalle.setPreparado(false);
             detalle.setEliminado(false);
             detallePedidoRepository.save(detalle);
-
-            // Descontar stock del Mix
-            mix.actualizarStock(-detalle.getCantidad());
-            mixRepository.save(mix);
         }
+
+        // 6. Registrar en historial de estados
+        registrarHistorial(pedidoGuardado, estadoPendiente, pedido.getUsuario());
 
         return pedidoGuardado;
     }
 
     /**
-     * Cambia el estado de un pedido (HU-14).
-     * Valida la transición, registra en el historial y restaura stock si se cancela.
+     * Marca un detalle individual del pedido como preparado.
+     * Valida y descuenta el stock de Mix en ese instante.
+     * Si todos los ítems del pedido quedan preparados, cambia automáticamente el estado del pedido a PREPARADO.
      */
     @Transactional
-    public void cambiarEstado(Long pedidoId, String nuevoEstadoDescripcion, Usuario usuario) throws ErrorServiceException {
-        // 1. Buscar el pedido
+    public void prepararDetalle(Long pedidoId, Long detalleId, Usuario usuario) throws ErrorServiceException {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .filter(p -> !Boolean.TRUE.equals(p.getEliminado()))
                 .orElseThrow(() -> new ErrorServiceException("Pedido no encontrado"));
 
-        // 2. Verificar que el pedido no esté en estado final
+        String estadoActual = pedido.getEstadoPedido().getDescripcion().toUpperCase();
+        if ("ENTREGADO".equals(estadoActual) || "CANCELADO".equals(estadoActual)) {
+            throw new ErrorServiceException("No se puede modificar un pedido en estado " + estadoActual);
+        }
+
+        DetallePedido detalle = detallePedidoRepository.findById(detalleId)
+                .filter(d -> !Boolean.TRUE.equals(d.getEliminado()))
+                .orElseThrow(() -> new ErrorServiceException("Detalle de pedido no encontrado"));
+
+        if (!detalle.getPedido().getId().equals(pedidoId)) {
+            throw new ErrorServiceException("El detalle no corresponde a este pedido");
+        }
+
+        if (Boolean.TRUE.equals(detalle.getPreparado())) {
+            throw new ErrorServiceException("Este ítem ya se encuentra preparado");
+        }
+
+        Mix mix = mixRepository.findById(detalle.getMix().getId())
+                .orElseThrow(() -> new ErrorServiceException("Mix no encontrado"));
+
+        if (mix.getStock() < detalle.getCantidad()) {
+            throw new ErrorServiceException("Stock insuficiente del mix '" + mix.getNombre() + "': "
+                    + "se requieren " + redondear(detalle.getCantidad()) + " kg y hay " + redondear(mix.getStock()) + " kg disponibles. "
+                    + "Registre una elaboración de este mix antes de marcarlo como preparado.");
+        }
+
+        // Descontar stock del mix
+        mix.actualizarStock(-detalle.getCantidad());
+        mixRepository.save(mix);
+
+        detalle.setPreparado(true);
+        detallePedidoRepository.save(detalle);
+
+        // Verificar si todos los detalles del pedido quedaron preparados
+        List<DetallePedido> detalles = detallePedidoRepository.findByPedidoId(pedidoId);
+        boolean todosPreparados = detalles.stream()
+                .filter(d -> !Boolean.TRUE.equals(d.getEliminado()))
+                .allMatch(d -> Boolean.TRUE.equals(d.getPreparado()));
+
+        if (todosPreparados && !"PREPARADO".equals(estadoActual)) {
+            EstadoPedido estadoPreparado = estadoPedidoRepository.findByDescripcionIgnoreCase("PREPARADO")
+                    .orElse(null);
+            if (estadoPreparado != null) {
+                pedido.setEstadoPedido(estadoPreparado);
+                pedidoRepository.save(pedido);
+                registrarHistorial(pedido, estadoPreparado, usuario);
+            }
+        }
+    }
+
+    /**
+     * Desmarca un detalle preparado (revierte el descuento de stock de Mix).
+     */
+    @Transactional
+    public void desmarcarDetalle(Long pedidoId, Long detalleId, Usuario usuario) throws ErrorServiceException {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .filter(p -> !Boolean.TRUE.equals(p.getEliminado()))
+                .orElseThrow(() -> new ErrorServiceException("Pedido no encontrado"));
+
+        String estadoActual = pedido.getEstadoPedido().getDescripcion().toUpperCase();
+        if ("ENTREGADO".equals(estadoActual) || "CANCELADO".equals(estadoActual)) {
+            throw new ErrorServiceException("No se puede modificar un pedido en estado " + estadoActual);
+        }
+
+        DetallePedido detalle = detallePedidoRepository.findById(detalleId)
+                .filter(d -> !Boolean.TRUE.equals(d.getEliminado()))
+                .orElseThrow(() -> new ErrorServiceException("Detalle de pedido no encontrado"));
+
+        if (!detalle.getPedido().getId().equals(pedidoId)) {
+            throw new ErrorServiceException("El detalle no corresponde a este pedido");
+        }
+
+        if (!Boolean.TRUE.equals(detalle.getPreparado())) {
+            return;
+        }
+
+        Mix mix = mixRepository.findById(detalle.getMix().getId())
+                .orElseThrow(() -> new ErrorServiceException("Mix no encontrado"));
+
+        // Restaurar stock del mix
+        mix.actualizarStock(detalle.getCantidad());
+        mixRepository.save(mix);
+
+        detalle.setPreparado(false);
+        detallePedidoRepository.save(detalle);
+
+        // Si el pedido estaba PREPARADO, vuelve a PENDIENTE
+        if ("PREPARADO".equals(estadoActual)) {
+            EstadoPedido estadoPendiente = estadoPedidoRepository.findByDescripcionIgnoreCase("PENDIENTE")
+                    .orElse(null);
+            if (estadoPendiente != null) {
+                pedido.setEstadoPedido(estadoPendiente);
+                pedidoRepository.save(pedido);
+                registrarHistorial(pedido, estadoPendiente, usuario);
+            }
+        }
+    }
+
+    /**
+     * Cambia el estado de un pedido (HU-14).
+     * Si pasa a PREPARADO, prepara automáticamente los detalles pendientes validando stock.
+     * Si pasa a CANCELADO, restaura el stock de los mixes que estaban preparados.
+     */
+    @Transactional
+    public void cambiarEstado(Long pedidoId, String nuevoEstadoDescripcion, Usuario usuario) throws ErrorServiceException {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .filter(p -> !Boolean.TRUE.equals(p.getEliminado()))
+                .orElseThrow(() -> new ErrorServiceException("Pedido no encontrado"));
+
         String estadoActual = pedido.getEstadoPedido().getDescripcion().toUpperCase();
         List<String> destinosPermitidos = TRANSICIONES_VALIDAS.getOrDefault(estadoActual, List.of());
 
@@ -141,7 +248,6 @@ public class PedidoService extends BaseService<Pedido, Long> {
             throw new ErrorServiceException("No se puede cambiar el estado de un pedido en estado " + estadoActual);
         }
 
-        // 3. Verificar que el nuevo estado sea válido para la transición
         String destino = nuevoEstadoDescripcion.toUpperCase();
         if (!destinosPermitidos.contains(destino)) {
             throw new ErrorServiceException(
@@ -149,37 +255,56 @@ public class PedidoService extends BaseService<Pedido, Long> {
                     ". Estados permitidos: " + String.join(", ", destinosPermitidos));
         }
 
-        // 4. Buscar el nuevo estado
         EstadoPedido nuevoEstado = estadoPedidoRepository.findByDescripcionIgnoreCase(destino)
                 .orElseThrow(() -> new ErrorServiceException("Estado '" + destino + "' no encontrado en el sistema"));
 
-        // 5. Si se cancela, restaurar stock de los mixes
-        if ("CANCELADO".equals(destino)) {
-            List<DetallePedido> detalles = detallePedidoRepository.findByPedidoId(pedidoId);
-            for (DetallePedido detalle : detalles) {
-                Mix mix = mixRepository.findById(detalle.getMix().getId()).get();
-                mix.actualizarStock(detalle.getCantidad());
-                mixRepository.save(mix);
+        List<DetallePedido> detalles = detallePedidoRepository.findByPedidoId(pedidoId);
+
+        // Si pasa a PREPARADO, preparar todos los detalles pendientes descontando stock
+        if ("PREPARADO".equals(destino)) {
+            for (DetallePedido det : detalles) {
+                if (!Boolean.TRUE.equals(det.getPreparado())) {
+                    Mix mix = mixRepository.findById(det.getMix().getId()).get();
+                    if (mix.getStock() < det.getCantidad()) {
+                        throw new ErrorServiceException("Stock insuficiente del mix '" + mix.getNombre() + "': "
+                                + "se requieren " + redondear(det.getCantidad()) + " kg y hay " + redondear(mix.getStock()) + " kg disponibles.");
+                    }
+                    mix.actualizarStock(-det.getCantidad());
+                    mixRepository.save(mix);
+                    det.setPreparado(true);
+                    detallePedidoRepository.save(det);
+                }
             }
         }
 
-        // 6. Actualizar el estado del pedido
+        // Si se CANCELA, restaurar stock solo de los que estaban preparados
+        if ("CANCELADO".equals(destino)) {
+            for (DetallePedido detalle : detalles) {
+                if (Boolean.TRUE.equals(detalle.getPreparado())) {
+                    Mix mix = mixRepository.findById(detalle.getMix().getId()).get();
+                    mix.actualizarStock(detalle.getCantidad());
+                    mixRepository.save(mix);
+                    detalle.setPreparado(false);
+                    detallePedidoRepository.save(detalle);
+                }
+            }
+        }
+
         pedido.setEstadoPedido(nuevoEstado);
         pedidoRepository.save(pedido);
+        registrarHistorial(pedido, nuevoEstado, usuario);
+    }
 
-        // 7. Registrar en el historial
+    private void registrarHistorial(Pedido pedido, EstadoPedido estado, Usuario usuario) {
         HistorialEstadoPedido historial = new HistorialEstadoPedido();
         historial.setPedido(pedido);
-        historial.setEstadoPedido(nuevoEstado);
+        historial.setEstadoPedido(estado);
         historial.setUsuario(usuario);
         historial.setFechaHora(LocalDateTime.now());
         historial.setEliminado(false);
         historialRepository.save(historial);
     }
 
-    /**
-     * Obtiene el historial de estados de un pedido.
-     */
     public List<HistorialEstadoPedido> obtenerHistorial(Long pedidoId) {
         return historialRepository.findByPedidoIdOrderByFechaHoraAsc(pedidoId);
     }

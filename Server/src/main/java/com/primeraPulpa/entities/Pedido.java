@@ -55,4 +55,30 @@ public class Pedido extends BaseEntity<Long> {
     public void setEliminado(Boolean eliminado) {
         this.eliminado = eliminado;
     }
+
+    public long getCantidadDetallesPreparados() {
+        if (detalles == null || detalles.isEmpty()) return 0;
+        return detalles.stream()
+                .filter(d -> !Boolean.TRUE.equals(d.getEliminado()))
+                .filter(d -> Boolean.TRUE.equals(d.getPreparado()))
+                .count();
+    }
+
+    public long getTotalDetalles() {
+        if (detalles == null || detalles.isEmpty()) return 0;
+        return detalles.stream()
+                .filter(d -> !Boolean.TRUE.equals(d.getEliminado()))
+                .count();
+    }
+
+    public int getPorcentajePreparado() {
+        long total = getTotalDetalles();
+        if (total == 0) return 0;
+        return (int) Math.round(((double) getCantidadDetallesPreparados() / total) * 100.0);
+    }
+
+    public boolean isCompletamentePreparado() {
+        long total = getTotalDetalles();
+        return total > 0 && getCantidadDetallesPreparados() == total;
+    }
 }

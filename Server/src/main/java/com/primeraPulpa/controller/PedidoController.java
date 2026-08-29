@@ -151,7 +151,7 @@ public class PedidoController {
             pedido.setDetalles(detalles);
 
             pedidoService.registrar(pedido);
-            redirectAttributes.addFlashAttribute("success", "Pedido registrado correctamente. Stock de mixes actualizado.");
+            redirectAttributes.addFlashAttribute("success", "Pedido registrado correctamente en estado PENDIENTE.");
         } catch (ErrorServiceException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
@@ -182,6 +182,44 @@ public class PedidoController {
             model.addAttribute("error", "Pedido no encontrado");
             return "error/404";
         }
+    }
+
+    // ── Preparar ítem individual del pedido ─────────────────────────────────
+    @PostMapping("/{pedidoId}/detalles/{detalleId}/preparar")
+    public String prepararDetalle(@PathVariable Long pedidoId,
+                                  @PathVariable Long detalleId,
+                                  @AuthenticationPrincipal User user,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
+            pedidoService.prepararDetalle(pedidoId, detalleId, usuario);
+            redirectAttributes.addFlashAttribute("success", "Ítem preparado exitosamente. Se descontó el stock de mix.");
+        } catch (ErrorServiceException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al procesar el ítem: " + e.getMessage());
+        }
+        return "redirect:/pedidos/" + pedidoId;
+    }
+
+    // ── Desmarcar ítem preparado (revierte descuento de stock) ──────────────
+    @PostMapping("/{pedidoId}/detalles/{detalleId}/desmarcar")
+    public String desmarcarDetalle(@PathVariable Long pedidoId,
+                                   @PathVariable Long detalleId,
+                                   @AuthenticationPrincipal User user,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
+            pedidoService.desmarcarDetalle(pedidoId, detalleId, usuario);
+            redirectAttributes.addFlashAttribute("success", "Se desmarcó el ítem y se restauró el stock de mix.");
+        } catch (ErrorServiceException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al desmarcar el ítem: " + e.getMessage());
+        }
+        return "redirect:/pedidos/" + pedidoId;
     }
 
     // ── Cambiar estado del pedido (HU-14) ────────────────────────────────────
