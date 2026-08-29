@@ -18,17 +18,20 @@ public class MixService extends BaseService<Mix, Long> {
     private final CostoAdicionalRepository costoAdicionalRepository;
     private final DetalleIngresoMPRepository detalleIngresoMPRepository;
     private final HistorialPrecioMixRepository historialPrecioRepository;
+    private final MateriaPrimaRepository materiaPrimaRepository;
 
     public MixService(MixRepository repository, DetallePedidoRepository detallePedidoRepository,
                       FormulaRepository formulaRepository, CostoAdicionalRepository costoAdicionalRepository,
                       DetalleIngresoMPRepository detalleIngresoMPRepository,
-                      HistorialPrecioMixRepository historialPrecioRepository) {
+                      HistorialPrecioMixRepository historialPrecioRepository,
+                      MateriaPrimaRepository materiaPrimaRepository) {
         super(repository);
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
         this.costoAdicionalRepository = costoAdicionalRepository;
         this.detalleIngresoMPRepository = detalleIngresoMPRepository;
         this.historialPrecioRepository = historialPrecioRepository;
+        this.materiaPrimaRepository = materiaPrimaRepository;
     }
 
     @Override
@@ -39,6 +42,13 @@ public class MixService extends BaseService<Mix, Long> {
         if (mix.getPrecioVenta() != null && mix.getPrecioVenta() < 0) {
             throw new ErrorServiceException("El precio de venta no puede ser negativo");
         }
+    }
+
+    @Override
+    protected void preAlta(Mix mix) throws ErrorServiceException {
+        mix.setStock(0.0);
+        mix.setCosto(0.0);
+        mix.setEliminado(false);
     }
 
     // HU-08: no se puede dar de baja un mix con pedidos pendientes asociados
@@ -143,18 +153,20 @@ public class MixService extends BaseService<Mix, Long> {
                 continue;
             }
             double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
-            MateriaPrima materiaPrima = detalle.getMateriaPrima();
-            materiaPrima.actualizarStock(-necesario);
-            consumirLotesFEFO(materiaPrima, necesario);
+            MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId())
+                    .orElse(detalle.getMateriaPrima());
+            mp.actualizarStock(-necesario);
+            materiaPrimaRepository.save(mp);
+            consumirLotesFEFO(mp, necesario);
         }
 
-        // 3) Aumentar el stock del mix (el mix llega detached → save hace merge)
-        mix.actualizarStock(cantidad);
-        repository.save(mix);
+        // 3) Aumentar el stock del mix
+        Mix mixEntidad = repository.findById(mix.getId()).orElse(mix);
+        mixEntidad.actualizarStock(cantidad);
+        repository.save(mixEntidad);
     }
 
     // Descuenta la cantidad necesaria de los lotes de la materia prima en orden FEFO
-    // (vence antes primero). Los lotes están dentro de la transacción → dirty checking.
     private void consumirLotesFEFO(MateriaPrima materiaPrima, double necesario) {
         List<DetalleIngresoMP> lotes = detalleIngresoMPRepository.findLotesDisponiblesFEFO(materiaPrima.getId());
         double pendiente = necesario;
@@ -168,6 +180,7 @@ public class MixService extends BaseService<Mix, Long> {
             }
             double aDescontar = Math.min(restante, pendiente);
             lote.setCantidadRestante(restante - aDescontar);
+            detalleIngresoMPRepository.save(lote);
             pendiente -= aDescontar;
         }
     }

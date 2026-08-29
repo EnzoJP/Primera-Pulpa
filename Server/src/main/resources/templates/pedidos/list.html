@@ -12,7 +12,7 @@
                 <span>Ventas</span>
             </div>
             <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Pedidos de Clientes</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Registro de pedidos y despachos. El stock de mixes se descuenta al confirmar.</p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Registro y seguimiento de pedidos. Puedes preparar los ítems individualmente para descontar stock.</p>
         </div>
 
         <a th:href="@{/pedidos/nuevo}"
@@ -47,7 +47,7 @@
         </select>
 
         <button type="submit"
-                class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity cursor-pointer">
             <span class="material-symbols-outlined text-[18px]">search</span>
             Buscar
         </button>
@@ -64,10 +64,10 @@
                 <tr>
                     <th class="py-3 px-4 font-normal w-20 text-center">ID</th>
                     <th class="py-3 px-4 font-normal w-auto">Cliente</th>
-                    <th class="py-3 px-4 font-normal w-32 text-center">Fecha</th>
-                    <th class="py-3 px-4 font-normal w-36 text-center">Estado</th>
-                    <th class="py-3 px-4 font-normal w-32 text-center">Items</th>
-                    <th class="py-3 px-4 font-normal w-40 text-right">Registrado por</th>
+                    <th class="py-3 px-4 font-normal w-28 text-center">Fecha</th>
+                    <th class="py-3 px-4 font-normal w-32 text-center">Estado</th>
+                    <th class="py-3 px-4 font-normal w-36 text-center">Progreso Armado</th>
+                    <th class="py-3 px-4 font-normal w-36 text-right">Registrado por</th>
                     <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-32 text-right">Total</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
@@ -84,7 +84,7 @@
                     <td class="py-3.5 px-4 font-medium text-primary">
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-outlined text-outline text-[20px]">storefront</span>
-                            <span th:text="${item.cliente?.nombre ?: '—'}">Cliente</span>
+                            <span class="font-semibold" th:text="${item.cliente?.nombre ?: '—'}">Cliente</span>
                         </div>
                     </td>
 
@@ -100,15 +100,25 @@
                               th:text="${item.estadoPedido?.descripcion ?: '—'}">PENDIENTE</span>
                     </td>
 
-                    <!-- Items (cantidad de detalles) -->
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant">
-                        <span class="inline-block px-2.5 py-0.5 rounded bg-surface-container text-xs font-semibold"
-                              th:text="${item.detalles != null ? item.detalles.size() + ' mix(es)' : '0 mixes'}">0 mixes</span>
+                    <!-- Progreso de Armado (ej: 1/3) -->
+                    <td class="py-3.5 px-4 text-center">
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold font-data-tabular"
+                                  th:classappend="${item.porcentajePreparado == 100} ? 'bg-emerald-100 text-emerald-800' : (${item.porcentajePreparado > 0} ? 'bg-blue-100 text-blue-800' : 'bg-surface-container text-on-surface-variant')">
+                                <span th:text="${item.cantidadDetallesPreparados} + ' / ' + ${item.totalDetalles}">0 / 0</span>
+                                <span class="text-[10px]" th:text="'(' + ${item.porcentajePreparado} + '%)'">(0%)</span>
+                            </span>
+                            <div class="w-16 bg-surface-container rounded-full h-1.5 overflow-hidden">
+                                <div class="h-1.5 rounded-full transition-all duration-300"
+                                     th:classappend="${item.porcentajePreparado == 100} ? 'bg-emerald-600' : 'bg-primary'"
+                                     th:style="'width: ' + ${item.porcentajePreparado} + '%'"></div>
+                            </div>
+                        </div>
                     </td>
 
                     <!-- Registrado por -->
                     <td class="py-3.5 px-4 text-right text-on-surface-variant">
-                        <span th:text="${item.usuario?.nombre ?: '—'}">Usuario</span>
+                        <span class="truncate block" th:text="${item.usuario?.nombre ?: '—'}">Usuario</span>
                     </td>
 
                     <!-- Total (solo ADMIN) -->
@@ -127,7 +137,7 @@
                                 <span class="material-symbols-outlined chevron transition-transform duration-200">chevron_right</span>
                             </button>
                             <a th:href="@{/pedidos/{id}(id=${item.id})}"
-                               title="Ver Detalle"
+                               title="Ver Detalle y Armado"
                                class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                             </a>
@@ -137,7 +147,7 @@
                                   onsubmit="return confirm('¿Seguro que deseas eliminar este pedido?');">
                                 <button type="submit"
                                         title="Eliminar"
-                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors cursor-pointer">
                                     <span class="material-symbols-outlined text-[20px]">delete</span>
                                 </button>
                             </form>
@@ -147,44 +157,56 @@
 
                 <!-- Desglose desplegable del pedido -->
                 <tr th:id="'pedido-detalle-' + ${st.index}" class="bg-surface-container-low" hidden>
-                    <td colspan="8" class="px-4 py-2.5">
+                    <td colspan="8" class="px-4 py-3">
                         <table class="w-full text-left border-collapse">
                             <thead class="text-on-surface-variant font-label-caps text-label-caps border-b border-outline-variant/20">
                             <tr>
                                 <th class="py-1.5 pr-4 font-normal">Mix</th>
-                                <th class="py-1.5 px-4 font-normal w-32 text-right">Cantidad (kg)</th>
-                                <th sec:authorize="hasRole('ADMIN')" class="py-1.5 px-4 font-normal w-40 text-right">Precio unit.</th>
-                                <th sec:authorize="hasRole('ADMIN')" class="py-1.5 pl-4 font-normal w-36 text-right">Subtotal</th>
+                                <th class="py-1.5 px-4 font-normal w-32 text-right">Cantidad</th>
+                                <th sec:authorize="hasRole('ADMIN')" class="py-1.5 px-4 font-normal w-36 text-right">Precio unit.</th>
+                                <th sec:authorize="hasRole('ADMIN')" class="py-1.5 px-4 font-normal w-36 text-right">Subtotal</th>
+                                <th class="py-1.5 pl-4 font-normal w-36 text-center">Estado Ítem</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant/10">
                             <tr th:each="d : ${item.detalles}">
                                 <td class="py-2 pr-4 font-medium text-primary">
                                     <div class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-outline text-[18px]">inventory_2</span>
+                                        <span class="material-symbols-outlined text-[18px]"
+                                              th:classappend="${d.preparado} ? 'text-emerald-600' : 'text-outline'">inventory_2</span>
                                         <span th:text="${d.mix?.nombre ?: '—'}">Mix Frutos Secos Clásico</span>
                                     </div>
                                 </td>
-                                <td class="py-2 px-4 text-right font-data-tabular text-data-tabular">
+                                <td class="py-2 px-4 text-right font-data-tabular text-data-tabular font-medium">
                                     <span th:text="${#numbers.formatDecimal(d.cantidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                                    <span class="text-xs text-on-surface-variant">kg</span>
                                 </td>
                                 <td sec:authorize="hasRole('ADMIN')" class="py-2 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
                                     <span class="text-xs mr-0.5">$</span>
                                     <span th:text="${#numbers.formatDecimal(d.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                                 </td>
-                                <td sec:authorize="hasRole('ADMIN')" class="py-2 pl-4 text-right font-data-tabular text-data-tabular font-medium">
+                                <td sec:authorize="hasRole('ADMIN')" class="py-2 px-4 text-right font-data-tabular text-data-tabular font-medium">
                                     <span class="text-on-surface-variant text-xs mr-0.5">$</span>
                                     <span th:text="${#numbers.formatDecimal(d.cantidad * d.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                                </td>
+                                <td class="py-2 pl-4 text-center">
+                                    <span th:if="${d.preparado}" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                                        <span class="material-symbols-outlined text-[14px]">check</span> Listo
+                                    </span>
+                                    <span th:unless="${d.preparado}" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                                        <span class="material-symbols-outlined text-[14px]">hourglass_top</span> Pendiente
+                                    </span>
                                 </td>
                             </tr>
                             </tbody>
                             <tfoot sec:authorize="hasRole('ADMIN')">
                             <tr class="border-t border-outline-variant/20">
-                                <td class="pt-2 font-label-caps text-label-caps text-on-surface-variant uppercase" colspan="3">Total a pagar</td>
+                                <td class="pt-2 font-label-caps text-label-caps text-on-surface-variant uppercase" colspan="3">Total del Pedido</td>
                                 <td class="pt-2 text-right font-data-tabular text-data-tabular font-bold text-primary">
                                     <span class="text-on-surface-variant text-xs mr-0.5">$</span>
                                     <span th:text="${#numbers.formatDecimal(totalPorPedido[item.id], 1, 'POINT', 2, 'COMMA')}">0,00</span>
                                 </td>
+                                <td></td>
                             </tr>
                             </tfoot>
                         </table>
@@ -220,41 +242,45 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- Paginación -->
-    <div th:if="${totalPages > 1}" class="flex items-center justify-between pt-1">
-        <span class="font-body-sm text-body-sm text-on-surface-variant"
-              th:text="'Página ' + ${page + 1} + ' de ' + ${totalPages}"></span>
-        <div class="flex items-center gap-sm">
-            <a th:if="${page > 0}"
-               th:href="@{/pedidos(page=${page - 1}, fecha=${fechaFiltro}, estado=${estadoFiltro})}"
-               class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-                Anterior
-            </a>
-            <a th:if="${page < totalPages - 1}"
-               th:href="@{/pedidos(page=${page + 1}, fecha=${fechaFiltro}, estado=${estadoFiltro})}"
-               class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
-                Siguiente
-                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </a>
+        <!-- Paginación -->
+        <div th:if="${totalPages > 1}"
+             class="flex items-center justify-between px-md py-sm border-t border-outline-variant/20 bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm">
+            <span th:text="'Página ' + (${page} + 1) + ' de ' + ${totalPages}">Página 1 de 1</span>
+            <div class="flex gap-1">
+                <a th:if="${page > 0}"
+                   th:href="@{/pedidos(page=${page - 1}, fecha=${fechaFiltro != null ? #temporals.format(fechaFiltro, 'yyyy-MM-dd') : ''}, estado=${estadoFiltro})}"
+                   class="px-3 py-1 bg-surface-container rounded hover:bg-surface-container-highest transition-colors">
+                    Anterior
+                </a>
+                <a th:if="${page + 1 < totalPages}"
+                   th:href="@{/pedidos(page=${page + 1}, fecha=${fechaFiltro != null ? #temporals.format(fechaFiltro, 'yyyy-MM-dd') : ''}, estado=${estadoFiltro})}"
+                   class="px-3 py-1 bg-surface-container rounded hover:bg-surface-container-highest transition-colors">
+                    Siguiente
+                </a>
+            </div>
         </div>
     </div>
 
+    <!-- Script de toggle colocado dentro del fragmento para ser renderizado por Thymeleaf -->
     <script>
-        function togglePedido(btn, index) {
-            const detalle = document.getElementById('pedido-detalle-' + index);
+        function togglePedido(btn, idx) {
+            const row = document.getElementById('pedido-detalle-' + idx);
+            if (!row) return;
             const chevron = btn.querySelector('.chevron');
-            if (detalle.hidden) {
-                detalle.hidden = false;
-                chevron.style.transform = 'rotate(90deg)';
+            const isHidden = row.hasAttribute('hidden') || row.style.display === 'none' || window.getComputedStyle(row).display === 'none';
+            if (isHidden) {
+                row.removeAttribute('hidden');
+                row.style.display = 'table-row';
+                if (chevron) chevron.classList.add('rotate-90');
             } else {
-                detalle.hidden = true;
-                chevron.style.transform = '';
+                row.style.display = 'none';
+                row.setAttribute('hidden', '');
+                if (chevron) chevron.classList.remove('rotate-90');
             }
         }
     </script>
+
 </div>
 
 </body>
