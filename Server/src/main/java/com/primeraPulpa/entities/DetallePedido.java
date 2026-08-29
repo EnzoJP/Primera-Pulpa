@@ -3,6 +3,7 @@ package com.primeraPulpa.entities;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class DetallePedido extends BaseEntity<Long> {
 
     private double cantidad;
@@ -22,6 +24,14 @@ public class DetallePedido extends BaseEntity<Long> {
 
     @ManyToOne
     private Mix mix;
+
+    // Indica si este mix específico ya fue elaborado/preparado y descontado del stock de Mix
+    @Builder.Default
+    private Boolean preparado = false;
+
+    public Boolean getPreparado() {
+        return this.preparado != null ? this.preparado : false;
+    }
 
     @Override
     public Long getId() {
