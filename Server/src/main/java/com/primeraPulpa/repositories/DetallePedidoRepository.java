@@ -18,7 +18,6 @@ public interface DetallePedidoRepository extends BaseRepository<DetallePedido, L
         "JOIN dp.pedido p " +
         "WHERE p.eliminado = false AND p.estadoPedido.descripcion = 'PENDIENTE' " +
         "AND dp.eliminado = false " +
-        "AND (dp.preparado = false OR dp.preparado IS NULL) " +
         "GROUP BY dp.mix.id")
     List<Object[]> sumCantidadPendienteByMixId();
 }

@@ -20,18 +20,21 @@ public class MixService extends BaseService<Mix, Long> {
     private final DetalleIngresoMPRepository detalleIngresoMPRepository;
     private final HistorialPrecioMixRepository historialPrecioRepository;
     private final CostoAdicionalRepository costoAdicionalRepository;
+    private final MateriaPrimaRepository materiaPrimaRepository;
 
     public MixService(MixRepository repository, DetallePedidoRepository detallePedidoRepository,
                       FormulaRepository formulaRepository,
                       DetalleIngresoMPRepository detalleIngresoMPRepository,
                       HistorialPrecioMixRepository historialPrecioRepository,
-                      CostoAdicionalRepository costoAdicionalRepository) {
+                      CostoAdicionalRepository costoAdicionalRepository,
+                      MateriaPrimaRepository materiaPrimaRepository) {
         super(repository);
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
         this.detalleIngresoMPRepository = detalleIngresoMPRepository;
         this.historialPrecioRepository = historialPrecioRepository;
         this.costoAdicionalRepository = costoAdicionalRepository;
+        this.materiaPrimaRepository = materiaPrimaRepository;
     }
 
     @Override
@@ -51,6 +54,9 @@ public class MixService extends BaseService<Mix, Long> {
     @Override
     protected void preAlta(Mix mix) throws ErrorServiceException {
         normalizarPresentacion(mix);
+        mix.setStock(0.0);
+        mix.setCosto(0.0);
+        mix.setEliminado(false);
     }
 
     @Override
@@ -288,6 +294,7 @@ public class MixService extends BaseService<Mix, Long> {
             }
             double aDescontar = Math.min(restante, pendiente);
             lote.setCantidadRestante(restante - aDescontar);
+            detalleIngresoMPRepository.save(lote);
             pendiente -= aDescontar;
         }
     }

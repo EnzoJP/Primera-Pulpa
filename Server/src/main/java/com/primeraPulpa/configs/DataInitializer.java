@@ -92,10 +92,10 @@ public class DataInitializer {
             logger.info("Usuarios creados: admin@example.com, empleado@example.com, maria@example.com y lucas@example.com (desactivado).");
 
             // 4. Costos Adicionales
-            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Bolsa Doypack 500g zipper").valor(180.0).build());
-            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Etiqueta Autoadhesiva Full Color").valor(50.0).build());
-            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Caja Master Corrugada x 12u").valor(350.0).build());
-            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Cinta de Embalaje y Termosellado").valor(30.0).build());
+            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Bolsa Doypack 1Kg zipper").valor(250.0).presentacion(PresentacionCosto.UNO_KG).build());
+            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Bolsa 5Kg zipper").valor(500.0).presentacion(PresentacionCosto.CINCO_KG).build());
+            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Etiqueta Autoadhesiva Full Color").presentacion(PresentacionCosto.TODOS).valor(100.0).build());
+            costoAdicionalRepository.save(CostoAdicional.builder().descripcion("Costo Laboral").valor(1500.0).presentacion(PresentacionCosto.TODOS).build());
             logger.info("Costos adicionales de empaque cargados.");
 
             // 5. Materias Primas
