@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class MixService extends BaseService<Mix, Long> {
@@ -62,6 +63,29 @@ public class MixService extends BaseService<Mix, Long> {
     @Override
     protected void preModificacion(Mix mix) throws ErrorServiceException {
         normalizarPresentacion(mix);
+    }
+
+    // El formulario de edición no incluye stock, costo ni estado de baja:
+    // se conservan los valores persistidos para que la edición no los pise (ej. el stock pasaba a 0).
+    @Override
+    public Optional<Mix> modificar(Long id, Mix entidadNueva) throws ErrorServiceException {
+        try {
+            validar(entidadNueva);
+            entidadNueva.setId(id);
+            preModificacion(entidadNueva);
+            return repository.findById(id).map(entidad -> {
+                entidadNueva.setStock(entidad.getStock());
+                entidadNueva.setCosto(entidad.getCosto());
+                entidadNueva.setEliminado(entidad.getEliminado());
+                Mix actualizado = repository.save(entidadNueva);
+                postModificacion(actualizado);
+                return actualizado;
+            });
+        } catch (ErrorServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ErrorServiceException("Error de Sistemas");
+        }
     }
 
     private void normalizarPresentacion(Mix mix) {
@@ -269,14 +293,17 @@ public class MixService extends BaseService<Mix, Long> {
                 continue;
             }
             double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
-            MateriaPrima materiaPrima = detalle.getMateriaPrima();
-            materiaPrima.actualizarStock(-necesario);
-            consumirLotesFEFO(materiaPrima, necesario);
+            MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId())
+                    .orElse(detalle.getMateriaPrima());
+            mp.actualizarStock(-necesario);
+            materiaPrimaRepository.save(mp);
+            consumirLotesFEFO(mp, necesario);
         }
 
-        // 3) Aumentar el stock del mix (el mix llega detached → save hace merge)
-        mix.actualizarStock(cantidad);
-        repository.save(mix);
+        // 3) Aumentar el stock del mix
+        Mix mixEntidad = repository.findById(mix.getId()).orElse(mix);
+        mixEntidad.actualizarStock(cantidad);
+        repository.save(mixEntidad);
     }
 
     // Descuenta la cantidad necesaria de los lotes de la materia prima en orden FEFO
