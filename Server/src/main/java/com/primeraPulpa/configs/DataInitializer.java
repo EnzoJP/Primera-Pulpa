@@ -211,6 +211,7 @@ public class DataInitializer {
             mixClasico.setNombre("Mix Clásico Energético");
             mixClasico.setPrecioVenta(14500.0);
             mixClasico.setStock(25.0);
+            mixClasico.setCantidadPorUnidad(1.0);
             mixClasico.setEliminado(false);
             mixRepository.save(mixClasico);
 
@@ -229,6 +230,7 @@ public class DataInitializer {
             mixFitness.setNombre("Mix Fitness & Sport");
             mixFitness.setPrecioVenta(11500.0);
             mixFitness.setStock(30.0);
+            mixFitness.setCantidadPorUnidad(1.0);
             mixFitness.setEliminado(false);
             mixRepository.save(mixFitness);
             logger.info("Mixes creados en catálogo con stock cuadrado con elaboraciones y pedidos.");
