@@ -293,6 +293,7 @@ public class PedidoController {
         }
         try {
             model.addAttribute("mixes", mixService.listarActivos());
+            model.addAttribute("cantidadesPendientes", mixService.cantidadesPendientesPorMix());
         } catch (ErrorServiceException e) {
             model.addAttribute("mixes", List.of());
         }

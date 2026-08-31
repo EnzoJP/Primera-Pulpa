@@ -102,8 +102,9 @@
                                         class="w-full sm:w-56 md:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
                                     <option value="">Seleccione un mix...</option>
                                     <option th:each="m : ${mixes}"
+                                            th:with="pend=${cantidadesPendientes[m.id] ?: 0.0}"
                                             th:value="${m.id}"
-                                            th:data-stock="${m.stock}"
+                                            th:data-stock="${m.stock - pend}"
                                             th:data-precio="${m.precioVenta}"
                                             th:data-unidad="${m.cantidadPorUnidadOrDefault}"
                                             th:text="${m.nombre}">Mix</option>
@@ -167,6 +168,7 @@
 
     <script th:inline="javascript">
         const mixes = /*[[${mixes}]]*/ [];
+        const cantidadesPendientes = /*[[${cantidadesPendientes}]]*/ {};
         let contadorFilas = 0;
         let modo = 'paquete';
 
@@ -179,7 +181,8 @@
             let opts = '<option value="">Seleccione un mix...</option>';
             mixes.forEach(m => {
                 const unidad = (m.cantidadPorUnidadOrDefault && m.cantidadPorUnidadOrDefault > 0) ? m.cantidadPorUnidadOrDefault : 1;
-                opts += `<option value="${m.id}" data-stock="${m.stock}" data-precio="${m.precioVenta || ''}" data-unidad="${unidad}">${m.nombre}</option>`;
+                const libre = (m.stock || 0) - (cantidadesPendientes[m.id] || 0);
+                opts += `<option value="${m.id}" data-stock="${libre}" data-precio="${m.precioVenta || ''}" data-unidad="${unidad}">${m.nombre}</option>`;
             });
             return opts;
         }

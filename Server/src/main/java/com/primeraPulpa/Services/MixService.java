@@ -375,6 +375,26 @@ public class MixService extends BaseService<Mix, Long> {
     }
 
     /**
+     * Devuelve un mapa mixId → cantidad total PEDIDA (comprometida) en pedidos
+     * activos no despachados (PENDIENTE o PREPARADO). Incluye ítems preparados y
+     * pendientes. Se muestra en una columna propia del listado de mixes y es
+     * independiente del stock (el stock libre ya no incluye lo preparado).
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, Double> cantidadesPedidasPorMix() {
+        List<Object[]> resultados = detallePedidoRepository.sumCantidadPedidaByMixId();
+        Map<Long, Double> mapa = new HashMap<>();
+        for (Object[] fila : resultados) {
+            Long mixId = (Long) fila[0];
+            Double total = (Double) fila[1];
+            if (mixId != null && total != null) {
+                mapa.put(mixId, redondear(total));
+            }
+        }
+        return mapa;
+    }
+
+    /**
      * Registra un cambio de precio de venta en el historial (HU-8).
      */
     @Transactional

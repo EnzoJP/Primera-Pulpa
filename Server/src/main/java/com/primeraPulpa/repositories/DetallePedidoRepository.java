@@ -21,4 +21,16 @@ public interface DetallePedidoRepository extends BaseRepository<DetallePedido, L
         "AND (dp.preparado = false OR dp.preparado IS NULL) " +
         "GROUP BY dp.mix.id")
     List<Object[]> sumCantidadPendienteByMixId();
+
+    // Cantidad total PEDIDA (comprometida) por mix: todos los kg de detalles activos
+    // en pedidos activos NO despachados (PENDIENTE o PREPARADO). Excluye ENTREGADO y
+    // CANCELADO. Incluye tanto los ítems ya preparados como los pendientes.
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT dp.mix.id, SUM(dp.cantidad) FROM DetallePedido dp " +
+        "JOIN dp.pedido p " +
+        "WHERE p.eliminado = false AND dp.eliminado = false " +
+        "AND (p.estadoPedido.descripcion IS NULL OR " +
+        "     (p.estadoPedido.descripcion <> 'ENTREGADO' AND p.estadoPedido.descripcion <> 'CANCELADO')) " +
+        "GROUP BY dp.mix.id")
+    List<Object[]> sumCantidadPedidaByMixId();
 }

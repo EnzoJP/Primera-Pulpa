@@ -55,6 +55,7 @@ public class MixController extends BaseController<Mix, Long> {
                 activos = filtrarPorParametros(activos, params);
             }
             Map<Long, Double> pendientes = service.cantidadesPendientesPorMix();
+            Map<Long, Double> pedidas = service.cantidadesPedidasPorMix();
 
             // Verificar si algún mix tiene stock insuficiente para cubrir pedidos pendientes
             boolean hayStockInsuficiente = activos.stream().anyMatch(m -> {
@@ -65,6 +66,7 @@ public class MixController extends BaseController<Mix, Long> {
             cargarAtributosBase(model);
             model.addAttribute("items", activos);
             model.addAttribute("cantidadesPendientes", pendientes);
+            model.addAttribute("cantidadesPedidas", pedidas);
             model.addAttribute("hayStockInsuficiente", hayStockInsuficiente);
             return vistaListado();
         } catch (ErrorServiceException e) {

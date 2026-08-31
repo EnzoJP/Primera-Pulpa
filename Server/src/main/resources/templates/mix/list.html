@@ -60,7 +60,8 @@
                 <tr>
                     <th class="py-3 px-4 font-normal w-16 text-center">ID</th>
                     <th class="py-3 px-4 font-normal w-auto">Nombre del Mix</th>
-                    <th class="py-3 px-4 font-normal w-40 text-right">Cantidad en Stock</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Stock Disponible</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right">Cantidad Pedido</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Estado</th>
                     <th class="py-3 px-4 font-normal w-40 text-center">Presentación</th>
                     <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-36 text-right">Precio x Unidad</th>
@@ -71,83 +72,108 @@
 
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                 <tr th:each="item : ${items}"
+                    th:with="libre=${item.stock - (cantidadesPendientes[item.id] ?: 0)}, pedido=${cantidadesPedidas[item.id] ?: 0}, porElaborar=${pedido > item.stock ? (pedido - item.stock) : 0}"
                     th:data-nombre="${item.nombre != null ? #strings.toLowerCase(item.nombre) : ''}"
-                    th:data-stock="${item.stock}"
+                    th:data-stock="${libre}"
                     th:data-pendiente="${cantidadesPendientes[item.id] ?: 0}"
+                    th:data-pedido="${pedido}"
                     class="mix-row transition-colors group"
-                    th:classappend="${item.stock < 0} ? 'bg-error-container/20 text-on-error-container font-medium' : (${item.stock == 0} ? 'bg-surface-container/60 text-outline' : 'hover:bg-surface-container-low')">
+                    th:classappend="${libre < 0} ? 'bg-error-container/20 text-on-error-container font-medium' : (${libre == 0} ? 'bg-surface-container/60 text-outline' : 'hover:bg-surface-container-low')">
 
                     <!-- ID -->
                     <td data-label="ID" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular font-medium"
-                        th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')"
+                        th:classappend="${libre < 0} ? 'text-error' : (${libre == 0} ? 'text-outline' : 'text-on-surface-variant')"
                         th:text="${item.id}">#1</td>
 
                     <!-- Nombre del Mix -->
                     <td data-label="Nombre" class="py-3.5 px-4 font-medium"
-                        th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-primary')">
+                        th:classappend="${libre < 0} ? 'text-error' : (${libre == 0} ? 'text-outline' : 'text-primary')">
                         <div class="flex items-center gap-2 truncate">
                             <span class="material-symbols-outlined text-[20px] flex-shrink-0 !hidden md:!inline-flex"
-                                  th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-outline')">blender</span>
+                                  th:classappend="${libre < 0} ? 'text-error' : (${libre == 0} ? 'text-outline' : 'text-outline')">blender</span>
                             <span class="truncate" th:text="${item.nombre}">Mix Clásico</span>
                         </div>
                     </td>
 
                     <!-- Cantidad en Stock -->
 
-                    <td data-label="Cantidad en stock" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                    <td data-label="Stock Disponible" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <div class="flex flex-col items-end gap-0.5">
 
-                            <!-- Valor principal del stock -->
+                            <!-- Valor principal del stock (libre) -->
                             <div class="text-base font-semibold">
                                 <!-- Menor a 0 -->
-                                <span th:if="${item.stock < 0}" class="text-error font-bold inline-flex items-center justify-end gap-1">
+                                <span th:if="${libre < 0}" class="text-error font-bold inline-flex items-center justify-end gap-1">
                                 <span class="material-symbols-outlined text-[16px]">priority_high</span>
-                                <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">-1,00</span>
+                                <span th:text="${#numbers.formatDecimal(libre, 1, 'POINT', 2, 'COMMA')}">-1,00</span>
                                 <span class="text-xs text-error/80 ml-0.5">kg</span>
                                  </span>
 
                                 <!-- Igual a 0 -->
-                                <span th:if="${item.stock == 0}" class="text-outline">
+                                <span th:if="${libre == 0}" class="text-outline">
                                 <span>0,00</span>
                                 <span class="text-xs ml-0.5">kg</span>
                                 </span>
 
                                 <!-- Mayor a 0 -->
-                                <span th:if="${item.stock > 0}" class="text-primary font-bold">
-                                <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">20,00</span>
+                                <span th:if="${libre > 0}" class="text-primary font-bold">
+                                <span th:text="${#numbers.formatDecimal(libre, 1, 'POINT', 2, 'COMMA')}">20,00</span>
                                 <span class="text-xs text-on-surface-variant font-normal ml-0.5">kg</span>
                                 </span>
                             </div>
 
-                            <!-- Badge de Pedidos Pendientes -->
-                            <div th:if="${cantidadesPendientes[item.id] != null and cantidadesPendientes[item.id] > 0}"
-                                 class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-900 border border-amber-300/60 text-[10px] font-medium leading-none mt-0.5">
-                                <span class="material-symbols-outlined text-[12px] text-amber-700">shopping_cart</span>
-                                <span th:text="${#numbers.formatDecimal(cantidadesPendientes[item.id], 1, 'POINT', 2, 'COMMA') + ' kg pendientes'}">10,00 kg pendientes</span>
-                            </div>
 
+
+                        </div>
+                    </td>
+
+                    <!-- Cantidad Pedido (comprometida en pedidos activos no despachados) -->
+                    <td data-label="Cantidad pedido" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                        <div class="flex flex-col items-end gap-0.5">
+                            <span th:if="${pedido > 0}"
+                                  class="inline-flex items-center justify-end gap-1 text-amber-700 font-semibold">
+                                <span class="material-symbols-outlined text-[16px]">shopping_cart</span>
+                                <span th:text="${#numbers.formatDecimal(pedido, 1, 'POINT', 2, 'COMMA')}">10,00</span>
+                                <span class="text-xs font-normal text-on-surface-variant ml-0.5">kg</span>
+                            </span>
+                            <span th:if="${pedido == 0}" class="text-on-surface-variant">—</span>
+
+                            <!-- Cantidad necesaria a elaborar para cubrir pedidos (falta stock libre)
+                            <span th:if="${porElaborar > 0}"
+                                  class="inline-flex items-center justify-end gap-0.5 text-error text-xs font-semibold mt-0.5">
+                                <span class="material-symbols-outlined text-[14px]">production_quantity_limits</span>
+                                <span>por elaborar</span>
+                                <span th:text="${#numbers.formatDecimal(porElaborar, 1, 'POINT', 2, 'COMMA')}">5,00</span>
+                                <span class="font-normal">kg</span>
+                            </span>-->
                         </div>
                     </td>
 
                     <!-- Estado -->
                     <td data-label="Estado" class="py-3.5 px-4 text-center">
-                        <span th:if="${item.stock < 0}"
+                        <span th:if="${libre < 0}"
                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-error text-on-error font-bold tracking-wider">
                             Negativo
                         </span>
-                        <span th:if="${item.stock == 0}"
+                        <span th:if="${libre == 0}"
                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-outline-variant/30 text-outline font-medium tracking-wider">
                             Sin Stock
                         </span>
-                        <span th:if="${item.stock > 0}"
+                        <span th:if="${libre > 0}"
                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-secondary-container text-on-secondary-container font-semibold tracking-wider">
                             Disponible
                         </span>
+
+                        <span class="inline-flex items-center justify-end gap-0.5 text-xs mt-0.5">
+                                <span>total en local</span>
+                                <span th:text="${#numbers.formatDecimal(libre+pedido, 0, 'POINT', 0, 'COMMA')}">0,00</span>
+                                <span class="font-normal">kg</span>
+                         </span>
                     </td>
 
                     <!-- Presentación -->
                     <td data-label="Presentación" class="py-3.5 px-4 text-center font-body-sm text-body-sm text-on-surface-variant"
-                        th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : '')">
+                        th:classappend="${libre < 0} ? 'text-error' : (${libre == 0} ? 'text-outline' : '')">
                         <span th:text="${#numbers.formatDecimal(item.cantidadPorUnidadOrDefault, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span>
                     </td>
 
@@ -201,7 +227,7 @@
 
                 <!-- Estado Vacío del Backend -->
                 <tr th:if="${#lists.isEmpty(items)}">
-                    <td colspan="8" class="py-12 px-4 text-center">
+                    <td colspan="9" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">inventory_2</span>
                             <p class="font-body-md text-body-md">No hay mixes registrados en el catálogo.</p>
@@ -214,7 +240,7 @@
 
                 <!-- Sin coincidencias en la búsqueda -->
                 <tr id="fila-vacia" class="hidden">
-                    <td colspan="8" class="py-12 px-4 text-center">
+                    <td colspan="9" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">search</span>
                             <p class="font-body-md text-body-md">No se encontraron mixes que coincidan con la búsqueda.</p>
@@ -223,6 +249,36 @@
                 </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Leyenda: Stock vs Cantidad Pedido -->
+    <div class="bg-surface-container-low rounded-xl p-md border border-outline-variant/20">
+        <div class="flex items-start gap-2 text-on-surface-variant">
+            <span class="material-symbols-outlined text-outline text-[18px] mt-0.5">info</span>
+            <div class="font-body-sm text-body-sm space-y-1">
+                <p class="font-medium text-on-surface">Cómo leer Stock y Cantidad Pedido de cada mix</p>
+                <p>
+                    <span class="font-semibold text-on-surface">Stock Disponible</span> es la cantidad
+                    <span class="font-semibold">libre / disponible</span> del mix: la que <span class="font-medium">no
+                    está reservada</span> para ningún pedido. Se descuenta lo ya preparado y también lo
+                    <span class="font-medium">pedido pendiente</span> (aún no preparado). Si es negativa, hay más
+                    comprometido que stock.
+                </p>
+                <p>
+                    <span class="font-semibold text-on-surface">Cantidad Pedido</span> es la cantidad de mix
+                    <span class="font-semibold">comprometida</span> en pedidos activos (PENDIENTE y PREPARADO) que
+                    todavía no se despachó. Se excluyen los pedidos ENTREGADO y CANCELADO.
+                </p>
+                <p>
+                    <span class="font-semibold text-error">Por elaborar</span> (en rojo bajo la Cantidad Pedido) es la
+                    cantidad que <span class="font-medium">falta producir</span> para cubrir los pedidos: aparece
+                    cuando lo pedido supera el stock físico. Sería igual a <span class="font-mono">pedido − stock</span>.
+                </p>
+                <p>
+                    Relación: <span class="font-medium">Stock (libre) + Pedido = capacidad total sin pedidos</span>.
+                </p>
+            </div>
         </div>
     </div>
 
