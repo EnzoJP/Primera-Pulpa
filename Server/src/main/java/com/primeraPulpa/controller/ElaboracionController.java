@@ -171,7 +171,9 @@ public class ElaboracionController {
 
     private void cargarMixes(Model model) {
         try {
-            model.addAttribute("mixes", mixService.listarActivos());
+            model.addAttribute("mixes", mixService.listarActivos().stream()
+                    .sorted(Mix.ordenarPorPresentacion())
+                    .toList());
         } catch (ErrorServiceException e) {
             model.addAttribute("mixes", List.of());
         }

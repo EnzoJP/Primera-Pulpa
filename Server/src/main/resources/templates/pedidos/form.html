@@ -107,7 +107,7 @@
                                             th:data-stock="${m.stock - pend}"
                                             th:data-precio="${m.precioVenta}"
                                             th:data-unidad="${m.cantidadPorUnidadOrDefault}"
-                                            th:text="${m.nombre}">Mix</option>
+                                            th:text="${m.nombreConPresentacion}">Mix</option>
                                 </select>
                             </td>
                             <td data-label="Stock Disp." class="py-3 px-4 text-center">
@@ -182,7 +182,7 @@
             mixes.forEach(m => {
                 const unidad = (m.cantidadPorUnidadOrDefault && m.cantidadPorUnidadOrDefault > 0) ? m.cantidadPorUnidadOrDefault : 1;
                 const libre = (m.stock || 0) - (cantidadesPendientes[m.id] || 0);
-                opts += `<option value="${m.id}" data-stock="${libre}" data-precio="${m.precioVenta || ''}" data-unidad="${unidad}">${m.nombre}</option>`;
+                opts += `<option value="${m.id}" data-stock="${libre}" data-precio="${m.precioVenta || ''}" data-unidad="${unidad}">${m.nombreConPresentacion}</option>`;
             });
             return opts;
         }

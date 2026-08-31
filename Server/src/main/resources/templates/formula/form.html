@@ -40,7 +40,7 @@
                             <option th:each="m : ${mixes}"
                                     th:value="${m.id}"
                                     th:selected="${item.mix != null and item.mix.id == m.id}"
-                                    th:text="${m.nombre}">Mix Premium</option>
+                                    th:text="${m.nombreConPresentacion}">Mix Premium</option>
                         </select>
                         <span class="material-symbols-outlined text-on-surface-variant absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[20px]">
                             expand_more
@@ -86,7 +86,8 @@
                             </tr>
                             </thead>
                             <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10 bg-surface-container-lowest">
-                            <tr th:each="d, st : ${item.detalles}" class="hover:bg-surface-container-low transition-colors">
+                            <tr th:each="d, st : ${item.detalles}" class="hover:bg-surface-container-low transition-colors"
+                                th:attr="data-precio=${d.materiaPrima != null ? d.materiaPrima.precio : 0}">
 
                                 <td data-label="Materia prima" class="py-3 px-base font-medium text-primary flex items-center gap-2">
                                     <span class="material-symbols-outlined text-outline text-[20px] !hidden md:!inline-flex">inventory</span>
@@ -123,6 +124,68 @@
                 </div>
             </div>
 
+            <!-- Proyección dinámica de Rentabilidad -->
+            <div class="rounded-xl border border-outline-variant/20 overflow-hidden">
+                <!-- Header con precio del mix seleccionado -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-sm px-md py-base bg-surface-container-high border-b border-outline-variant/20">
+                    <div class="flex items-center gap-2 text-primary">
+                        <span class="material-symbols-outlined text-[22px]">monitoring</span>
+                        <span class="font-headline-md text-headline-md text-primary">Proyección de Rentabilidad</span>
+                    </div>
+                    <div class="inline-flex items-center justify-start sm:justify-end">
+                        <span class="px-3 py-1.5 rounded-full bg-surface text-on-surface border border-outline-variant/30 font-data-tabular text-data-tabular whitespace-nowrap">
+                            <span class="text-on-surface-variant font-normal text-[11px] uppercase tracking-wide mr-1">Precio/Unidad</span>
+                            <span id="precioMix" class="font-semibold text-primary">—</span>
+                            <span id="precioMixSub" class="text-on-surface-variant text-xs font-normal ml-1"></span>
+                             <span class="text-on-surface-variant font-normal text-[11px] uppercase tracking-wide mr-1">Precio/Kg</span>
+                            <span id="precioMixKg" class="font-semibold text-primary">—</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container p-md space-y-sm">
+                    <p class="font-body-sm text-xs text-on-surface-variant">Se toma el precio de venta y la presentación del mix seleccionado. El costo por unidad se recalcula en vivo con los gramos de materias primas y el rendimiento.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-md pt-xs">
+                        <div class="bg-surface-container-lowest rounded-lg p-sm border border-outline-variant/20 flex items-start gap-2.5">
+                            <span class="material-symbols-outlined text-primary/60 text-[20px] mt-0.5">layers</span>
+                            <div class="min-w-0">
+                                <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Costo MP / kg</span>
+                                <div class="flex items-baseline gap-1 mt-0.5">
+                                    <span class="text-on-surface-variant text-xs">$</span>
+                                    <span id="mp-costo-kg" class="font-data-tabular text-data-tabular text-[18px] text-primary font-semibold">—</span>
+                                </div>
+                                <span class="text-[11px] text-on-surface-variant">solo materias primas</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-surface-container-lowest rounded-lg p-sm border border-outline-variant/20 flex items-start gap-2.5">
+                            <span class="material-symbols-outlined text-primary/60 text-[20px] mt-0.5">shopping_bag</span>
+                            <div class="min-w-0">
+                                <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Costo por unidad</span>
+                                <div class="flex items-baseline gap-1 mt-0.5">
+                                    <span class="text-on-surface-variant text-xs">$</span>
+                                    <span id="costo-unidad" class="font-data-tabular text-data-tabular text-[18px] text-primary font-semibold">—</span>
+                                </div>
+                                <span class="text-[11px] text-on-surface-variant">MP + costos adicionales</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-surface-container-lowest rounded-lg p-sm border border-outline-variant/20 flex items-start gap-2.5">
+                            <span class="material-symbols-outlined text-primary/60 text-[20px] mt-0.5">trending_up</span>
+                            <div class="min-w-0">
+                                <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Margen / unidad</span>
+                                <div class="flex items-baseline gap-1 mt-0.5">
+                                    <span class="text-on-surface-variant text-xs">$</span>
+                                    <span id="ganancia" class="font-data-tabular text-data-tabular text-[18px] font-bold">—</span>
+                                </div>
+                                <span id="porcentaje-margen" class="text-[11px] text-on-surface-variant font-medium">Seleccione un mix para calcular</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
                 <a th:href="@{|${basePath}|}"
                    class="px-md py-2.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors">
@@ -142,6 +205,16 @@
         const inputCantidad = document.getElementById('cantidad');
         const inputsGramos = Array.from(document.querySelectorAll('input.dosificacion-input'));
         const elRestante = document.getElementById('restante-simple');
+
+        // Datos para la proyección de rentabilidad
+        const mixesArr = /*[[${mixes}]]*/ [];
+        const costoAdicionalPorKg = /*[[${costoAdicionalPorKg}]]*/ {};
+        const selectMix = document.getElementById('mix');
+        const spanMpCostoKg = document.getElementById('mp-costo-kg');
+        const spanCostoUnidad = document.getElementById('costo-unidad');
+        const spanGanancia = document.getElementById('ganancia');
+        const spanPorcentaje = document.getElementById('porcentaje-margen');
+        const filasDosificacion = Array.from(document.querySelectorAll('tr[data-precio]'));
 
         function formatear(n) {
             return n.toLocaleString('es-AR', { maximumFractionDigits: 2 });
@@ -171,11 +244,72 @@
             }
         }
 
+        // Proyección de rentabilidad: replica la fórmula del catálogo de mixes.
+        // Costo MP por kg = (Σ gramos/1000 * precio MP) / rendimiento.
+        // Costo por unidad = (costo MP por kg + costos adicionales por kg) * presentación del mix.
+        // Margen % = (precio por unidad − costo por unidad) / precio por unidad * 100.
+        function calcularRentabilidad() {
+            const selectedId = selectMix ? selectMix.value : '';
+            const mix = mixesArr.find(m => String(m.id) === String(selectedId));
+            const cantidadUnidad = mix ? (parseFloat(mix.cantidadPorUnidadOrDefault) > 0 ? parseFloat(mix.cantidadPorUnidadOrDefault) : 1) : 1;
+            const precioKg = mix ? (parseFloat(mix.precioVenta) > 0 ? parseFloat(mix.precioVenta) : 0) : 0;
+            const rendimiento = parseFloat(inputCantidad.value) || 0;
+
+            const precioMix = document.getElementById("precioMix")
+            precioMix.innerHTML = mix.precioVenta * mix.cantidadPorUnidadOrDefault
+
+            const precioMixKg = document.getElementById("precioMixKg")
+            precioMixKg.innerHTML = mix.precioVenta
+            // Costo de materia prima (por kg) calculado en vivo
+            let subtotalMP = 0;
+            filasDosificacion.forEach(tr => {
+                const inp = tr.querySelector('input.dosificacion-input');
+                const gramos = inp ? (parseFloat(inp.value) || 0) : 0;
+                const precio = parseFloat(tr.dataset.precio) || 0;
+                subtotalMP += (gramos / 1000) * precio;
+            });
+            const costoMPKg = rendimiento > 0 ? subtotalMP / rendimiento : 0;
+
+            const adicionalKg = mix ? (parseFloat(costoAdicionalPorKg[selectedId]) > 0 ? parseFloat(costoAdicionalPorKg[selectedId]) : 0) : 0;
+            const costoPorKg = costoMPKg + adicionalKg;
+            const costoPorUnidad = costoPorKg * cantidadUnidad;
+            const precioPorUnidad = precioKg * cantidadUnidad;
+
+            spanMpCostoKg.textContent = costoMPKg.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            spanCostoUnidad.textContent = costoPorUnidad.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            if (!mix || precioPorUnidad <= 0) {
+                spanGanancia.textContent = '—';
+                spanGanancia.className = 'text-primary';
+                spanPorcentaje.textContent = mix ? 'Defina el precio de venta del mix para calcular' : 'Seleccione un mix para calcular';
+                spanPorcentaje.className = 'text-[11px] text-on-surface-variant';
+                return;
+            }
+
+            const ganancia = precioPorUnidad - costoPorUnidad;
+            const margenPct = (ganancia / precioPorUnidad) * 100;
+
+            spanGanancia.textContent = ganancia.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            spanPorcentaje.textContent = '(' + margenPct.toFixed(1) + '%) ' + (ganancia >= 0 ? 'margen' : 'pérdida');
+
+            if (ganancia >= 0) {
+                spanGanancia.className = 'text-secondary font-bold';
+                spanPorcentaje.className = 'text-[11px] text-secondary font-medium';
+            } else {
+                spanGanancia.className = 'text-error font-bold';
+                spanPorcentaje.className = 'text-[11px] text-error font-medium';
+            }
+        }
+
         inputCantidad.addEventListener('input', actualizarDosificacion);
+        inputCantidad.addEventListener('input', calcularRentabilidad);
         inputsGramos.forEach(function (inp) {
             inp.addEventListener('input', actualizarDosificacion);
+            inp.addEventListener('input', calcularRentabilidad);
         });
+        if (selectMix) selectMix.addEventListener('change', calcularRentabilidad);
         actualizarDosificacion();
+        calcularRentabilidad();
     </script>
 </div>
 

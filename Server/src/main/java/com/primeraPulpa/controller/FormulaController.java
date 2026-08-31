@@ -8,6 +8,7 @@ import com.primeraPulpa.repositories.FormulaRepository;
 import com.primeraPulpa.repositories.MateriaPrimaRepository;
 import com.primeraPulpa.repositories.MixRepository;
 import com.primeraPulpa.Services.FormulaService;
+import com.primeraPulpa.Services.MixService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -26,13 +27,16 @@ public class FormulaController extends BaseController<Formula, Long> {
     private final FormulaRepository formulaRepository;
     private final MixRepository mixRepository;
     private final MateriaPrimaRepository materiaPrimaRepository;
+    private final MixService mixService;
 
     public FormulaController(FormulaService service, FormulaRepository formulaRepository,
-                             MixRepository mixRepository, MateriaPrimaRepository materiaPrimaRepository) {
+                             MixRepository mixRepository, MateriaPrimaRepository materiaPrimaRepository,
+                             MixService mixService) {
         super(service, Formula.class, "/formulas", "fórmula");
         this.formulaRepository = formulaRepository;
         this.mixRepository = mixRepository;
         this.materiaPrimaRepository = materiaPrimaRepository;
+        this.mixService = mixService;
     }
 
     // Convierte el id enviado por el formulario en las entidades Mix y MateriaPrima
@@ -62,9 +66,25 @@ public class FormulaController extends BaseController<Formula, Long> {
 
     @Override
     protected void cargarDatosFormulario(Model model) {
-        model.addAttribute("mixes", mixRepository.findAll().stream()
+        List<Mix> mixes = mixRepository.findAll().stream()
                 .filter(m -> !Boolean.TRUE.equals(m.getEliminado()))
-                .toList());
+                .sorted(Mix.ordenarPorPresentacion())
+                .toList();
+        model.addAttribute("mixes", mixes);
+
+        // Costos adicionales por kg aplicables a la presentación de cada mix
+        // (bolsa, etiqueta, etc.), para proyectar la rentabilidad en vivo.
+        Map<Long, Double> costoAdicionalPorKg = new HashMap<>();
+        for (Mix m : mixes) {
+            try {
+                costoAdicionalPorKg.put(m.getId(),
+                        mixService.desgloseCostos(m.getId()).getCostosAdicionalesPorKg());
+            } catch (Exception ignored) {
+                costoAdicionalPorKg.put(m.getId(), 0.0);
+            }
+        }
+        model.addAttribute("costoAdicionalPorKg", costoAdicionalPorKg);
+
         normalizarDetalles(model);
     }
 

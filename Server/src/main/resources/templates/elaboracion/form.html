@@ -40,7 +40,7 @@
                             <option th:each="m : ${mixes}"
                                     th:value="${m.id}"
                                     th:selected="${lote.mix != null and lote.mix.id == m.id}"
-                                    th:text="${m.nombre}">Mix Frutos Secos Clásico</option>
+                                    th:text="${m.nombreConPresentacion}">Mix Frutos Secos Clásico</option>
                         </select>
                         <span class="material-symbols-outlined text-on-surface-variant absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[20px]">
                             expand_more

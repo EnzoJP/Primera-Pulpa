@@ -84,7 +84,9 @@ public class MovimientoStockController {
 
     private List<com.primeraPulpa.entities.Mix> listarMixes() {
         try {
-            return mixService.listarActivos();
+            return mixService.listarActivos().stream()
+                    .sorted(com.primeraPulpa.entities.Mix.ordenarPorPresentacion())
+                    .toList();
         } catch (ErrorServiceException e) {
             return List.of();
         }

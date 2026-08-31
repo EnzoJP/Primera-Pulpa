@@ -32,7 +32,7 @@
                         <option value="">Seleccionar mix...</option>
                         <option th:each="m : ${mixes}"
                                 th:value="${m.id}"
-                                th:text="${m.nombre}"
+                                th:text="${m.nombreConPresentacion}"
                                 th:selected="${m.id == mixIdFiltro}">Mix</option>
                     </select>
                     <span class="material-symbols-outlined text-on-surface-variant absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[20px]">expand_more</span>

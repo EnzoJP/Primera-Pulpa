@@ -96,4 +96,25 @@ public class Mix extends BaseEntity<Long> {
     public void setPrecioVentaUnidad(Double valor) {
         this.precioVentaUnidad = valor;
     }
+
+    // Nombre comercial más la presentación, para diferenciar mixes del mismo
+    // nombre que se venden en distinto tamaño (ej: "Mix X (5kg)" / "Mix X (1kg)").
+    // Solo visual: no modifica el nombre persistido.
+    public String getNombreConPresentacion() {
+        String base = nombre != null ? nombre : "";
+        double u = getCantidadPorUnidadOrDefault();
+        String suf = u == Math.floor(u) ? String.valueOf((long) u) : String.valueOf(u);
+        return base + " (" + suf + "kg)";
+    }
+
+    // Comparador para listas de mixes: primero todos los de 5 kg (alfabéticos),
+    // después el resto (1 kg y otros) también alfabéticos.
+    public static java.util.Comparator<Mix> ordenarPorPresentacion() {
+        java.util.Comparator<Mix> porPresentacion = java.util.Comparator.comparingInt((Mix m) -> {
+            double u = m.getCantidadPorUnidadOrDefault();
+            return Math.abs(u - 5.0) < 0.05 ? 0 : 1;
+        });
+        return porPresentacion.thenComparing(
+                java.util.Comparator.comparing(Mix::getNombre, java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
+    }
 }
