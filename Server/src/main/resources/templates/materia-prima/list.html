@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Listado de Materias Primas - Primera Pulpa', 'materias-primas', ~{::#mp-list-content})}">
 <body>
 
@@ -16,7 +16,7 @@
             <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Control de existencias, costos y umbrales mínimos de insumos.</p>
         </div>
 
-        <a th:href="@{|${basePath}/nuevo|}"
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{|${basePath}/nuevo|}"
            class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
             <span class="material-symbols-outlined text-[20px]">add</span>
             <span>Nueva Materia Prima</span>
@@ -53,11 +53,11 @@
                     <th class="py-3 px-4 font-normal w-16 text-center">ID</th>
                     <th class="py-3 px-4 font-normal w-auto">Nombre del Insumo</th>
                     <th class="py-3 px-4 font-normal w-28 text-center">Unidad</th>
-                    <th class="py-3 px-4 font-normal w-32 text-right">Precio</th>
+                    <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-32 text-right">Precio</th>
                     <th class="py-3 px-4 font-normal w-32 text-right">Stock Actual</th>
                     <th class="py-3 px-4 font-normal w-32 text-right">Stock Mínimo</th>
                     <th class="py-3 px-4 font-normal w-36 text-center">Último Ingreso</th>
-                    <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
+                    <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
 
@@ -83,7 +83,7 @@
                     </td>
 
                     <!-- Precio -->
-                    <td data-label="Precio" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                    <td sec:authorize="hasRole('ADMIN')" data-label="Precio" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span class="text-on-surface-variant text-xs mr-0.5">$</span>
                         <span th:text="${#numbers.formatDecimal(item.precio, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                     </td>
@@ -111,7 +111,7 @@
                     </td>
 
                     <!-- Acciones -->
-                    <td data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                    <td sec:authorize="hasRole('ADMIN')" data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
                             <a th:href="@{|${basePath}/${item.id}|}"
                                title="Ver Detalle"

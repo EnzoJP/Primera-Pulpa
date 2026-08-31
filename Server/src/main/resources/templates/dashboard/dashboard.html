@@ -15,10 +15,10 @@
             <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Resumen operativo de inventario, stock crítico y catálogo de producción.</p>
         </div>
         <div class="flex items-center gap-xs pt-1 sm:pt-0">
-            <a sec:authorize="hasRole('ADMIN')" th:href="@{/materias-primas/nuevo}"
+            <a th:href="@{/elaboracion/nuevo}"
                class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">add</span>
-                <span>Cargar Insumo</span>
+                <span>Cargar Elaboración</span>
             </a>
         </div>
     </header>

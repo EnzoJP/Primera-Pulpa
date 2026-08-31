@@ -294,6 +294,7 @@ public class DataInitializer {
                     .build();
             lote1.setEliminado(false);
             loteMixRepository.save(lote1);
+            mixService.consumirLotesPorElaboracion(mixClasico.getId(), lote1.getCantidadElaborada());
 
             LoteMix lote2 = LoteMix.builder()
                     .mix(mixPremium)
@@ -303,6 +304,7 @@ public class DataInitializer {
                     .build();
             lote2.setEliminado(false);
             loteMixRepository.save(lote2);
+            mixService.consumirLotesPorElaboracion(mixPremium.getId(), lote2.getCantidadElaborada());
 
             LoteMix lote3 = LoteMix.builder()
                     .mix(mixClasico)
@@ -312,6 +314,7 @@ public class DataInitializer {
                     .build();
             lote3.setEliminado(false);
             loteMixRepository.save(lote3);
+            mixService.consumirLotesPorElaboracion(mixClasico.getId(), lote3.getCantidadElaborada());
 
             LoteMix lote4 = LoteMix.builder()
                     .mix(mixFitness)
@@ -321,6 +324,7 @@ public class DataInitializer {
                     .build();
             lote4.setEliminado(false);
             loteMixRepository.save(lote4);
+            mixService.consumirLotesPorElaboracion(mixFitness.getId(), lote4.getCantidadElaborada());
 
             LoteMix lote5 = LoteMix.builder()
                     .mix(mixPremium)
@@ -330,6 +334,7 @@ public class DataInitializer {
                     .build();
             lote5.setEliminado(false);
             loteMixRepository.save(lote5);
+            mixService.consumirLotesPorElaboracion(mixPremium.getId(), lote5.getCantidadElaborada());
 
             LoteMix lote6 = LoteMix.builder()
                     .mix(mixFitness)
@@ -339,6 +344,7 @@ public class DataInitializer {
                     .build();
             lote6.setEliminado(false);
             loteMixRepository.save(lote6);
+            mixService.consumirLotesPorElaboracion(mixFitness.getId(), lote6.getCantidadElaborada());
             logger.info("Lotes de elaboración de mix cargados.");
 
             // 9. Clientes

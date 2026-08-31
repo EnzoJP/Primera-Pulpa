@@ -326,6 +326,30 @@ public class MixService extends BaseService<Mix, Long> {
         }
     }
 
+    /**
+     * Aplica el consumo FIFO de los lotes de materia prima para una elaboración,
+     * sin tocar el stock global de la MP ni el del mix (solo descuenta los lotes).
+     * Se usa en el seed de datos para que "Restante Lote" quede coherente con las
+     * elaboraciones, replicando lo que hace actualizarStockMixElaboracion.
+     */
+    @Transactional
+    public void consumirLotesPorElaboracion(Long mixId, double cantidad) {
+        Formula formula = formulaRepository.findByMixId(mixId).stream()
+                .filter(f -> !Boolean.TRUE.equals(f.getEliminado()))
+                .findFirst()
+                .orElse(null);
+        if (formula == null || formula.getCantidad() <= 0 || cantidad <= 0) {
+            return;
+        }
+        for (DetalleFormula detalle : formula.getDetalles()) {
+            if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
+                continue;
+            }
+            double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
+            consumirLotesFEFO(detalle.getMateriaPrima(), necesario);
+        }
+    }
+
     // Elimina el ruido del punto flotante: redondea a 6 decimales (0,000001 kg = 1 mg).
     // Conserva cantidades chicas como 0,325 g (= 0,000325 kg) sin dejar 7.000000000000001.
     private static double redondear(double valor) {

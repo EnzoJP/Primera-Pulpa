@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.nombre} + ' - Primera Pulpa', 'materias-primas', ~{::#product-detail-content})}">
 <body>
 
@@ -23,7 +23,7 @@
             <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Ficha técnica, niveles de existencia y parámetros de inventario.</p>
         </div>
 
-        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+        <div sec:authorize="hasRole('ADMIN')" class="flex items-center gap-xs pt-1 sm:pt-0">
             <a th:href="@{|${basePath}/${item.id}/editar|}"
                class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">edit</span>
@@ -68,7 +68,7 @@
         </div>
 
         <!-- Precio Unitario -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+        <div sec:authorize="hasRole('ADMIN')" class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start mb-xs">
                     <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Precio Unitario</p>

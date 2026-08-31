@@ -92,7 +92,7 @@
         </div>
 
         <!-- Total del Pedido -->
-        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
+        <div sec:authorize="hasRole('ADMIN')" class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
             <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Total del Pedido</span>
             <div class="flex items-baseline gap-1 mt-1">
                 <span class="text-on-surface-variant text-xs">$</span>
@@ -166,8 +166,8 @@
                     <tr>
                         <th class="py-3 px-4 font-normal w-auto">Mix Solicitado</th>
                         <th class="py-3 px-4 font-normal w-32 text-right">Cantidad</th>
-                        <th class="py-3 px-4 font-normal w-36 text-right">Precio Unitario</th>
-                        <th class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
+                        <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-36 text-right">Precio Unitario</th>
+                        <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
                         <th class="py-3 px-4 font-normal w-40 text-center">Estado Armado</th>
                         <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-44 text-center"
                             th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">Acción</th>
@@ -192,16 +192,14 @@
                             <span class="font-bold text-primary" th:text="${#numbers.formatDecimal(det.cantidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                             <span class="text-xs text-on-surface-variant ml-0.5">kg</span>
                         </td>
-
-                        <!-- Precio Unitario -->
-                        <td data-label="Precio Unit." class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                        <td sec:authorize="hasRole('ADMIN')" data-label="Precio Unit." class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
                             <span class="text-xs mr-0.5">$</span>
                             <span th:text="${#numbers.formatDecimal(det.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                             <span class="text-xs ml-0.5">/ kg</span>
                         </td>
 
                         <!-- Subtotal -->
-                        <td data-label="Subtotal" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-on-surface">
+                        <td sec:authorize="hasRole('ADMIN')" data-label="Subtotal" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-on-surface">
                             <span class="text-xs mr-0.5">$</span>
                             <span th:text="${#numbers.formatDecimal(det.cantidad * det.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                         </td>
@@ -249,7 +247,7 @@
 
                     <!-- Total Escritorio -->
                     <tfoot class="hidden md:table-footer-group">
-                    <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
+                    <tr sec:authorize="hasRole('ADMIN')" class="bg-surface-container-low border-t-2 border-outline-variant/30">
                         <td colspan="3" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
                             Total del Pedido:
                         </td>
@@ -265,7 +263,7 @@
         </div>
 
         <!-- Total en Móvil -->
-        <div class="md:hidden bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 soft-shadow flex items-center justify-between">
+        <div sec:authorize="hasRole('ADMIN')" class="md:hidden bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 soft-shadow flex items-center justify-between">
             <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
                 Total Pedido:
             </span>

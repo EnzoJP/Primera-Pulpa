@@ -43,7 +43,7 @@
                     <th class="py-3 px-4 font-normal w-32 text-center">Unidad</th>
                     <th class="py-3 px-4 font-normal w-36 text-right">Cantidad</th>
                     <th class="py-3 px-4 font-normal w-40 text-center">Vencimiento</th>
-                    <th class="py-3 px-4 font-normal w-44 text-right">Restante </th>
+                    <th class="py-3 px-4 font-normal w-44 text-right">Restante Lote</th>
                 </tr>
                 </thead>
 
@@ -71,7 +71,7 @@
                         th:text="${det.fechaVencimiento != null ? #temporals.format(det.fechaVencimiento, 'dd/MM/yyyy') : '—'}">—</td>
 
                     <!-- Restante (FIFO) -->
-                    <td data-label="Restante" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                    <td data-label="Restante Lote" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span th:if="${det.restante <= 0}"
                               class="inline-flex items-center justify-end gap-1 font-bold text-error">
                             <span class="material-symbols-outlined text-[15px] !hidden md:!inline-flex">block</span>
@@ -99,6 +99,19 @@
                 </tr>
                 </tfoot>
             </table>
+        </div>
+    </div>
+
+    <!-- Leyenda: Restante Lote -->
+    <div class="bg-surface-container-low rounded-xl p-md border border-outline-variant/20">
+        <div class="flex items-start gap-2 text-on-surface-variant">
+            <span class="material-symbols-outlined text-outline text-[18px] mt-0.5">fact_check</span>
+            <div class="font-body-sm text-body-sm space-y-1">
+                <p class="font-medium text-on-surface">Sobre la columna "Restante Lote"</p>
+                <p>Es el <span class="font-semibold text-on-surface">stock disponible de cada lote (batch)</span> recibido en este ingreso. Se descuenta a medida que las elaboraciones de mixes consumen materia prima (método FIFO: se agota el lote que vence primero).</p>
+                <p class="text-on-surface-variant">No es el stock total de la materia prima: ese se ve en el catálogo / historial de movimientos. "Agotado" indica que el lote ya se consumió por completo.</p>
+                <p class="text-on-surface-variant">Si aparece "(íntegro)" es un lote sin seguimiento FIFO registrado, por lo que se toma como disponible en su totalidad.</p>
+            </div>
         </div>
     </div>
 

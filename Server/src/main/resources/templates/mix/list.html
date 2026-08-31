@@ -63,7 +63,7 @@
                     <th class="py-3 px-4 font-normal w-40 text-right">Cantidad en Stock</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Estado</th>
                     <th class="py-3 px-4 font-normal w-40 text-center">Presentación</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Precio x Unidad</th>
+                    <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-36 text-right">Precio x Unidad</th>
                     <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-32 text-right">Rentabilidad</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
@@ -152,7 +152,7 @@
                     </td>
 
                     <!-- Precio de Venta por unidad -->
-                    <td data-label="Precio por unidad" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                    <td sec:authorize="hasRole('ADMIN')" data-label="Precio por unidad" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span th:if="${item.precioVenta != null}">
                             <span class="text-on-surface-variant text-xs mr-0.5">$</span>
                             <span th:text="${#numbers.formatDecimal(item.precioVentaPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
@@ -170,7 +170,7 @@
                     </td>
 
                     <!-- Acciones -->
-                    <td data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                    <td sec:authorize="hasRole('ADMIN')" data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
                             <a th:href="@{|${basePath}/${item.id}|}"
                                title="Ver Detalle"

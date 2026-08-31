@@ -36,7 +36,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
 
         <!-- 1. Precio x Unidad -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+        <div sec:authorize="hasRole('ADMIN')" class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start mb-xs">
                     <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Precio x Unidad</p>

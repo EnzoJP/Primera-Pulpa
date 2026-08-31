@@ -19,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * HU-15 / HU-16: historial de movimientos de StockMP (IngresoMP / ElaboracionMix)
@@ -149,9 +151,11 @@ public class MovimientoStockService {
     }
 
     /**
-     * Ordena cronológicamente, calcula el saldo acumulado de cada movimiento y
-     * filtra por el rango de fechas. Devuelve también el stock actual y el saldo
-     * resultante al final del período consultado.
+     * Calcula el saldo acumulado en orden cronológico (viejo → nuevo) y luego
+     * muestra los movimientos de lo más nuevo a lo más antiguo. El saldo de cada
+     * movimiento se computa recorriendo el historial hacia adelante (depende del
+     * orden de los registros en el tiempo), por eso la lista de salida se invierte
+     * al final, sobre la lista ya filtrada por período.
      */
     private ListaMovimientos completar(List<MovimientoStockDTO> todos, double stockActual,
                                        LocalDate desde, LocalDate hasta, String nombre) {
@@ -170,7 +174,10 @@ public class MovimientoStockService {
         List<MovimientoStockDTO> enPeriodo = conSaldo.stream()
                 .filter(m -> (desde == null || !m.getFecha().isBefore(desde))
                         && (hasta == null || !m.getFecha().isAfter(hasta)))
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // Mostrar de lo más nuevo a lo más antiguo (el saldo ya se calculó cronológico)
+        Collections.reverse(enPeriodo);
 
         double saldoFinal = 0;
         for (MovimientoStockDTO m : conSaldo) {

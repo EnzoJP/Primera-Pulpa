@@ -31,7 +31,7 @@
     <a th:href="@{/ingresos-mp}"
        class="bg-primary text-on-primary font-label-caps text-label-caps py-sm px-md rounded-lg mb-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 soft-shadow flex-shrink-0">
         <span class="material-symbols-outlined text-[20px]">add_box</span>
-        <span>Nuevo Lote</span>
+        <span>Ingreso MP</span>
     </a>
 
     <nav class="flex-1 flex flex-col gap-xs overflow-y-auto custom-scrollbar pr-1">
@@ -81,6 +81,14 @@
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
             <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">shopping_cart</span>
             <span class="font-label-caps text-label-caps truncate">Pedidos</span>
+        </a>
+
+        <a sec:authorize="hasRole('EMPLEADO')" th:href="@{/materias-primas}"
+           th:class="${activePage == 'materias-primas' or activeMenu == 'materias-primas'} ?
+                         'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
+                         'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">spa</span>
+            <span class="font-label-caps text-label-caps truncate">Materia Prima</span>
         </a>
 
         <a sec:authorize="hasRole('ADMIN')" th:href="@{/stock/stock-mp}"
