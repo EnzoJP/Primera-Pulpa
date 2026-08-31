@@ -3,100 +3,110 @@
 <body>
 
 <aside th:fragment="sidebar(activePage)"
-       class="hidden md:flex flex-col h-full py-md px-sm border-r border-outline-variant/20 bg-surface-container dark:bg-surface-container-low fixed left-0 w-64 z-40 transition-all duration-300">
+       id="app-sidebar"
+       class="flex flex-col h-full py-md px-sm border-r border-outline-variant/20 bg-surface-container dark:bg-surface-container-low fixed inset-y-0 left-0 w-64 z-50 transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0">
 
-    <div class="flex items-center gap-sm px-sm mb-lg">
-        <div class="w-10 h-10 rounded-lg overflow-hidden bg-primary-container flex items-center justify-center text-on-primary-container">
-            <span class="material-symbols-outlined text-on-primary text-[32px] fill">eco</span>
+    <div class="flex items-center justify-between px-2 mb-6">
+        <!-- Logo y Título -->
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-[#322214] flex items-center justify-center text-[#fbddc7] shadow-sm flex-shrink-0">
+                <span class="material-symbols-outlined text-[24px] fill">eco</span>
+            </div>
+            <div class="min-w-0">
+                <h1 class="font-bold text-lg text-[#322214] dark:text-[#fbddc7] leading-tight truncate">Primera Pulpa</h1>
+                <p class="text-xs text-[#80756d] truncate">Control de stock</p>
+            </div>
         </div>
-        <div>
-            <h1 class="font-headline-md text-headline-md text-primary">Primera Pulpa</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Control de stock</p>
-        </div>
+
+        <!-- Botón de Cierre Redondeado -->
+        <button id="btn-sidebar-close"
+                type="button"
+                class="md:hidden w-8 h-8 rounded-full flex items-center justify-center text-[#80756d] hover:text-[#322214] hover:bg-[#e9e1db] active:scale-95 transition-all cursor-pointer flex-shrink-0 ml-2"
+                title="Cerrar menú">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
     </div>
 
-    <!-- Botón Nuevo Lote / Ingreso MP -->
+    <!-- Botón Nuevo Lote -->
     <a th:href="@{/ingresos-mp}"
-       class="bg-primary text-on-primary font-label-caps text-label-caps py-sm px-md rounded-lg mb-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 soft-shadow">
+       class="bg-primary text-on-primary font-label-caps text-label-caps py-sm px-md rounded-lg mb-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 soft-shadow flex-shrink-0">
         <span class="material-symbols-outlined text-[20px]">add_box</span>
-        Nuevo Lote
+        <span>Nuevo Lote</span>
     </a>
 
     <nav class="flex-1 flex flex-col gap-xs overflow-y-auto custom-scrollbar pr-1">
-        <!-- Navegación General (Dashboard y Producción) -->
         <a th:href="@{/dashboard}"
            th:class="${activePage == 'dashboard' or activeMenu == 'dashboard'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
-            <span class="font-label-caps text-label-caps">Dashboard</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">dashboard</span>
+            <span class="font-label-caps text-label-caps truncate">Dashboard</span>
         </a>
 
         <a th:href="@{/ingresos-mp}"
            th:class="${activePage == 'ingresos-mp' or activeMenu == 'ingresos-mp'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">move_to_inbox</span>
-            <span class="font-label-caps text-label-caps">Ingresos MP</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">move_to_inbox</span>
+            <span class="font-label-caps text-label-caps truncate">Ingresos MP</span>
         </a>
 
         <a th:href="@{/mixes}"
            th:class="${activePage == 'mixes' or activeMenu == 'mixes'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">inventory_2</span>
-            <span class="font-label-caps text-label-caps">Catálogo Mixes</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">inventory_2</span>
+            <span class="font-label-caps text-label-caps truncate">Catálogo Mixes</span>
         </a>
 
         <a th:href="@{/formulas}"
            th:class="${activePage == 'formulas' or activeMenu == 'formulas'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">science</span>
-            <span class="font-label-caps text-label-caps">Fórmulas</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">science</span>
+            <span class="font-label-caps text-label-caps truncate">Fórmulas</span>
         </a>
 
         <a th:href="@{/elaboracion}"
            th:class="${activePage == 'elaboracion' or activeMenu == 'elaboracion'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">precision_manufacturing</span>
-            <span class="font-label-caps text-label-caps">Elaboraciones</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">precision_manufacturing</span>
+            <span class="font-label-caps text-label-caps truncate">Elaboraciones</span>
         </a>
 
         <a th:href="@{/pedidos}"
            th:class="${activePage == 'pedidos' or activeMenu == 'pedidos'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">shopping_cart</span>
-            <span class="font-label-caps text-label-caps">Pedidos</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">shopping_cart</span>
+            <span class="font-label-caps text-label-caps truncate">Pedidos</span>
         </a>
 
-        <a th:href="@{/stock/stock-mp}"
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/stock/stock-mp}"
            th:class="${activePage == 'stock-mp'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">monitoring</span>
-            <span class="font-label-caps text-label-caps">Historial Stock MP</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">monitoring</span>
+            <span class="font-label-caps text-label-caps truncate">Historial Stock MP</span>
         </a>
 
-        <a th:href="@{/stock/stock-mix}"
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/stock/stock-mix}"
            th:class="${activePage == 'stock-mix'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">query_stats</span>
-            <span class="font-label-caps text-label-caps">Historial StockMix</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">query_stats</span>
+            <span class="font-label-caps text-label-caps truncate">Historial StockMix</span>
         </a>
 
-        <a th:href="@{/clientes}"
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/clientes}"
            th:class="${activePage == 'clientes' or activeMenu == 'clientes'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">group</span>
-            <span class="font-label-caps text-label-caps">Clientes</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">group</span>
+            <span class="font-label-caps text-label-caps truncate">Clientes</span>
         </a>
 
-        <!-- Apartado de Administración y Configuración (Solo visible para ADMIN) -->
         <div sec:authorize="hasRole('ADMIN')" class="pt-sm mt-xs border-t border-outline-variant/20 flex flex-col gap-xs">
             <p class="px-md text-[11px] font-bold text-on-surface-variant/70 uppercase tracking-wider mb-xs">Administración</p>
 
@@ -104,53 +114,53 @@
                th:class="${activePage == 'estadisticas' or activeMenu == 'estadisticas'} ?
                      'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                      'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">bar_chart</span>
-                <span class="font-label-caps text-label-caps">Estadísticas</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">bar_chart</span>
+                <span class="font-label-caps text-label-caps truncate">Estadísticas</span>
             </a>
 
             <a th:href="@{/materias-primas}"
                th:class="${activePage == 'materias-primas' or activeMenu == 'materias-primas'} ?
                          'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                          'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">spa</span>
-                <span class="font-label-caps text-label-caps">Materia Prima</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">spa</span>
+                <span class="font-label-caps text-label-caps truncate">Materia Prima</span>
             </a>
 
             <a th:href="@{/unidades-medida}"
                th:class="${activePage == 'unidades-medida' or activeMenu == 'unidades-medida'} ?
                          'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                          'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">straighten</span>
-                <span class="font-label-caps text-label-caps">Unidades de Medida</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">straighten</span>
+                <span class="font-label-caps text-label-caps truncate">Unidades de Medida</span>
             </a>
 
             <a th:href="@{/costos-adicionales}"
                th:class="${activePage == 'costos-adicionales' or activeMenu == 'costos-adicionales'} ?
                          'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                          'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">price_change</span>
-                <span class="font-label-caps text-label-caps">Costos Adicionales</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">price_change</span>
+                <span class="font-label-caps text-label-caps truncate">Costos Adicionales</span>
             </a>
 
             <a th:href="@{/usuarios}"
                th:class="${activePage == 'usuarios' or activeMenu == 'usuarios'} ?
                          'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
                          'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">manage_accounts</span>
-                <span class="font-label-caps text-label-caps">Usuarios</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">manage_accounts</span>
+                <span class="font-label-caps text-label-caps truncate">Usuarios</span>
             </a>
         </div>
     </nav>
 
-    <div class="mt-auto flex flex-col gap-xs pt-md border-t border-outline-variant/30">
+    <div class="mt-auto flex flex-col gap-xs pt-md border-t border-outline-variant/30 flex-shrink-0">
         <a th:href="@{/perfil}" class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group">
-            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">account_circle</span>
-            <span class="font-label-caps text-label-caps">Mi Perfil</span>
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">account_circle</span>
+            <span class="font-label-caps text-label-caps truncate">Mi Perfil</span>
         </a>
         <form th:action="@{/logout}" method="post" class="m-0">
             <button type="submit" class="w-full flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-error-container/30 hover:text-error rounded-lg transition-all group cursor-pointer">
-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">logout</span>
-                <span class="font-label-caps text-label-caps">Cerrar Sesión</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">logout</span>
+                <span class="font-label-caps text-label-caps truncate">Cerrar Sesión</span>
             </button>
         </form>
     </div>

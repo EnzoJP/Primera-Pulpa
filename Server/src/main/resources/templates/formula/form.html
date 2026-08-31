@@ -75,7 +75,7 @@
                     </div>
                 </div>
 
-                <div class="bg-surface-container rounded-lg border border-outline-variant/20 overflow-hidden mt-sm">
+                <div class="table-responsive-cards md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
                     <div class="overflow-x-auto custom-scrollbar">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-surface-container-high border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
@@ -88,17 +88,17 @@
                             <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10 bg-surface-container-lowest">
                             <tr th:each="d, st : ${item.detalles}" class="hover:bg-surface-container-low transition-colors">
 
-                                <td class="py-3 px-base font-medium text-primary flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-outline text-[18px]">inventory</span>
+                                <td data-label="Materia prima" class="py-3 px-base font-medium text-primary flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-outline text-[20px] !hidden md:!inline-flex">inventory</span>
                                     <span th:text="${d.materiaPrima.nombre}">Almendras Enteras</span>
                                 </td>
 
-                                <td class="py-3 px-base font-label-caps text-on-surface-variant">
+                                <td data-label="Unidad base" class="py-3 px-base font-label-caps text-on-surface-variant">
                                         <span class="px-2 py-0.5 rounded bg-surface-container text-xs"
                                               th:text="${d.materiaPrima.unidadMedida?.descripcion ?: 'kg'}">kg</span>
                                 </td>
 
-                                <td class="py-3 px-base text-right">
+                                <td data-label="Gramos requeridos" class="py-3 px-base text-right">
                                     <input type="hidden" th:name="'detalles[' + ${st.index} + '].id'" th:value="${d.id}">
                                     <input type="hidden" th:name="'detalles[' + ${st.index} + '].materiaPrima'" th:value="${d.materiaPrima.id}">
 

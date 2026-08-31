@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Detalle de Fórmula - Primera Pulpa', 'formulas', ~{::#formula-detail-content})}">
 <body>
 
 <div id="formula-detail-content" class="max-w-4xl mx-auto space-y-md">
 
+    <!-- Encabezado -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
             <a th:href="@{|${basePath}|}"
@@ -21,7 +22,7 @@
         </div>
 
         <div class="flex items-center gap-xs">
-            <a th:href="@{|${basePath}/${item.id}/editar|}"
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{|${basePath}/${item.id}/editar|}"
                class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">edit</span>
                 <span>Editar Fórmula</span>
@@ -29,15 +30,16 @@
         </div>
     </div>
 
+    <!-- Cards Superiores -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
-
         <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex items-start gap-md">
             <div class="w-12 h-12 rounded-lg bg-secondary-container/40 flex items-center justify-center text-secondary flex-shrink-0">
                 <span class="material-symbols-outlined text-[28px]">blender</span>
             </div>
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
                 <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Producto / Mix</p>
-                <p class="font-headline-md text-headline-md text-primary truncate mt-0.5" th:text="${item.mix?.nombre ?: 'Sin especificar'}">Mix Frutos Secos</p>
+                <p class="font-headline-md text-lg sm:text-headline-md text-primary font-bold break-words leading-snug mt-0.5"
+                   th:text="${item.mix?.nombre ?: 'Sin especificar'}">Mix Frutos Secos</p>
                 <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Lote final para fraccionamiento</p>
             </div>
         </div>
@@ -55,62 +57,68 @@
                 <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Capacidad estándar de producción</p>
             </div>
         </div>
-
     </div>
 
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
-        <div class="p-md border-b border-outline-variant/20 flex justify-between items-center bg-surface-container/50">
+    <!-- Sección de Materias Primas Requeridas -->
+    <div class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
+
+        <!-- Header de la sección (en móvil actúa como título independiente) -->
+        <div class="p-3 sm:p-md flex justify-between items-center bg-transparent md:bg-surface-container/50 md:border-b md:border-outline-variant/20">
             <div>
-                <h2 class="font-headline-md text-headline-md text-primary">Materias Primas Requeridas</h2>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">Dosificación exacta de insumos para completar el rendimiento.</p>
+                <h2 class="font-headline-md text-lg sm:text-headline-md text-primary font-bold">Materias Primas Requeridas</h2>
+                <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant">Dosificación exacta de insumos para completar el rendimiento.</p>
             </div>
-            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full font-label-caps text-label-caps bg-surface-container-high text-on-surface-variant border border-outline-variant/30">
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full font-label-caps text-xs bg-surface-container-high text-on-surface-variant border border-outline-variant/30 flex-shrink-0">
                 <span class="material-symbols-outlined text-[16px]">format_list_numbered</span>
                 <span th:text="${item.detalles != null ? item.detalles.size() : 0}">3</span>
-                <span>Insumos</span>
+                <span class="hidden sm:inline">Insumos</span>
             </span>
         </div>
 
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
-                <tr>
-                    <th class="py-3 px-base font-normal">Materia Prima</th>
-                    <th class="py-3 px-base font-normal w-40 text-right">Dosificación (g)</th>
-                    <th class="py-3 px-base font-normal w-40 text-right">Equivalente (kg)</th>
-                </tr>
-                </thead>
-                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="d : ${item.detalles}" class="hover:bg-surface-container-low transition-colors">
+        <!-- Tabla transformable a Cards -->
+        <div class="table-responsive-cards">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                    <tr>
+                        <th class="py-3 px-base font-normal">Materia Prima</th>
+                        <th class="py-3 px-base font-normal w-40 text-right">Dosificación (g)</th>
+                        <th class="py-3 px-base font-normal w-40 text-right">Equivalente (kg)</th>
+                    </tr>
+                    </thead>
+                    <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                    <tr th:each="d : ${item.detalles}" class="hover:bg-surface-container-low transition-colors">
 
-                    <td class="py-3.5 px-base font-medium text-primary flex items-center gap-2">
-                        <span class="material-symbols-outlined text-outline text-[18px]">inventory_2</span>
-                        <span th:text="${d.materiaPrima?.nombre ?: 'Insumo no asignado'}">Almendras Peladas</span>
-                    </td>
 
-                    <td class="py-3.5 px-base text-right font-data-tabular text-data-tabular">
-                        <span th:text="${#numbers.formatDecimal(d.gramos, 1, 'POINT', 2, 'COMMA')}">25.000,00</span>
-                        <span class="text-on-surface-variant text-xs ml-0.5">g</span>
-                    </td>
+                        <td data-label="Materia prima" class="py-3.5 px-base font-medium text-primary md:flex md:items-center md:gap-2">
+                            <span class="material-symbols-outlined text-outline text-[18px] !hidden md:!inline-flex">inventory_2</span>
+                            <span class="text-right md:text-left" th:text="${d.materiaPrima?.nombre ?: 'Insumo no asignado'}">Almendras Peladas</span>
+                        </td>
 
-                    <td class="py-3.5 px-base text-right font-data-tabular text-data-tabular text-on-surface-variant">
-                        <span th:text="${d.gramos != null ? #numbers.formatDecimal(d.gramos / 1000.0, 1, 'POINT', 2, 'COMMA') : '0,00'}">25,00</span>
-                        <span class="text-xs ml-0.5">kg</span>
-                    </td>
+                        <td data-label="Dosificación (g)" class="py-3.5 px-base text-right font-data-tabular text-data-tabular">
+                            <span th:text="${#numbers.formatDecimal(d.gramos, 1, 'POINT', 2, 'COMMA')}">25.000,00</span>
+                            <span class="text-on-surface-variant text-xs ml-0.5">g</span>
+                        </td>
 
-                </tr>
+                        <td data-label="Equivalente (kg)" class="py-3.5 px-base text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                            <span th:text="${d.gramos != null ? #numbers.formatDecimal(d.gramos / 1000.0, 1, 'POINT', 2, 'COMMA') : '0,00'}">25,00</span>
+                            <span class="text-xs ml-0.5">kg</span>
+                        </td>
 
-                <tr th:if="${#lists.isEmpty(item.detalles)}">
-                    <td colspan="3" class="py-lg text-center text-on-surface-variant font-body-sm">
-                        <span class="material-symbols-outlined text-outline text-[32px] block mb-1">warning</span>
-                        Esta fórmula no tiene ingredientes o materias primas asociadas.
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(item.detalles)}">
+                        <td colspan="3" class="py-lg text-center text-on-surface-variant font-body-sm">
+                            <span class="material-symbols-outlined text-outline text-[32px] block mb-1">warning</span>
+                            Esta fórmula no tiene ingredientes o materias primas asociadas.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
+    </div>
 </div>
 
 </body>

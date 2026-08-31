@@ -1,74 +1,80 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Detalle de Ingreso MP - Primera Pulpa', 'ingresos-mp', ~{::#ingreso-detail-content})}">
 <body>
 
-<div id="ingreso-detail-content" class="space-y-md">
+<div id="ingreso-detail-content" class="max-w-4xl mx-auto space-y-md">
 
     <!-- Header -->
-    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
-            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
-                <span class="material-symbols-outlined text-[18px]">move_to_inbox</span>
-                <span>Comprobante de Ingreso</span>
+            <a th:href="@{/ingresos-mp}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al Listado</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold">
+                    Ingreso <span class="font-data-tabular" th:text="'#' + ${ingreso.id}">#1</span>
+                </h1>
             </div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
-                Ingreso <span class="font-data-tabular" th:text="'#' + ${ingreso.id}">#1</span>
-            </h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant"
-               th:text="'Registrado el ' + ${#temporals.format(ingreso.fechaHora, 'dd/MM/yyyy')} + ' a las ' + ${#temporals.format(ingreso.fechaHora, 'HH:mm')} + ' hs'">Fecha</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5"
+               th:text="'Registrado el ' + ${#temporals.format(ingreso.fechaHora, 'dd/MM/yyyy')} + ' a las ' + ${#temporals.format(ingreso.fechaHora, 'HH:mm')} + ' hs'">
+                Registrado el 01/01/2026 a las 12:00 hs
+            </p>
         </div>
 
-        <a th:href="@{/ingresos-mp}"
-           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
-            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            <span>Volver al Listado</span>
-        </a>
-    </header>
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+            <a th:href="@{/ingresos-mp}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al Listado</span>
+            </a>
+        </div>
+    </div>
 
-    <!-- Tabla de Detalles -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+    <!-- Tabla de Detalles / Cards Móviles -->
+    <div class="table-responsive-cards md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
                 <tr>
                     <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
-                    <th class="py-3 px-4 font-normal w-36 text-center">Unidad</th>
-                    <th class="py-3 px-4 font-normal w-40 text-right">Cantidad</th>
-                    <th class="py-3 px-4 font-normal w-44 text-center">Vencimiento</th>
-                    <th class="py-3 px-4 font-normal w-44 text-right">Restante (FIFO)</th>
+                    <th class="py-3 px-4 font-normal w-32 text-center">Unidad</th>
+                    <th class="py-3 px-4 font-normal w-36 text-right">Cantidad</th>
+                    <th class="py-3 px-4 font-normal w-40 text-center">Vencimiento</th>
+                    <th class="py-3 px-4 font-normal w-44 text-right">Restante </th>
                 </tr>
                 </thead>
 
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                 <tr th:each="det : ${ingreso.detalles}" class="hover:bg-surface-container-low transition-colors">
+
                     <!-- Materia Prima -->
-                    <td class="py-3.5 px-4 font-medium text-primary">
-                        <div class="flex items-center gap-2 truncate">
-                            <span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0">spa</span>
-                            <span class="truncate" th:text="${det.materiaPrima?.nombre}">Materia Prima</span>
-                        </div>
+                    <td data-label="Materia Prima" class="py-3.5 px-4 font-medium text-primary">
+                        <span class="material-symbols-outlined text-outline text-[20px] !hidden md:!inline-flex mr-2">spa</span>
+                        <span class="text-right md:text-left break-words" th:text="${det.materiaPrima?.nombre}">Almendras Nonpareil</span>
                     </td>
 
                     <!-- Unidad -->
-                    <td class="py-3.5 px-4 text-center font-label-caps text-on-surface-variant">
+                    <td data-label="Unidad" class="py-3.5 px-4 text-center font-label-caps text-on-surface-variant">
                         <span class="inline-block px-2.5 py-0.5 rounded bg-surface-container text-xs font-semibold"
                               th:text="${det.materiaPrima?.unidadMedida?.descripcion ?: 'kg'}">kg</span>
                     </td>
 
                     <!-- Cantidad -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface"
-                        th:text="${det.cantidad}">0</td>
+                    <td data-label="Cantidad" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface"
+                        th:text="${#numbers.formatDecimal(det.cantidad, 1, 'POINT', 2, 'COMMA')}">0,00</td>
 
                     <!-- Vencimiento -->
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant"
+                    <td data-label="Vencimiento" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant"
                         th:text="${det.fechaVencimiento != null ? #temporals.format(det.fechaVencimiento, 'dd/MM/yyyy') : '—'}">—</td>
 
-                    <!-- Restante (desglose FIFO) -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                    <!-- Restante (FIFO) -->
+                    <td data-label="Restante" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span th:if="${det.restante <= 0}"
                               class="inline-flex items-center justify-end gap-1 font-bold text-error">
-                            <span class="material-symbols-outlined text-[15px]">block</span>
+                            <span class="material-symbols-outlined text-[15px] !hidden md:!inline-flex">block</span>
                             Agotado
                         </span>
                         <span th:if="${det.restante > 0 and det.cantidadRestante != null}"
@@ -81,8 +87,8 @@
                 </tr>
                 </tbody>
 
-                <!-- Total -->
-                <tfoot>
+                <!-- Total Escritorio -->
+                <tfoot class="hidden md:table-footer-group">
                 <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
                     <td colspan="4" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
                         Cantidad Total del Ingreso:
@@ -95,6 +101,18 @@
             </table>
         </div>
     </div>
+
+    <!-- Total Tarjeta Móvil -->
+    <div class="md:hidden bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 soft-shadow flex items-center justify-between">
+        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
+            Total Ingreso:
+        </span>
+        <span class="font-data-tabular text-lg font-bold text-primary"
+              th:text="${#numbers.formatDecimal(#aggregates.sum(ingreso.detalles.![cantidad]), 1, 'POINT', 2, 'COMMA')}">
+            0,00
+        </span>
+    </div>
+
 </div>
 
 </body>

@@ -12,12 +12,12 @@
                 <span class="material-symbols-outlined text-[18px]">group</span>
                 <span>Ventas y Pedidos</span>
             </div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Gestión de Clientes</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Consulta, busca y registra los clientes para asociarlos a los pedidos.</p>
+            <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold">Gestión de Clientes</h1>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Consulta, busca y registra los clientes para asociarlos a los pedidos.</p>
         </div>
 
         <a th:href="@{|${basePath}/nuevo|}"
-           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
             <span class="material-symbols-outlined text-[20px]">person_add</span>
             <span>Nuevo Cliente</span>
         </a>
@@ -34,22 +34,22 @@
         <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
     </div>
 
-    <!-- Barra de Búsqueda -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
-        <form th:action="@{/clientes}" method="get" class="flex flex-col sm:flex-row items-center gap-sm">
+    <!-- Barra de Búsqueda Responsive -->
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-3 sm:p-4">
+        <form th:action="@{/clientes}" method="get" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
             <div class="relative flex-1 w-full">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
                 <input type="text" name="buscar" th:value="${buscar}" placeholder="Buscar cliente por nombre o contacto..."
-                       class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"/>
+                       class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg font-body-sm text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"/>
             </div>
-            <div class="flex items-center gap-xs w-full sm:w-auto">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
                 <button type="submit"
-                        class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-md py-2 bg-secondary-container text-on-secondary-container font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-opacity">
+                        class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary text-on-primary font-label-caps text-xs font-bold rounded-lg soft-shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-[18px]">search</span>
                     <span>Buscar</span>
                 </button>
                 <a th:if="${buscar != null and !#strings.isEmpty(buscar)}" th:href="@{/clientes}"
-                   class="inline-flex items-center justify-center gap-1 px-md py-2 bg-surface-container text-on-surface-variant font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors"
+                   class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-4 py-2 border border-outline-variant/30 bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high font-label-caps text-xs font-bold rounded-lg transition-colors text-center"
                    title="Limpiar búsqueda">
                     <span class="material-symbols-outlined text-[18px]">close</span>
                     <span>Limpiar</span>
@@ -58,10 +58,10 @@
         </form>
     </div>
 
-    <!-- Tabla de Clientes -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+    <!-- Tabla de Clientes con modo Card para Móviles -->
+    <div class="table-responsive-cards md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse table-fixed">
+            <table class="w-full text-left border-collapse">
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
                 <tr>
                     <th class="py-3 px-4 font-normal w-16 text-center">ID</th>
@@ -69,45 +69,41 @@
                     <th class="py-3 px-4 font-normal w-40">CUIT</th>
                     <th class="py-3 px-4 font-normal w-64">Contacto</th>
                     <th class="py-3 px-4 font-normal w-28 text-center">Estado</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right pr-6">Acciones</th>
+                    <th class="py-3 px-4 font-normal w-32 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
 
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                 <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
+
                     <!-- ID -->
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular font-medium text-on-surface-variant" th:text="${item.id}">#1</td>
+                    <td data-label="ID" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular font-medium text-on-surface-variant" th:text="${item.id}">#1</td>
 
                     <!-- Nombre -->
-                    <td class="py-3.5 px-4 font-medium text-primary">
-                        <div class="flex items-center gap-2 truncate">
-                            <span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0">store</span>
-                            <span class="truncate font-semibold" th:text="${item.nombre}">Panadería Central</span>
-                        </div>
+                    <td data-label="Nombre" class="py-3.5 px-4 font-medium text-primary">
+                        <span class="material-symbols-outlined text-outline text-[20px] !hidden md:!inline-flex mr-1.5">store</span>
+                        <span class="font-semibold text-right md:text-left break-words" th:text="${item.nombre}">Panadería Central</span>
                     </td>
 
                     <!-- CUIT -->
-                    <td class="py-3.5 px-4 font-data-tabular text-data-tabular text-on-surface-variant"
+                    <td data-label="CUIT" class="py-3.5 px-4 font-data-tabular text-data-tabular text-on-surface-variant"
                         th:text="${item.cuit != null and !#strings.isEmpty(item.cuit) ? item.cuit : '-'}">30-71234567-8</td>
 
                     <!-- Contacto -->
-                    <td class="py-3.5 px-4 truncate">
-                        <div class="flex items-center gap-1.5 text-on-surface-variant truncate">
-                            <span class="material-symbols-outlined text-[16px] text-outline flex-shrink-0">call</span>
-                            <span class="truncate font-data-tabular text-data-tabular" th:text="${item.contacto}">+54 9 11 1234-5678</span>
-                        </div>
+                    <td data-label="Contacto" class="py-3.5 px-4">
+                        <span class="text-right md:text-left font-data-tabular text-data-tabular text-on-surface-variant break-words" th:text="${item.contacto}">+54 9 11 1234-5678</span>
                     </td>
 
                     <!-- Estado -->
-                    <td class="py-3.5 px-4 text-center font-label-caps">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-secondary-container text-on-secondary-container">
-                            <span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    <td data-label="Estado" class="py-3.5 px-4 text-center font-label-caps">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-secondary-container text-on-secondary-container">
+                            <span class="material-symbols-outlined text-[13px] !hidden md:!inline-flex">check_circle</span>
                             Activo
                         </span>
                     </td>
 
                     <!-- Acciones -->
-                    <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                    <td data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
                             <!-- Ver Detalle -->
                             <a th:href="@{|${basePath}/${item.id}|}"
@@ -162,11 +158,11 @@
     <div id="eliminarModal"
          class="hidden fixed inset-0 bg-on-surface/50 backdrop-blur-xs z-50 flex items-center justify-center p-4"
          onclick="if(event.target === this) closeEliminarModal()">
-        
+
         <div class="bg-surface-container-lowest rounded-2xl p-6 soft-shadow border border-outline-variant/30 w-full max-w-[460px] mx-auto shadow-2xl relative">
-            
+
             <button type="button" onclick="closeEliminarModal()"
-                    class="absolute top-4 right-4 text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container transition-colors">
+                    class="absolute top-4 right-4 text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container transition-colors cursor-pointer">
                 <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
 
@@ -175,12 +171,12 @@
                     <span class="material-symbols-outlined text-[24px]">delete</span>
                 </div>
                 <div>
-                    <h3 class="font-headline-md text-headline-md text-primary tracking-tight">¿Eliminar Cliente?</h3>
-                    <p class="font-body-sm text-body-sm text-on-surface-variant">Baja de registro</p>
+                    <h3 class="font-headline-md text-lg sm:text-headline-md text-primary font-bold tracking-tight">¿Eliminar Cliente?</h3>
+                    <p class="font-body-sm text-xs text-on-surface-variant">Baja de registro</p>
                 </div>
             </div>
 
-            <p class="font-body-md text-body-md text-on-surface mb-6">
+            <p class="font-body-md text-sm text-on-surface mb-6">
                 ¿Estás seguro de que deseas eliminar al cliente <strong id="eliminarClienteName" class="text-primary"></strong>?
                 No se podrá eliminar si tiene pedidos asociados en el sistema.
             </p>
@@ -188,13 +184,13 @@
             <form id="eliminarForm" method="post" action="">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/20">
+                <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-2 border-t border-outline-variant/20">
                     <button type="button" onclick="closeEliminarModal()"
-                            class="px-4 py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors cursor-pointer">
+                            class="w-full sm:w-auto px-4 py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors cursor-pointer">
                         Cancelar
                     </button>
                     <button type="submit"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-error text-on-error font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity cursor-pointer">
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-error text-on-error font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity cursor-pointer">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                         <span>Eliminar Cliente</span>
                     </button>

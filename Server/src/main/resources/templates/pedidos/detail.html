@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Detalle de Pedido - Primera Pulpa', 'pedidos', ~{::#pedido-detail-content})}">
 <body>
 
-<div id="pedido-detail-content" class="space-y-md">
+<div id="pedido-detail-content" class="max-w-5xl mx-auto space-y-md">
 
     <!-- Mensajes flash -->
     <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
@@ -16,35 +16,43 @@
     </div>
 
     <!-- Cabecera -->
-    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
-            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
-                <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
-                <span>Comprobante de Pedido</span>
+            <a th:href="@{/pedidos}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver a Pedidos</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold">
+                    Pedido <span class="font-data-tabular" th:text="'#' + ${pedido.id}">#1</span>
+                </h1>
             </div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
-                Pedido <span class="font-data-tabular" th:text="'#' + ${pedido.id}">#1</span>
-            </h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant"
-               th:text="'Registrado el ' + ${#temporals.format(pedido.fecha, 'dd/MM/yyyy')} + ' por ' + (${pedido.usuario?.nombre} ?: '—')">Fecha</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5"
+               th:text="'Registrado el ' + ${#temporals.format(pedido.fecha, 'dd/MM/yyyy')} + ' por ' + (${pedido.usuario?.nombre} ?: '—')">
+                Registrado el 01/01/2026
+            </p>
         </div>
 
-        <a th:href="@{/pedidos}"
-           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
-            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            <span>Volver al Listado</span>
-        </a>
-    </header>
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+            <a th:href="@{/pedidos}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al Listado</span>
+            </a>
+        </div>
+    </div>
 
-    <!-- Info del Pedido y Progreso de Preparación -->
+    <!-- Info del Pedido y Métricas Principales -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+
         <!-- Cliente -->
         <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
             <div>
                 <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Cliente</span>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="material-symbols-outlined text-primary text-[20px]">storefront</span>
-                    <span class="font-body-md text-body-md font-medium text-primary truncate" th:text="${pedido.cliente?.nombre ?: '—'}">Cliente</span>
+                    <span class="material-symbols-outlined text-primary text-[20px] flex-shrink-0">storefront</span>
+                    <span class="font-body-md text-body-md font-medium text-primary break-words" th:text="${pedido.cliente?.nombre ?: '—'}">Cliente</span>
                 </div>
             </div>
             <span class="block font-body-sm text-xs text-on-surface-variant mt-2 truncate" th:text="'Contacto: ' + (${pedido.cliente?.contacto} ?: '—')">Contacto</span>
@@ -61,7 +69,7 @@
             <span class="block font-body-sm text-xs text-on-surface-variant mt-2" th:text="${pedido.estadoPedido?.descripcion == 'ENTREGADO' ? 'Pedido finalizado' : (pedido.estadoPedido?.descripcion == 'CANCELADO' ? 'Pedido cancelado' : (pedido.estadoPedido?.descripcion == 'PREPARADO' ? 'Listo para despachar' : 'En proceso de preparación'))}">Estado</span>
         </div>
 
-        <!-- Progreso de Preparación (1/3) -->
+        <!-- Progreso de Preparación -->
         <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between">
@@ -76,7 +84,6 @@
                     <span class="text-xs text-on-surface-variant font-medium">mixes listos</span>
                 </div>
             </div>
-            <!-- Barra de Progreso -->
             <div class="w-full bg-surface-container rounded-full h-2 mt-2 overflow-hidden">
                 <div class="h-2 rounded-full transition-all duration-500"
                      th:classappend="${pedido.porcentajePreparado == 100} ? 'bg-emerald-600' : 'bg-primary'"
@@ -96,42 +103,42 @@
         </div>
     </div>
 
-    <!-- Acciones Globales: Cambio de Estado (HU-14) -->
-    <div th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}"
+    <!-- Acciones Globales: Cambio de Estado -->
+    <div sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}"
          class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
-        <h3 class="font-headline-md text-headline-md text-primary mb-3">Acciones Globales</h3>
-        <div class="flex flex-wrap gap-sm items-center">
+        <h3 class="font-headline-md text-base sm:text-headline-md text-primary font-bold mb-3">Acciones Globales</h3>
+        <div class="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-sm items-stretch sm:items-center">
 
-            <!-- PENDIENTE → PREPARADO (Global) -->
-            <form th:if="${pedido.estadoPedido?.descripcion == 'PENDIENTE'}"
-                  th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="inline"
+            <!-- PENDIENTE → PREPARADO -->
+            <form sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.descripcion == 'PENDIENTE'}"
+                  th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="w-full sm:w-auto"
                   onsubmit="return confirm('¿Desea marcar todos los ítems pendientes como preparados y descontar el stock correspondiente de cada mix?');">
                 <input type="hidden" name="nuevoEstado" value="PREPARADO"/>
                 <button type="submit"
-                        class="inline-flex items-center gap-xs px-md py-sm bg-blue-600 text-white font-label-caps text-label-caps rounded-lg hover:bg-blue-700 transition-colors soft-shadow cursor-pointer">
-                    <span class="material-symbols-outlined text-[20px]">done_all</span>
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-secondary text-white font-label-caps text-xs sm:text-label-caps font-bold rounded-lg hover:bg-emerald-700 transition-colors soft-shadow cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">done_all</span>
                     <span>Preparar Todo y Cambiar a PREPARADO</span>
                 </button>
             </form>
 
             <!-- PREPARADO → ENTREGADO -->
-            <form th:if="${pedido.estadoPedido?.descripcion == 'PREPARADO'}"
-                  th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="inline">
+            <form sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.descripcion == 'PREPARADO'}"
+                  th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="w-full sm:w-auto">
                 <input type="hidden" name="nuevoEstado" value="ENTREGADO"/>
                 <button type="submit"
-                        class="inline-flex items-center gap-xs px-md py-sm bg-emerald-600 text-white font-label-caps text-label-caps rounded-lg hover:bg-emerald-700 transition-colors soft-shadow cursor-pointer">
-                    <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-emerald-600 text-white font-label-caps text-xs sm:text-label-caps font-bold rounded-lg hover:bg-emerald-700 transition-colors soft-shadow cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">local_shipping</span>
                     <span>Marcar como ENTREGADO (Despachar)</span>
                 </button>
             </form>
 
-            <!-- CANCELAR (desde PENDIENTE o PREPARADO) -->
-            <form th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="inline"
+            <!-- CANCELAR -->
+            <form sec:authorize="hasRole('ADMIN')" th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="w-full sm:w-auto"
                   onsubmit="return confirm('¿Está seguro que desea cancelar este pedido? Se restaurará el stock de los mixes que hayan sido preparados.');">
                 <input type="hidden" name="nuevoEstado" value="CANCELADO"/>
                 <button type="submit"
-                        class="inline-flex items-center gap-xs px-md py-sm bg-error text-on-error font-label-caps text-label-caps rounded-lg hover:bg-error/80 transition-colors soft-shadow cursor-pointer">
-                    <span class="material-symbols-outlined text-[20px]">cancel</span>
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-error text-on-error font-label-caps text-xs sm:text-label-caps font-bold rounded-lg hover:bg-error/80 transition-colors soft-shadow cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">cancel</span>
                     <span>Cancelar Pedido</span>
                 </button>
             </form>
@@ -139,150 +146,159 @@
     </div>
 
     <!-- Tabla de Detalles con Preparación Ítem por Ítem -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
-        <div class="p-md border-b border-outline-variant/20 bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <div class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
+
+        <div class="p-3 sm:p-md bg-transparent md:bg-surface-container-low md:border-b md:border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-                <h3 class="font-headline-md text-headline-md text-primary">Mixes del Pedido</h3>
-                <p class="font-body-sm text-xs text-on-surface-variant">Puedes marcar cada ítem individualmente a medida que se arma en planta para descontar su stock de mix.</p>
+                <h3 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Mixes del Pedido</h3>
+                <p class="font-body-sm text-xs text-on-surface-variant">Puedes marcar cada ítem individualmente para descontar su stock de mix en planta.</p>
             </div>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container text-on-surface rounded-full text-xs font-semibold font-label-caps">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container text-on-surface rounded-full text-xs font-semibold font-label-caps self-start sm:self-auto flex-shrink-0">
                 <span class="material-symbols-outlined text-[16px] text-primary">fact_check</span>
                 <span th:text="${pedido.cantidadDetallesPreparados} + ' de ' + ${pedido.totalDetalles} + ' preparados'">0 de 0 preparados</span>
             </span>
         </div>
 
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
-                <tr>
-                    <th class="py-3 px-4 font-normal w-auto">Mix Solicitado</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Cantidad</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Precio Unitario</th>
-                    <th class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
-                    <th class="py-3 px-4 font-normal w-44 text-center">Estado Armado</th>
-                    <th class="py-3 px-4 font-normal w-48 text-center"
-                        th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">Acción</th>
-                </tr>
-                </thead>
+        <div class="table-responsive-cards">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                    <tr>
+                        <th class="py-3 px-4 font-normal w-auto">Mix Solicitado</th>
+                        <th class="py-3 px-4 font-normal w-32 text-right">Cantidad</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Precio Unitario</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
+                        <th class="py-3 px-4 font-normal w-40 text-center">Estado Armado</th>
+                        <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-44 text-center"
+                            th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">Acción</th>
+                    </tr>
+                    </thead>
 
-                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="det : ${detalles}" class="hover:bg-surface-container-low transition-colors"
-                    th:classappend="${det.preparado} ? 'bg-emerald-50/40 dark:bg-emerald-950/10' : ''">
-                    
-                    <!-- Mix -->
-                    <td class="py-3.5 px-4 font-medium text-primary">
-                        <div class="flex items-center gap-2 truncate">
-                            <span class="material-symbols-outlined text-[20px] flex-shrink-0"
+                    <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                    <tr th:each="det : ${detalles}" class="hover:bg-surface-container-low transition-colors"
+                        th:classappend="${det.preparado} ? 'bg-emerald-50/40 dark:bg-emerald-950/10' : ''">
+
+                        <!-- Mix -->
+                        <td data-label="Mix" class="py-3.5 px-4 font-medium text-primary">
+                            <span class="material-symbols-outlined text-[20px] !hidden md:!inline-flex mr-1.5"
                                   th:classappend="${det.preparado} ? 'text-emerald-600' : 'text-outline'">
                                 inventory_2
                             </span>
-                            <span class="truncate font-semibold" th:text="${det.mix?.nombre}">Mix</span>
-                        </div>
-                    </td>
+                            <span class="font-semibold text-right md:text-left break-words" th:text="${det.mix?.nombre}">Mix</span>
+                        </td>
 
-                    <!-- Cantidad -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface">
-                        <span class="font-bold text-primary" th:text="${#numbers.formatDecimal(det.cantidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                        <span class="text-xs text-on-surface-variant ml-0.5">kg</span>
-                    </td>
+                        <!-- Cantidad -->
+                        <td data-label="Cantidad" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-medium text-on-surface">
+                            <span class="font-bold text-primary" th:text="${#numbers.formatDecimal(det.cantidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                            <span class="text-xs text-on-surface-variant ml-0.5">kg</span>
+                        </td>
 
-                    <!-- Precio Unitario -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
-                        <span class="text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(det.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                        <span class="text-xs ml-0.5">/ kg</span>
-                    </td>
+                        <!-- Precio Unitario -->
+                        <td data-label="Precio Unit." class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                            <span class="text-xs mr-0.5">$</span>
+                            <span th:text="${#numbers.formatDecimal(det.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                            <span class="text-xs ml-0.5">/ kg</span>
+                        </td>
 
-                    <!-- Subtotal -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-on-surface">
-                        <span class="text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(det.cantidad * det.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
+                        <!-- Subtotal -->
+                        <td data-label="Subtotal" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-on-surface">
+                            <span class="text-xs mr-0.5">$</span>
+                            <span th:text="${#numbers.formatDecimal(det.cantidad * det.precioUnitario, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        </td>
 
-                    <!-- Estado Armado (Badge) -->
-                    <td class="py-3.5 px-4 text-center">
-                        <span th:if="${det.preparado}"
-                              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                            <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                            <span>Listo / Descontado</span>
-                        </span>
-                        <span th:unless="${det.preparado}"
-                              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                            <span class="material-symbols-outlined text-[16px]">hourglass_top</span>
-                            <span>Pendiente</span>
-                        </span>
-                    </td>
+                        <!-- Estado Armado -->
+                        <td data-label="Estado" class="py-3.5 px-4 text-center">
+                            <span th:if="${det.preparado}"
+                                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                <span>Listo</span>
+                            </span>
+                            <span th:unless="${det.preparado}"
+                                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                                <span class="material-symbols-outlined text-[14px]">hourglass_top</span>
+                                <span>Pendiente</span>
+                            </span>
+                        </td>
 
-                    <!-- Botón de Acción individual -->
-                    <td class="py-3.5 px-4 text-center"
-                        th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">
-                        
-                        <!-- Si está PENDIENTE: botón para preparar -->
-                        <form th:if="${!det.preparado}"
-                              th:action="@{|/pedidos/${pedido.id}/detalles/${det.id}/preparar|}" method="post" class="inline">
-                            <button type="submit"
-                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-on-primary text-xs font-label-caps font-semibold rounded-lg hover:opacity-90 transition-opacity soft-shadow cursor-pointer">
-                                <span class="material-symbols-outlined text-[16px]">done</span>
-                                <span>Marcar Preparado</span>
-                            </button>
-                        </form>
+                        <!-- Acción Individual -->
+                        <td sec:authorize="hasRole('ADMIN')" data-label="Acción" class="py-3.5 px-4 text-center"
+                            th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">
 
-                        <!-- Si está PREPARADO: botón para deshacer si se necesita corregir -->
-                        <form th:if="${det.preparado}"
-                              th:action="@{|/pedidos/${pedido.id}/detalles/${det.id}/desmarcar|}" method="post" class="inline"
-                              onsubmit="return confirm('¿Desea desmarcar este ítem y restaurar el stock del mix?');">
-                            <button type="submit"
-                                    class="inline-flex items-center gap-1 px-2.5 py-1 bg-surface-container text-on-surface-variant text-xs font-label-caps rounded-lg hover:bg-surface-container-highest transition-colors cursor-pointer"
-                                    title="Desmarcar y restaurar stock de mix">
-                                <span class="material-symbols-outlined text-[16px]">undo</span>
-                                <span>Deshacer</span>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                </tbody>
+                            <form th:if="${!det.preparado}"
+                                  th:action="@{|/pedidos/${pedido.id}/detalles/${det.id}/preparar|}" method="post" class="w-full sm:w-auto">
+                                <button type="submit"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-primary text-on-primary text-xs font-label-caps font-semibold rounded-lg hover:opacity-90 transition-opacity soft-shadow cursor-pointer">
+                                    <span class="material-symbols-outlined text-[16px]">done</span>
+                                    <span>Marcar Preparado</span>
+                                </button>
+                            </form>
 
-                <tfoot>
-                <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
-                    <td colspan="3" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                        Total del Pedido:
-                    </td>
-                    <td class="py-4 px-4 text-right font-data-tabular text-body-lg font-bold text-primary">
-                        <span class="text-sm">$</span>
-                        <span th:text="${#numbers.formatDecimal(totalPedido, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
-                    <td colspan="2" class="py-4 px-4"></td>
-                </tr>
-                </tfoot>
-            </table>
+                            <form th:if="${det.preparado}"
+                                  th:action="@{|/pedidos/${pedido.id}/detalles/${det.id}/desmarcar|}" method="post" class="w-full sm:w-auto"
+                                  onsubmit="return confirm('¿Desea desmarcar este ítem y restaurar el stock del mix?');">
+                                <button type="submit"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-2.5 py-1 bg-surface-container text-on-surface-variant text-xs font-label-caps rounded-lg hover:bg-surface-container-highest transition-colors cursor-pointer"
+                                        title="Desmarcar y restaurar stock de mix">
+                                    <span class="material-symbols-outlined text-[16px]">undo</span>
+                                    <span>Deshacer</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+
+                    <!-- Total Escritorio -->
+                    <tfoot class="hidden md:table-footer-group">
+                    <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
+                        <td colspan="3" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                            Total del Pedido:
+                        </td>
+                        <td class="py-4 px-4 text-right font-data-tabular text-body-lg font-bold text-primary">
+                            <span class="text-sm">$</span>
+                            <span th:text="${#numbers.formatDecimal(totalPedido, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        </td>
+                        <td colspan="2" class="py-4 px-4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
+
+        <!-- Total en Móvil -->
+        <div class="md:hidden bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 soft-shadow flex items-center justify-between">
+            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
+                Total Pedido:
+            </span>
+            <span class="font-data-tabular text-lg font-bold text-primary"
+                  th:text="'$ ' + ${#numbers.formatDecimal(totalPedido, 1, 'POINT', 2, 'COMMA')}">
+                $ 0,00
+            </span>
+        </div>
+
     </div>
 
-    <!-- Historial de Estados (HU-14) -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden"
+    <!-- Historial de Estados (Timeline) -->
+    <div sec:authorize="hasRole('ADMIN')" class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden"
          th:if="${historial != null and !historial.isEmpty()}">
-        <div class="p-md border-b border-outline-variant/20 bg-surface-container-low">
-            <h3 class="font-headline-md text-headline-md text-primary">Historial de Estados</h3>
+        <div class="p-3 sm:p-md border-b border-outline-variant/20 bg-surface-container-low">
+            <h3 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Historial de Estados</h3>
         </div>
 
-        <div class="p-md">
+        <div class="p-4 sm:p-md">
             <div class="relative">
-                <!-- Línea vertical conectora -->
                 <div class="absolute left-[19px] top-0 bottom-0 w-0.5 bg-outline-variant/30"></div>
 
                 <div th:each="h, stat : ${historial}" class="relative flex items-start gap-3 pb-4 last:pb-0">
-                    <!-- Ícono del estado -->
-                    <div class="relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                    <div class="relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xs"
                          th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-emerald-100' : 'bg-error-container/40'))">
                         <span class="material-symbols-outlined text-[20px]"
                               th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'text-amber-700' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'text-blue-700' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'text-emerald-700' : 'text-error'))"
                               th:text="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'receipt_long' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'inventory_2' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'local_shipping' : 'cancel'))">icon</span>
                     </div>
 
-                    <!-- Info -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
                                   th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-emerald-100 text-emerald-800' : 'bg-error-container/40 text-on-error-container'))"
                                   th:text="${h.estadoPedido?.descripcion}">Estado</span>
                             <span class="font-body-sm text-xs text-on-surface-variant"

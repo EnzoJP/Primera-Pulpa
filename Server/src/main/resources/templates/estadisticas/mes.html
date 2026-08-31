@@ -3,120 +3,158 @@
       th:replace="~{layouts/main-layout :: layout('Desglose Mensual - Primera Pulpa', 'estadisticas', ~{::#stats-content})}">
 <body>
 
-<div id="stats-content" class="space-y-md">
+<div id="stats-content" class="max-w-5xl mx-auto space-y-md">
 
+    <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
             <a th:href="@{/estadisticas}"
-               class="inline-flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps mb-2">
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 <span>Volver a estadísticas</span>
             </a>
             <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
                 <span class="material-symbols-outlined text-[18px]">bar_chart</span>
-                <span>Desglose por mix</span>
+                <span>Desglose por Mix</span>
             </div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight"
+            <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold capitalize"
                 th:text="${nombreMes + ' ' + anio}">Enero 2026</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Mix vendidos en el mes con su cantidad y ganancia real (según el precio de venta de cada pedido).</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Mixes vendidos en el mes con su cantidad y ganancia real (según el precio de venta de cada pedido).</p>
         </div>
     </header>
 
     <!-- Tarjetas resumen del mes -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-md">
-        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
-            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
-                <span class="material-symbols-outlined text-[16px]">shopping_cart</span>
-                <span>Kg vendidos</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+
+        <!-- Kg Vendidos -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Kg Vendidos</span>
+                <span class="material-symbols-outlined text-outline text-[20px]">shopping_cart</span>
             </div>
-            <p class="font-headline-md text-headline-md text-primary font-bold"
-               th:text="${#numbers.formatDecimal(totalKg, 1, 'POINT', 1, 'COMMA')}">0,0</p>
+            <div class="flex items-baseline gap-1">
+                <span class="font-display text-2xl sm:text-[30px] leading-tight text-primary font-bold font-data-tabular"
+                      th:text="${#numbers.formatDecimal(totalKg, 1, 'POINT', 1, 'COMMA')}">0,0</span>
+                <span class="font-label-caps text-xs text-on-surface-variant uppercase">kg</span>
+            </div>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
-            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
-                <span class="material-symbols-outlined text-[16px]">payments</span>
-                <span>Facturado</span>
+        <!-- Facturado -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Facturado</span>
+                <span class="material-symbols-outlined text-outline text-[20px]">payments</span>
             </div>
-            <p class="font-headline-md text-headline-md text-primary font-bold">
-                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
-                <span th:text="${#numbers.formatDecimal(totalFacturado, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-            </p>
+            <div class="flex items-baseline gap-1">
+                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                <span class="font-display text-2xl sm:text-[30px] leading-tight text-primary font-bold font-data-tabular"
+                      th:text="${#numbers.formatDecimal(totalFacturado, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+            </div>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
-            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
-                <span class="material-symbols-outlined text-[16px]">receipt_long</span>
-                <span>Costo</span>
+        <!-- Costo -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Costo Total</span>
+                <span class="material-symbols-outlined text-outline text-[20px]">receipt_long</span>
             </div>
-            <p class="font-headline-md text-headline-md text-primary font-bold">
-                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
-                <span th:text="${#numbers.formatDecimal(totalCosto, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-            </p>
+            <div class="flex items-baseline gap-1">
+                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                <span class="font-display text-2xl sm:text-[30px] leading-tight text-primary font-bold font-data-tabular"
+                      th:text="${#numbers.formatDecimal(totalCosto, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+            </div>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-base">
-            <div class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps uppercase mb-2">
-                <span class="material-symbols-outlined text-[16px]">trending_up</span>
-                <span>Ganancia real</span>
+        <!-- Ganancia Real -->
+        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Ganancia Real</span>
+                <span class="material-symbols-outlined text-[20px]"
+                      th:classappend="${totalGanancia >= 0} ? 'text-secondary' : 'text-error'">
+                    trending_up
+                </span>
             </div>
-            <p class="font-headline-md text-headline-md font-bold"
-               th:classappend="${totalGanancia >= 0} ? 'text-primary' : 'text-error'">
-                <span class="text-on-surface-variant text-xs mr-0.5">$</span>
-                <span th:text="${#numbers.formatDecimal(totalGanancia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-            </p>
+            <div class="flex items-baseline gap-1">
+                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                <span class="font-display text-2xl sm:text-[30px] leading-tight font-bold font-data-tabular"
+                      th:classappend="${totalGanancia >= 0} ? 'text-primary' : 'text-error'"
+                      th:text="${#numbers.formatDecimal(totalGanancia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+            </div>
         </div>
+
     </div>
 
-    <!-- Tabla por mix -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
-                <tr>
-                    <th class="py-3 px-4 font-normal">Mix</th>
-                    <th class="py-3 px-4 font-normal text-right">Kg vendidos</th>
-                    <th class="py-3 px-4 font-normal text-right">Facturado</th>
-                    <th class="py-3 px-4 font-normal text-right">Costo</th>
-                    <th class="py-3 px-4 font-normal text-right">Ganancia real</th>
-                </tr>
-                </thead>
-                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="d : ${detalles}" class="hover:bg-surface-container-low transition-colors">
-                    <td class="py-3 px-4 font-medium text-primary">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-outline text-[20px]">inventory_2</span>
-                            <span th:text="${d.nombreMix()}">Mix</span>
-                        </div>
-                    </td>
-                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular"
-                        th:text="${#numbers.formatDecimal(d.cantidadVendida(), 1, 'POINT', 1, 'COMMA')}">0,0</td>
-                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular">
-                        <span class="text-on-surface-variant text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(d.facturado(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
-                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
-                        <span class="text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(d.costo(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
-                    <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-semibold"
-                        th:classappend="${d.ganancia() >= 0} ? 'text-secondary' : 'text-error'">
-                        <span class="text-xs mr-0.5">$</span>
-                        <span th:text="${#numbers.formatDecimal(d.ganancia(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                    </td>
-                </tr>
+    <!-- Tabla por mix Transformable a Cards -->
+    <div class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
 
-                <tr th:if="${#lists.isEmpty(detalles)}">
-                    <td colspan="5" class="py-12 px-4 text-center">
-                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
-                            <span class="material-symbols-outlined text-outline text-[36px]">bar_chart</span>
-                            <p class="font-body-md text-body-md">No hay ventas registradas en este periodo.</p>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="p-3 sm:p-md bg-transparent md:bg-surface-container/40 md:border-b md:border-outline-variant/20 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">inventory_2</span>
+            <h2 class="font-headline-md text-base sm:text-headline-md font-bold text-primary">Detalle de Mixes Vendidos</h2>
         </div>
+
+        <div class="table-responsive-cards">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                    <tr>
+                        <th class="py-3 px-4 font-normal w-auto">Mix</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Kg Vendidos</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Facturado</th>
+                        <th class="py-3 px-4 font-normal w-36 text-right">Costo</th>
+                        <th class="py-3 px-4 font-normal w-40 text-right pr-6">Ganancia Real</th>
+                    </tr>
+                    </thead>
+
+                    <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                    <tr th:each="d : ${detalles}" class="hover:bg-surface-container-low transition-colors group">
+
+                        <!-- Mix -->
+                        <td data-label="Mix" class="py-3.5 px-4 font-medium text-primary">
+                            <span class="material-symbols-outlined text-outline text-[20px] !hidden md:!inline-flex mr-1.5">inventory_2</span>
+                            <span class="text-right md:text-left break-words font-semibold" th:text="${d.nombreMix()}">Mix</span>
+                        </td>
+
+                        <!-- Kg Vendidos -->
+                        <td data-label="Kg Vendidos" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                            <span th:text="${#numbers.formatDecimal(d.cantidadVendida(), 1, 'POINT', 1, 'COMMA')}">0,0</span>
+                            <span class="text-xs text-on-surface-variant ml-0.5">kg</span>
+                        </td>
+
+                        <!-- Facturado -->
+                        <td data-label="Facturado" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                            <span class="text-on-surface-variant text-xs mr-0.5">$</span>
+                            <span th:text="${#numbers.formatDecimal(d.facturado(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        </td>
+
+                        <!-- Costo -->
+                        <td data-label="Costo" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                            <span class="text-xs mr-0.5">$</span>
+                            <span th:text="${#numbers.formatDecimal(d.costo(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        </td>
+
+                        <!-- Ganancia Real -->
+                        <td data-label="Ganancia Real" class="py-3.5 px-4 pr-6 text-right font-data-tabular text-data-tabular font-bold"
+                            th:classappend="${d.ganancia() >= 0} ? 'text-secondary' : 'text-error'">
+                            <span class="text-xs mr-0.5">$</span>
+                            <span th:text="${#numbers.formatDecimal(d.ganancia(), 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                        </td>
+
+                    </tr>
+
+                    <!-- Estado Vacío -->
+                    <tr th:if="${#lists.isEmpty(detalles)}">
+                        <td colspan="5" class="py-12 px-4 text-center text-on-surface-variant">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-outline text-[36px]">bar_chart</span>
+                                <p class="font-body-md text-body-md">No hay ventas registradas en este periodo.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
 </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Stock de Mixes - Primera Pulpa', 'mixes', ~{::#mix-list-content})}">
 <body>
 
@@ -15,7 +15,7 @@
             <p class="font-body-sm text-body-sm text-on-surface-variant">Control de existencias para expedición y estado de producción.</p>
         </div>
 
-        <a th:href="@{|${basePath}/nuevo|}"
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{|${basePath}/nuevo|}"
            class="inline-flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
             <span class="material-symbols-outlined text-[20px]">add</span>
             <span>Nuevo Mix</span>
@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+    <div class="table-responsive-cards md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
@@ -64,58 +64,73 @@
                     <th class="py-3 px-4 font-normal w-32 text-center">Estado</th>
                     <th class="py-3 px-4 font-normal w-40 text-center">Presentación</th>
                     <th class="py-3 px-4 font-normal w-36 text-right">Precio x Unidad</th>
-                    <th class="py-3 px-4 font-normal w-32 text-right">Rentabilidad</th>
+                    <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-32 text-right">Rentabilidad</th>
                     <th class="py-3 px-4 font-normal w-28 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
 
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                 <tr th:each="item : ${items}"
+                    th:data-nombre="${item.nombre != null ? #strings.toLowerCase(item.nombre) : ''}"
                     th:data-stock="${item.stock}"
                     th:data-pendiente="${cantidadesPendientes[item.id] ?: 0}"
                     class="mix-row transition-colors group"
                     th:classappend="${item.stock < 0} ? 'bg-error-container/20 text-on-error-container font-medium' : (${item.stock == 0} ? 'bg-surface-container/60 text-outline' : 'hover:bg-surface-container-low')">
 
                     <!-- ID -->
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular font-medium"
+                    <td data-label="ID" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular font-medium"
                         th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')"
                         th:text="${item.id}">#1</td>
 
                     <!-- Nombre del Mix -->
-                    <td class="py-3.5 px-4 font-medium"
+                    <td data-label="Nombre" class="py-3.5 px-4 font-medium"
                         th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-primary')">
                         <div class="flex items-center gap-2 truncate">
-                            <span class="material-symbols-outlined text-[20px] flex-shrink-0"
+                            <span class="material-symbols-outlined text-[20px] flex-shrink-0 !hidden md:!inline-flex"
                                   th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-outline')">blender</span>
                             <span class="truncate" th:text="${item.nombre}">Mix Clásico</span>
                         </div>
                     </td>
 
                     <!-- Cantidad en Stock -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-base font-semibold">
-                        <span th:if="${item.stock < 0}" class="text-error font-bold flex items-center justify-end gap-1">
-                            <span class="material-symbols-outlined text-[16px]">priority_high</span>
-                            <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">-1,00</span>
-                            <span class="text-xs text-error/80">kg</span>
-                        </span>
-                        <span th:if="${item.stock == 0}" class="text-outline">
-                            <span>0,00</span>
-                            <span class="text-xs">kg</span>
-                        </span>
-                        <span th:if="${item.stock > 0}" class="text-primary font-bold">
-                            <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">20,00</span>
-                            <span class="text-xs text-on-surface-variant font-normal">kg</span>
-                        </span>
-                        <div th:if="${cantidadesPendientes[item.id] != null and cantidadesPendientes[item.id] > 0}"
-                             class="flex items-center justify-end gap-1 mt-0.5">
-                            <span class="material-symbols-outlined text-amber-600" style="font-size: 14px">shopping_cart</span>
-                            <span class="text-[11px] text-amber-700 font-medium"
-                                  th:text="${#numbers.formatDecimal(cantidadesPendientes[item.id], 1, 'POINT', 2, 'COMMA') + ' kg pendientes'}">0,00 kg pendientes</span>
+
+                    <td data-label="Cantidad en stock" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                        <div class="flex flex-col items-end gap-0.5">
+
+                            <!-- Valor principal del stock -->
+                            <div class="text-base font-semibold">
+                                <!-- Menor a 0 -->
+                                <span th:if="${item.stock < 0}" class="text-error font-bold inline-flex items-center justify-end gap-1">
+                                <span class="material-symbols-outlined text-[16px]">priority_high</span>
+                                <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">-1,00</span>
+                                <span class="text-xs text-error/80 ml-0.5">kg</span>
+                                 </span>
+
+                                <!-- Igual a 0 -->
+                                <span th:if="${item.stock == 0}" class="text-outline">
+                                <span>0,00</span>
+                                <span class="text-xs ml-0.5">kg</span>
+                                </span>
+
+                                <!-- Mayor a 0 -->
+                                <span th:if="${item.stock > 0}" class="text-primary font-bold">
+                                <span th:text="${#numbers.formatDecimal(item.stock, 1, 'POINT', 2, 'COMMA')}">20,00</span>
+                                <span class="text-xs text-on-surface-variant font-normal ml-0.5">kg</span>
+                                </span>
+                            </div>
+
+                            <!-- Badge de Pedidos Pendientes -->
+                            <div th:if="${cantidadesPendientes[item.id] != null and cantidadesPendientes[item.id] > 0}"
+                                 class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-900 border border-amber-300/60 text-[10px] font-medium leading-none mt-0.5">
+                                <span class="material-symbols-outlined text-[12px] text-amber-700">shopping_cart</span>
+                                <span th:text="${#numbers.formatDecimal(cantidadesPendientes[item.id], 1, 'POINT', 2, 'COMMA') + ' kg pendientes'}">10,00 kg pendientes</span>
+                            </div>
+
                         </div>
                     </td>
 
                     <!-- Estado -->
-                    <td class="py-3.5 px-4 text-center">
+                    <td data-label="Estado" class="py-3.5 px-4 text-center">
                         <span th:if="${item.stock < 0}"
                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase bg-error text-on-error font-bold tracking-wider">
                             Negativo
@@ -131,13 +146,13 @@
                     </td>
 
                     <!-- Presentación -->
-                    <td class="py-3.5 px-4 text-center font-body-sm text-body-sm text-on-surface-variant"
+                    <td data-label="Presentación" class="py-3.5 px-4 text-center font-body-sm text-body-sm text-on-surface-variant"
                         th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : '')">
                         <span th:text="${#numbers.formatDecimal(item.cantidadPorUnidadOrDefault, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span>
                     </td>
 
                     <!-- Precio de Venta por unidad -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
+                    <td data-label="Precio por unidad" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span th:if="${item.precioVenta != null}">
                             <span class="text-on-surface-variant text-xs mr-0.5">$</span>
                             <span th:text="${#numbers.formatDecimal(item.precioVentaPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
@@ -146,7 +161,7 @@
                     </td>
 
                     <!-- Rentabilidad (%) -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular"
+                    <td sec:authorize="hasRole('ADMIN')" data-label="Rentabilidad" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular"
                         th:with="precioU=${item.precioVenta != null ? item.precioVentaPorUnidad : null},costoU=${item.costoPorUnidad},rentabilidad=${precioU != null and precioU != 0 ? ((precioU - costoU) / precioU) * 100 : null}">
                         <span th:if="${rentabilidad != null}"
                               th:classappend="${rentabilidad >= 0} ? 'font-semibold text-secondary' : 'font-semibold text-error'"
@@ -155,7 +170,7 @@
                     </td>
 
                     <!-- Acciones -->
-                    <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                    <td data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
                             <a th:href="@{|${basePath}/${item.id}|}"
                                title="Ver Detalle"
@@ -163,13 +178,13 @@
                                th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')">
                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                             </a>
-                            <a th:href="@{|${basePath}/${item.id}/editar|}"
+                            <a sec:authorize="hasRole('ADMIN')" th:href="@{|${basePath}/${item.id}/editar|}"
                                title="Editar"
                                class="p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
                                th:classappend="${item.stock < 0} ? 'text-error' : (${item.stock == 0} ? 'text-outline' : 'text-on-surface-variant')">
                                 <span class="material-symbols-outlined text-[20px]">edit</span>
                             </a>
-                            <form th:action="@{|${basePath}/${item.id}/eliminar|}"
+                            <form sec:authorize="hasRole('ADMIN')" th:action="@{|${basePath}/${item.id}/eliminar|}"
                                   method="post"
                                   class="inline m-0"
                                   onsubmit="return confirm('¿Seguro que deseas eliminar este mix?');">
@@ -190,7 +205,7 @@
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">inventory_2</span>
                             <p class="font-body-md text-body-md">No hay mixes registrados en el catálogo.</p>
-                            <a th:href="@{|${basePath}/nuevo|}" class="font-label-caps text-label-caps text-secondary hover:underline mt-0.5">
+                            <a sec:authorize="hasRole('ADMIN')" th:href="@{|${basePath}/nuevo|}" class="font-label-caps text-label-caps text-secondary hover:underline mt-0.5">
                                 Registrar el primer mix
                             </a>
                         </div>
@@ -212,46 +227,55 @@
     </div>
 
     <script>
-        const tbody = document.querySelector('#mix-list-content tbody');
-        const inputFiltro = document.getElementById('filtroNombre');
-        const filaSinCoincidencias = document.getElementById('fila-vacia');
-        const filasMix = Array.from(document.querySelectorAll('#mix-list-content tbody tr.mix-row'));
+        document.addEventListener('DOMContentLoaded', () => {
+            const tbody = document.querySelector('#mix-list-content tbody');
+            const inputFiltro = document.getElementById('filtroNombre');
+            const botonLimpiar = document.getElementById('limpiarFiltro');
+            const filaSinCoincidencias = document.getElementById('fila-vacia');
+            const filasMix = Array.from(document.querySelectorAll('#mix-list-content tbody tr.mix-row'));
 
-        // Ordenamiento: Negativos asc (más negativo primero) -> Positivos desc -> Ceros al final
-        filasMix.sort((a, b) => {
-            const stockA = parseFloat(a.dataset.stock) || 0;
-            const stockB = parseFloat(b.dataset.stock) || 0;
-            const grupo = (s) => (s < 0 ? 1 : (s > 0 ? 2 : 3));
+            // 1. Ordenamiento: Negativos asc -> Positivos desc -> Ceros al final
+            filasMix.sort((a, b) => {
+                const stockA = parseFloat(a.dataset.stock) || 0;
+                const stockB = parseFloat(b.dataset.stock) || 0;
+                const grupo = (s) => (s < 0 ? 1 : (s > 0 ? 2 : 3));
 
-            if (grupo(stockA) !== grupo(stockB)) return grupo(stockA) - grupo(stockB);
-            if (stockA < 0) return stockA - stockB;
-            return stockB - stockA;
-        });
-
-        filasMix.forEach(row => tbody.appendChild(row));
-
-        // Filtro por nombre
-        function aplicarFiltro() {
-            const termino = inputFiltro.value.trim().toLowerCase();
-            let visibles = 0;
-            filasMix.forEach(row => {
-                const nombre = row.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
-                const coincide = nombre.includes(termino);
-                row.style.display = coincide ? '' : 'none';
-                if (coincide) visibles++;
+                if (grupo(stockA) !== grupo(stockB)) return grupo(stockA) - grupo(stockB);
+                if (stockA < 0) return stockA - stockB;
+                return stockB - stockA;
             });
-            if (filaSinCoincidencias) {
-                filaSinCoincidencias.classList.toggle('hidden', !(termino && visibles === 0));
+
+            filasMix.forEach(row => tbody.appendChild(row));
+
+            // 2. Función de Búsqueda Robusta
+            function aplicarFiltro() {
+                const termino = (inputFiltro.value || '').trim().toLowerCase();
+                let visibles = 0;
+
+                filasMix.forEach(row => {
+                    const nombre = row.dataset.nombre || row.textContent.toLowerCase();
+                    const coincide = !termino || nombre.includes(termino);
+
+                    // Alterna la clase Tailwind 'hidden' que tiene prioridad
+                    row.classList.toggle('hidden', !coincide);
+                    if (coincide) visibles++;
+                });
+
+                if (filaSinCoincidencias) {
+                    filaSinCoincidencias.classList.toggle('hidden', !(termino && visibles === 0));
+                }
             }
-        }
 
-        inputFiltro.addEventListener('input', aplicarFiltro);
+            inputFiltro.addEventListener('input', aplicarFiltro);
+            inputFiltro.addEventListener('keyup', aplicarFiltro);
 
-        const botonLimpiar = document.getElementById('limpiarFiltro');
-        botonLimpiar.addEventListener('click', () => {
-            inputFiltro.value = '';
-            aplicarFiltro();
-            inputFiltro.focus();
+            if (botonLimpiar) {
+                botonLimpiar.addEventListener('click', () => {
+                    inputFiltro.value = '';
+                    aplicarFiltro();
+                    inputFiltro.focus();
+                });
+            }
         });
     </script>
 </div>

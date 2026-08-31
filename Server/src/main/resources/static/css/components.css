@@ -57,3 +57,56 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #80756d; /* outline */
 }
+
+/* =======================================================
+   TABLAS RESPONSIVE GLOBALES (Mobile Card View)
+   ======================================================= */
+@media (max-width: 767px) {
+  .table-responsive-cards table,
+  .table-responsive-cards tbody,
+  .table-responsive-cards td {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Solo las filas visibles se muestran como bloque */
+  .table-responsive-cards tbody tr:not(.hidden) {
+    display: block !important;
+    margin-bottom: 0.75rem !important;
+    padding: 1rem !important;
+    background-color: #ffffff !important;
+    border: 1px solid rgba(210, 196, 187, 0.4) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 8px rgba(74, 55, 40, 0.04) !important;
+  }
+
+  /* Forzar que las filas ocultas no se muestren jamás */
+  .table-responsive-cards tbody tr.hidden {
+    display: none !important;
+  }
+
+  .table-responsive-cards thead {
+    display: none !important;
+  }
+
+  .table-responsive-cards tbody td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.35rem 0 !important;
+    text-align: right !important;
+    border: none !important;
+  }
+
+  .table-responsive-cards tbody td::before {
+    content: attr(data-label);
+    font-family: var(--font-label-caps, "Work Sans"), sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant, #4e453e);
+    text-align: left;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+}

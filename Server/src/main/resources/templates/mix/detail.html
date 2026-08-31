@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.nombre} + ' - Primera Pulpa', 'mixes', ~{::#mix-detail-content})}">
 <body>
 
 <div id="mix-detail-content" class="max-w-4xl mx-auto space-y-md">
 
+    <!-- Encabezado -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
             <a th:href="@{|${basePath}|}"
@@ -13,91 +14,107 @@
                 <span>Volver a mixes</span>
             </a>
             <div class="flex items-center gap-sm">
-                <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${item.nombre}">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary font-bold tracking-tight break-words" th:text="${item.nombre}">
                     Mix Frutos Secos Clásico
                 </h1>
-                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium"
+                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium flex-shrink-0"
                       th:text="'#' + ${item.id}">#1</span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Ficha comercial, estructura de costos y rendimiento por kilogramo.</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Ficha comercial, estructura de costos y rendimiento por kilogramo.</p>
         </div>
 
-        <div class="flex items-center gap-xs">
-            <a th:href="@{|${basePath}/${item.id}/editar|}"
-               class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{|${basePath}/${item.id}/editar|}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">edit</span>
                 <span>Editar Mix</span>
             </a>
         </div>
     </div>
 
+    <!-- Cards Principales (Métricas comerciales) -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
 
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-            <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Precio x Unidad</p>
-                <span class="material-symbols-outlined text-outline">payments</span>
+        <!-- 1. Precio x Unidad -->
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-xs">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Precio x Unidad</p>
+                    <span class="material-symbols-outlined text-outline text-[22px]">payments</span>
+                </div>
+                <div class="flex items-baseline gap-1" th:if="${item.precioVenta != null}">
+                    <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight text-primary font-bold"
+                          th:text="${#numbers.formatDecimal(item.precioVentaPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                </div>
+                <div class="flex items-baseline gap-1" th:unless="${item.precioVenta != null}">
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight text-on-surface-variant font-bold">—</span>
+                </div>
             </div>
-            <div class="flex items-baseline gap-1" th:if="${item.precioVenta != null}">
-                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
-                <span class="font-display text-[32px] leading-tight text-primary font-bold"
-                      th:text="${#numbers.formatDecimal(item.precioVentaPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-            </div>
-            <div class="flex items-baseline gap-1" th:unless="${item.precioVenta != null}">
-                <span class="font-display text-[32px] leading-tight text-on-surface-variant font-bold">—</span>
-            </div>
-            <p class="font-body-sm text-xs text-on-surface-variant mt-2">Presentación de <span class="font-medium" th:text="${#numbers.formatDecimal(item.cantidadPorUnidadOrDefault, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span> (equivale a $<span th:text="${#numbers.formatDecimal(item.precioVenta != null ? item.precioVenta : 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>/kg)</p>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">
+                Presentación de <span class="font-medium" th:text="${#numbers.formatDecimal(item.cantidadPorUnidadOrDefault, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span>
+                (equivale a $<span th:text="${#numbers.formatDecimal(item.precioVenta != null ? item.precioVenta : 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>/kg)
+            </p>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-            <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Costo por Unidad</p>
-                <span class="material-symbols-outlined text-outline">shopping_bag</span>
-            </div>
-            <div class="flex items-baseline gap-1">
-                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
-                <span class="font-display text-[32px] leading-tight text-primary font-bold"
-                      th:text="${#numbers.formatDecimal(item.costoPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-            </div>
-            <p class="font-body-sm text-xs text-on-surface-variant mt-2">MP + costos adicionales (equivale a $<span th:text="${#numbers.formatDecimal(item.costo ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>/kg)</p>
-        </div>
-
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-            <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Margen Unitario</p>
-                <span class="material-symbols-outlined"
-                      th:classappend="${item.precioVenta != null and (item.precioVentaPorUnidad - item.costoPorUnidad) >= 0} ? 'text-secondary' : 'text-error'">
-                    trending_up
-                </span>
-            </div>
-
-            <div th:if="${item.precioVenta != null}" th:with="ganancia=${item.precioVentaPorUnidad - item.costoPorUnidad}">
+        <!-- 2. Costo por Unidad -->
+        <div sec:authorize="hasRole('ADMIN')" class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-xs">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Costo por Unidad</p>
+                    <span class="material-symbols-outlined text-outline text-[22px]">shopping_bag</span>
+                </div>
                 <div class="flex items-baseline gap-1">
                     <span class="font-label-caps text-lg text-on-surface-variant">$</span>
-                    <span class="font-display text-[32px] leading-tight font-bold"
-                          th:classappend="${ganancia >= 0} ? 'text-secondary' : 'text-error'"
-                          th:text="${#numbers.formatDecimal(ganancia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                </div>
-                <div class="mt-2" th:if="${item.precioVentaPorUnidad > 0}">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px]"
-                          th:classappend="${ganancia >= 0} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'">
-                        <span class="material-symbols-outlined text-[14px]" th:text="${ganancia >= 0} ? 'check_circle' : 'warning'">check_circle</span>
-                        <span th:text="${#numbers.formatDecimal((ganancia / item.precioVentaPorUnidad) * 100, 1, 'POINT', 1, 'COMMA')} + '% rentabilidad'">35%</span>
-                    </span>
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight text-primary font-bold"
+                          th:text="${#numbers.formatDecimal(item.costoPorUnidad, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                 </div>
             </div>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">
+                MP + costos adicionales (equivale a $<span th:text="${#numbers.formatDecimal(item.costo ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>/kg)
+            </p>
+        </div>
 
-            <div th:unless="${item.precioVenta != null}">
-                <span class="font-display text-[32px] leading-tight text-on-surface-variant font-bold">—</span>
-                <p class="font-body-sm text-xs text-on-surface-variant mt-2">Precio de venta no definido</p>
+        <!-- 3. Margen Unitario -->
+        <div sec:authorize="hasRole('ADMIN')" class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-xs">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Margen Unitario</p>
+                    <span class="material-symbols-outlined text-[22px]"
+                          th:classappend="${item.precioVenta != null and (item.precioVentaPorUnidad - item.costoPorUnidad) >= 0} ? 'text-secondary' : 'text-error'">
+                        trending_up
+                    </span>
+                </div>
+
+                <div th:if="${item.precioVenta != null}" th:with="ganancia=${item.precioVentaPorUnidad - item.costoPorUnidad}">
+                    <div class="flex items-baseline gap-1">
+                        <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                        <span class="font-display text-2xl sm:text-[32px] leading-tight font-bold"
+                              th:classappend="${ganancia >= 0} ? 'text-secondary' : 'text-error'"
+                              th:text="${#numbers.formatDecimal(ganancia, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    </div>
+                    <div class="mt-2" th:if="${item.precioVentaPorUnidad > 0}">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px]"
+                              th:classappend="${ganancia >= 0} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'">
+                            <span class="material-symbols-outlined text-[14px]" th:text="${ganancia >= 0} ? 'check_circle' : 'warning'">check_circle</span>
+                            <span th:text="${#numbers.formatDecimal((ganancia / item.precioVentaPorUnidad) * 100, 1, 'POINT', 1, 'COMMA')} + '% rentabilidad'">35%</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div th:unless="${item.precioVenta != null}">
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight text-on-surface-variant font-bold">—</span>
+                    <p class="font-body-sm text-xs text-on-surface-variant mt-2">Precio de venta no definido</p>
+                </div>
             </div>
         </div>
 
     </div>
 
+    <!-- Información General -->
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 class="font-headline-md text-headline-md text-primary">Información General y Composición</h2>
+            <h2 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Información General y Composición</h2>
             <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Propiedades</span>
         </div>
 
@@ -106,9 +123,8 @@
 
                 <div class="border-b border-outline-variant/10 pb-3">
                     <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Nombre Comercial</dt>
-                    <dd class="font-body-md text-body-md text-on-surface font-medium" th:text="${item.nombre}">Mix Frutos Secos Clásico</dd>
+                    <dd class="font-body-md text-body-md text-on-surface font-medium break-words" th:text="${item.nombre}">Mix Frutos Secos Clásico</dd>
                 </div>
-
 
                 <div class="border-b border-outline-variant/10 pb-3">
                     <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Presentación</dt>
@@ -118,11 +134,11 @@
                     </dd>
                 </div>
 
-                <div class="border-b border-outline-variant/10 pb-3">
+                <div class="border-b border-outline-variant/10 pb-3 sm:border-b-0 sm:pb-0">
                     <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Estado en Catálogo</dt>
                     <dd>
-                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container">Activo</span>
-                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container">Inactivo</span>
+                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-xs bg-secondary-container text-on-secondary-container font-semibold">Activo</span>
+                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-xs bg-error-container text-on-error-container font-semibold">Inactivo</span>
                     </dd>
                 </div>
 
@@ -130,48 +146,51 @@
         </div>
     </div>
 
-    <!-- Desglose de Costos (fórmula + costos adicionales por paquete) -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
-        <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 class="font-headline-md text-headline-md text-primary">Desglose de Costos</h2>
-            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Estructura de costo por kg</span>
+    <!-- Desglose de Costos -->
+    <div sec:authorize="hasRole('ADMIN')" class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
+
+        <div class="p-3 sm:p-md bg-transparent md:bg-surface-container/40 md:border-b md:border-outline-variant/20 flex items-center justify-between">
+            <h2 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Desglose de Costos</h2>
+            <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Estructura / kg</span>
         </div>
 
-        <div class="p-md md:p-lg space-y-lg">
+        <div class="p-0 sm:p-md md:p-lg space-y-lg">
 
             <!-- 1) Materia prima (fórmula) -->
             <div>
-                <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-3">1. Materia Prima (Fórmula)</h3>
+                <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-3 px-1 sm:px-0">1. Materia Prima (Fórmula)</h3>
 
                 <div th:if="${desglose.formula != null and !desglose.formula.detalles.isEmpty()}"
-                     class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
-                        <tr>
-                            <th class="py-3 px-4 font-normal text-left">Materia Prima</th>
-                            <th class="py-3 px-4 font-normal text-right">Gramos</th>
-                            <th class="py-3 px-4 font-normal text-right">$ / kg</th>
-                            <th class="py-3 px-4 font-normal text-right">Costo</th>
-                        </tr>
-                        </thead>
-                        <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                        <tr th:each="d : ${desglose.formula.detalles}" class="hover:bg-surface-container-low transition-colors">
-                            <td class="py-3.5 px-4 font-medium" th:text="${d.materiaPrima}">Almendra</td>
-                            <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular" th:text="${#numbers.formatDecimal(d.gramos, 1, 'POINT', 0, 'COMMA')}">100</td>
-                            <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular" th:text="'$ ' + ${#numbers.formatDecimal(d.precioPorKg, 1, 'POINT', 2, 'COMMA')}">$ 1.000,00</td>
-                            <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-semibold" th:text="'$ ' + ${#numbers.formatDecimal(d.costo, 1, 'POINT', 2, 'COMMA')}">$ 100,00</td>
-                        </tr>
-                        </tbody>
-                        <tfoot>
-                        <tr class="border-t border-outline-variant/20 bg-surface-container/30">
-                            <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="3">Subtotal fórmula (para <span th:text="${#numbers.formatDecimal(desglose.formula.cantidad, 1, 'POINT', 2, 'COMMA') + ' kg'}">25,00 kg</span>)</td>
-                            <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary" th:text="'$ ' + ${#numbers.formatDecimal(desglose.formula.subtotalMateriaPrima, 1, 'POINT', 2, 'COMMA')}">$ 2.500,00</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="4">Costo de materia prima: <span class="font-bold text-on-surface" th:text="'$ ' + ${#numbers.formatDecimal(desglose.costoMateriaPrimaPorKg, 1, 'POINT', 3, 'COMMA') + ' / kg'}">$ 100,000 / kg</span></td>
-                        </tr>
-                        </tfoot>
-                    </table>
+                     class="table-responsive-cards">
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                            <tr>
+                                <th class="py-3 px-4 font-normal text-left">Materia Prima</th>
+                                <th class="py-3 px-4 font-normal text-right">Gramos</th>
+                                <th class="py-3 px-4 font-normal text-right">$ / kg</th>
+                                <th class="py-3 px-4 font-normal text-right">Costo</th>
+                            </tr>
+                            </thead>
+                            <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                            <tr th:each="d : ${desglose.formula.detalles}" class="hover:bg-surface-container-low transition-colors">
+                                <td data-label="Materia Prima" class="py-3.5 px-4 font-medium" th:text="${d.materiaPrima}">Almendra</td>
+                                <td data-label="Gramos" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular" th:text="${#numbers.formatDecimal(d.gramos, 1, 'POINT', 0, 'COMMA')} + ' g'">100 g</td>
+                                <td data-label="Precio / kg" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular" th:text="'$ ' + ${#numbers.formatDecimal(d.precioPorKg, 1, 'POINT', 2, 'COMMA')}">$ 1.000,00</td>
+                                <td data-label="Costo Parcial" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-semibold" th:text="'$ ' + ${#numbers.formatDecimal(d.costo, 1, 'POINT', 2, 'COMMA')}">$ 100,00</td>
+                            </tr>
+                            </tbody>
+                            <tfoot class="hidden sm:table-footer-group">
+                            <tr class="border-t border-outline-variant/20 bg-surface-container/30">
+                                <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="3">Subtotal fórmula (para <span th:text="${#numbers.formatDecimal(desglose.formula.cantidad, 1, 'POINT', 2, 'COMMA') + ' kg'}">25,00 kg</span>)</td>
+                                <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary" th:text="'$ ' + ${#numbers.formatDecimal(desglose.formula.subtotalMateriaPrima, 1, 'POINT', 2, 'COMMA')}">$ 2.500,00</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="4">Costo de materia prima: <span class="font-bold text-on-surface" th:text="'$ ' + ${#numbers.formatDecimal(desglose.costoMateriaPrimaPorKg, 1, 'POINT', 3, 'COMMA') + ' / kg'}">$ 100,000 / kg</span></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
 
                 <div th:if="${desglose.formula == null or desglose.formula.detalles.isEmpty()}"
@@ -183,44 +202,46 @@
 
             <!-- 2) Costos adicionales por paquete -->
             <div>
-                <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-3">2. Costos Adicionales (por paquete)</h3>
+                <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-3 px-1 sm:px-0">2. Costos Adicionales (por paquete)</h3>
 
                 <div th:if="${!desglose.adicionales.isEmpty()}"
-                     class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
-                        <tr>
-                            <th class="py-3 px-4 font-normal text-left">Concepto</th>
-                            <th class="py-3 px-4 font-normal text-left">Presentación</th>
-                            <th class="py-3 px-4 font-normal text-right">Valor (por paquete)</th>
-                            <th class="py-3 px-4 font-normal text-right">Aporte / kg</th>
-                        </tr>
-                        </thead>
-                        <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                        <tr th:each="a : ${desglose.adicionales}" class="hover:bg-surface-container-low transition-colors">
-                            <td class="py-3.5 px-4 font-medium" th:text="${a.descripcion}">Bolsa</td>
-                            <td class="py-3.5 px-4">
-                                <span class="inline-flex px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium" th:text="${a.presentacion}">1 kg</span>
-                            </td>
-                            <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular" th:text="'$ ' + ${#numbers.formatDecimal(a.valorPorPaquete, 1, 'POINT', 2, 'COMMA')}">$ 50,00</td>
-                            <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-semibold" th:text="'$ ' + ${#numbers.formatDecimal(a.aportePorKg, 1, 'POINT', 3, 'COMMA')}">$ 10,000</td>
-                        </tr>
-                        </tbody>
-                        <tfoot>
-                        <tr class="border-t border-outline-variant/20 bg-surface-container/30">
-                            <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="3">
-                                Total adicional por paquete (<span th:text="${#numbers.formatDecimal(desglose.cantidadPorUnidad, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span>)
-                            </td>
-                            <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary"
-                                th:text="'$ ' + ${#numbers.formatDecimal(desglose.totalAdicionalPorPaquete, 1, 'POINT', 2, 'COMMA')}">$ 50,00</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="4">
-                                Total costos adicionales: <span class="font-bold text-on-surface" th:text="'$ ' + ${#numbers.formatDecimal(desglose.costosAdicionalesPorKg, 1, 'POINT', 3, 'COMMA') + ' / kg'}">$ 50,000 / kg</span>
-                            </td>
-                        </tr>
-                        </tfoot>
-                    </table>
+                     class="table-responsive-cards">
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                            <tr>
+                                <th class="py-3 px-4 font-normal text-left">Concepto</th>
+                                <th class="py-3 px-4 font-normal text-left">Presentación</th>
+                                <th class="py-3 px-4 font-normal text-right">Valor (por paquete)</th>
+                                <th class="py-3 px-4 font-normal text-right">Aporte / kg</th>
+                            </tr>
+                            </thead>
+                            <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                            <tr th:each="a : ${desglose.adicionales}" class="hover:bg-surface-container-low transition-colors">
+                                <td data-label="Concepto" class="py-3.5 px-4 font-medium" th:text="${a.descripcion}">Bolsa</td>
+                                <td data-label="Presentación" class="py-3.5 px-4">
+                                    <span class="inline-flex px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium" th:text="${a.presentacion}">1 kg</span>
+                                </td>
+                                <td data-label="Valor x Paquete" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular" th:text="'$ ' + ${#numbers.formatDecimal(a.valorPorPaquete, 1, 'POINT', 2, 'COMMA')}">$ 50,00</td>
+                                <td data-label="Aporte / kg" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-semibold" th:text="'$ ' + ${#numbers.formatDecimal(a.aportePorKg, 1, 'POINT', 3, 'COMMA')}">$ 10,000</td>
+                            </tr>
+                            </tbody>
+                            <tfoot class="hidden sm:table-footer-group">
+                            <tr class="border-t border-outline-variant/20 bg-surface-container/30">
+                                <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="3">
+                                    Total adicional por paquete (<span th:text="${#numbers.formatDecimal(desglose.cantidadPorUnidad, 1, 'POINT', 2, 'COMMA') + ' kg'}">1,00 kg</span>)
+                                </td>
+                                <td class="py-3 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary"
+                                    th:text="'$ ' + ${#numbers.formatDecimal(desglose.totalAdicionalPorPaquete, 1, 'POINT', 2, 'COMMA')}">$ 50,00</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider" colspan="4">
+                                    Total costos adicionales: <span class="font-bold text-on-surface" th:text="'$ ' + ${#numbers.formatDecimal(desglose.costosAdicionalesPorKg, 1, 'POINT', 3, 'COMMA') + ' / kg'}">$ 50,000 / kg</span>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
 
                 <div th:if="${desglose.adicionales.isEmpty()}"
@@ -232,19 +253,19 @@
 
             <!-- 3) Resumen -->
             <div class="bg-surface-container rounded-xl p-md border border-outline-variant/20">
-                <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-3">3. Resumen</h3>
+                <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-3">3. Resumen de Costos</h3>
                 <dl class="grid grid-cols-1 sm:grid-cols-3 gap-md">
-                    <div>
+                    <div class="border-b border-outline-variant/20 pb-2 sm:border-b-0 sm:pb-0">
                         <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Materia Prima</dt>
-                        <dd class="font-display text-2xl font-bold text-on-surface" th:text="'$ ' + ${#numbers.formatDecimal(desglose.costoMateriaPrimaPorKg, 1, 'POINT', 2, 'COMMA') + ' /kg'}">$ 100,00 /kg</dd>
+                        <dd class="font-display text-xl sm:text-2xl font-bold text-on-surface" th:text="'$ ' + ${#numbers.formatDecimal(desglose.costoMateriaPrimaPorKg, 1, 'POINT', 2, 'COMMA') + ' /kg'}">$ 100,00 /kg</dd>
                     </div>
-                    <div>
+                    <div class="border-b border-outline-variant/20 pb-2 sm:border-b-0 sm:pb-0">
                         <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Costos Adicionales</dt>
-                        <dd class="font-display text-2xl font-bold text-on-surface" th:text="'+ $ ' + ${#numbers.formatDecimal(desglose.costosAdicionalesPorKg, 1, 'POINT', 2, 'COMMA') + ' /kg'}">+ $ 0,00 /kg</dd>
+                        <dd class="font-display text-xl sm:text-2xl font-bold text-on-surface" th:text="'+ $ ' + ${#numbers.formatDecimal(desglose.costosAdicionalesPorKg, 1, 'POINT', 2, 'COMMA') + ' /kg'}">+ $ 0,00 /kg</dd>
                     </div>
                     <div>
                         <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Costo Final</dt>
-                        <dd class="font-display text-2xl font-bold text-primary flex items-baseline gap-1">
+                        <dd class="font-display text-xl sm:text-2xl font-bold text-primary flex flex-wrap items-baseline gap-1">
                             <span th:text="'$ ' + ${#numbers.formatDecimal(desglose.costoFinalPorKg, 1, 'POINT', 2, 'COMMA') + ' /kg'}">$ 100,00 /kg</span>
                             <span class="font-body-sm text-xs font-normal text-on-surface-variant"
                                   th:text="'($ ' + ${#numbers.formatDecimal(desglose.costoFinalPorUnidad, 1, 'POINT', 2, 'COMMA')} + ' por unidad)'">($ 100,00 por unidad)</span>
@@ -257,14 +278,14 @@
     </div>
 
     <!-- Historial de Cambios de Precio (HU-8) -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden"
+    <div sec:authorize="hasRole('ADMIN')" class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden"
          th:if="${historialPrecios != null and !historialPrecios.isEmpty()}">
-        <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 class="font-headline-md text-headline-md text-primary">Historial de Cambios de Precio</h2>
+        <div class="p-3 sm:p-md bg-transparent md:bg-surface-container/40 md:border-b md:border-outline-variant/20 flex items-center justify-between">
+            <h2 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Historial de Cambios de Precio</h2>
             <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Trazabilidad</span>
         </div>
 
-        <div class="p-md">
+        <div class="table-responsive-cards">
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
@@ -278,25 +299,29 @@
                     </thead>
                     <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                     <tr th:each="h : ${historialPrecios}" class="hover:bg-surface-container-low transition-colors">
-                        <td class="py-3.5 px-4 font-data-tabular text-data-tabular text-on-surface-variant"
-                            th:text="${#temporals.format(h.fechaHora, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
-                        <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                        <td data-label="Fecha" class="py-3.5 px-4 font-data-tabular text-data-tabular text-on-surface-variant"
+                            th:text="${#temporals.format(h.fechaHora, 'dd/MM/yyyy HH:mm')}">01/01/2026 12:00</td>
+
+                        <td data-label="Precio Anterior" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular text-on-surface-variant">
                             <span th:if="${h.precioAnterior != null}">
                                 <span class="text-xs">$ </span><span th:text="${#numbers.formatDecimal(h.precioAnterior, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                             </span>
                             <span th:unless="${h.precioAnterior != null}" class="text-on-surface-variant">—</span>
                         </td>
-                        <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary">
+
+                        <td data-label="Precio Nuevo" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary">
                             <span class="text-xs">$ </span><span th:text="${#numbers.formatDecimal(h.precioNuevo, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                         </td>
-                        <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular"
+
+                        <td data-label="Variación" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular"
                             th:with="variacion=${h.precioAnterior != null and h.precioAnterior != 0 ? ((h.precioNuevo - h.precioAnterior) / h.precioAnterior) * 100 : null}">
                             <span th:if="${variacion != null}"
                                   th:classappend="${variacion >= 0} ? 'text-secondary font-semibold' : 'text-error font-semibold'"
                                   th:text="${variacion >= 0 ? '+' : ''} + ${#numbers.formatDecimal(variacion, 1, 'POINT', 1, 'COMMA')} + '%'">+0%</span>
                             <span th:unless="${variacion != null}" class="text-on-surface-variant">—</span>
                         </td>
-                        <td class="py-3.5 px-4 text-on-surface" th:text="${h.usuario?.nombre ?: '—'}">Usuario</td>
+
+                        <td data-label="Usuario" class="py-3.5 px-4 text-on-surface" th:text="${h.usuario?.nombre ?: '—'}">Usuario</td>
                     </tr>
                     </tbody>
                 </table>
@@ -305,7 +330,7 @@
     </div>
 
     <!-- Aviso si no hay historial -->
-    <div th:if="${historialPrecios == null or historialPrecios.isEmpty()}"
+    <div sec:authorize="hasRole('ADMIN')" th:if="${historialPrecios == null or historialPrecios.isEmpty()}"
          class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
         <div class="flex items-center gap-2 text-on-surface-variant">
             <span class="material-symbols-outlined text-outline">history</span>

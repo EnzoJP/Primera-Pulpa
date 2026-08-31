@@ -5,32 +5,46 @@
 
 <div id="usuario-form-content" class="max-w-3xl mx-auto space-y-md">
 
-    <div class="pb-sm border-b border-outline-variant/20">
-        <a th:href="@{|${basePath}|}"
-           class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
-            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-            <span>Volver al listado</span>
-        </a>
-        <div class="flex items-center gap-sm">
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${formTitle}">
-                Formulario de Usuario
-            </h1>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <a th:href="@{|${basePath}|}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al listado</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold" th:text="${formTitle}">
+                    Formulario de Usuario
+                </h1>
+            </div>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Completá los datos del usuario, email institucional y rol asignado.</p>
         </div>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Completá los datos del usuario, email institucional y rol asignado.</p>
+
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+            <a th:href="@{|${basePath}|}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al listado</span>
+            </a>
+        </div>
     </div>
 
+    <!-- Error alert -->
     <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
         <span class="material-symbols-outlined text-error fill">error</span>
         <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ocurrió un error al guardar el usuario.</span>
     </div>
 
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-lg">
+    <!-- Formulario Responsive -->
+    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md sm:p-lg">
         <form th:object="${item}" th:action="${formAction}" method="post" class="space-y-md">
 
             <input type="hidden" th:if="*{id != null}" th:field="*{id}" />
 
+            <!-- Nombre Completo -->
             <div class="space-y-1.5">
-                <label for="nombre" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                <label for="nombre" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
                     Nombre Completo <span class="text-error">*</span>
                 </label>
                 <div class="relative">
@@ -41,22 +55,24 @@
                 <p th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}" class="text-error font-body-sm text-xs mt-1"></p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
 
+                <!-- Correo Electrónico -->
                 <div class="space-y-1.5">
-                    <label for="email" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    <label for="email" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
                         Correo Electrónico <span class="text-error">*</span>
                     </label>
                     <div class="relative">
                         <input id="email" type="email" th:field="*{email}" required
                                placeholder="usuario@primerapulpa.com"
-                               class="w-full bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                               class="w-full bg-surface border border-outline-variant/40 rounded-lg px-md py-2.5 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline" />
                     </div>
                     <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-error font-body-sm text-xs mt-1"></p>
                 </div>
 
+                <!-- Rol del Sistema -->
                 <div class="space-y-1.5">
-                    <label for="rol" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    <label for="rol" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
                         Rol del Sistema <span class="text-error">*</span>
                     </label>
                     <div class="relative">
@@ -78,7 +94,7 @@
 
             <!-- Contraseña solo si es nuevo usuario -->
             <div class="space-y-1.5" th:if="${item.id == null}">
-                <label for="passwordHash" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                <label for="passwordHash" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
                     Contraseña Temporal <span class="text-error">*</span>
                 </label>
                 <div class="relative">
@@ -89,13 +105,14 @@
                 <p class="font-body-sm text-xs text-on-surface-variant">La contraseña se encriptará de forma segura automáticamente al guardar.</p>
             </div>
 
-            <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
+            <!-- Botones de Acción Responsive -->
+            <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
                 <a th:href="@{|${basePath}|}"
-                   class="px-md py-2.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors">
+                   class="w-full sm:w-auto text-center px-md py-2.5 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container rounded-lg transition-colors">
                     Cancelar
                 </a>
                 <button type="submit"
-                        class="inline-flex items-center gap-xs px-md py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity cursor-pointer">
                     <span class="material-symbols-outlined text-[18px]">save</span>
                     <span>Guardar Usuario</span>
                 </button>

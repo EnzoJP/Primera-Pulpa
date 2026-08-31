@@ -3,25 +3,32 @@
       th:replace="~{layouts/main-layout :: layout('Nuevo Ingreso de Materia Prima - Primera Pulpa', 'ingresos-mp', ~{::#ingreso-form-content})}">
 <body>
 
-<div id="ingreso-form-content" class="space-y-md">
+<div id="ingreso-form-content" class="max-w-4xl mx-auto space-y-md">
 
     <!-- Header -->
-    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
-            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
-                <span class="material-symbols-outlined text-[18px]">move_to_inbox</span>
-                <span>Registro de Stock</span>
+            <a th:href="@{/ingresos-mp}"
+               class="inline-flex items-center gap-xs font-label-caps text-label-caps text-on-surface-variant hover:text-primary mb-2 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al listado</span>
+            </a>
+            <div class="flex items-center gap-sm">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold">
+                    Nuevo Ingreso de Materia Prima
+                </h1>
             </div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Nuevo Ingreso de Materia Prima</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Registrá los insumos recibidos</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Registrá los insumos recibidos para actualizar existencias y lotes.</p>
         </div>
 
-        <a th:href="@{/ingresos-mp}"
-           class="inline-flex items-center justify-center gap-xs px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
-            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            <span>Volver al Listado</span>
-        </a>
-    </header>
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+            <a th:href="@{/ingresos-mp}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver al Listado</span>
+            </a>
+        </div>
+    </div>
 
     <!-- Error alert -->
     <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
@@ -32,56 +39,58 @@
     <!-- Formulario -->
     <form th:action="@{/ingresos-mp/confirmar}" method="post" class="space-y-md">
 
-        <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
-            <div class="p-md border-b border-outline-variant/20 bg-surface-container-low flex justify-between items-center">
-                <h3 class="font-headline-md text-headline-md text-primary">Insumos a Ingresar</h3>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">Agregá una o más materias primas</span>
+        <div class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
+            <div class="p-3 sm:p-md bg-transparent md:bg-surface-container-low md:border-b md:border-outline-variant/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <h3 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Insumos a Ingresar</h3>
+                <span class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant">Agregá una o más materias primas</span>
             </div>
 
-            <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse" id="tablaDetalles">
-                    <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
-                    <tr>
-                        <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
-                        <th class="py-3 px-4 font-normal w-44 text-right">Cantidad</th>
-                        <th class="py-3 px-4 font-normal w-44 text-center">Vencimiento</th>
-                        <th class="py-3 px-4 font-normal w-20 text-center"></th>
-                    </tr>
-                    </thead>
-                    <tbody id="filas" class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+            <div class="table-responsive-cards">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse" id="tablaDetalles">
+                        <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                        <tr>
+                            <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
+                            <th class="py-3 px-4 font-normal w-40 text-right">Cantidad</th>
+                            <th class="py-3 px-4 font-normal w-44 text-center">Vencimiento</th>
+                            <th class="py-3 px-4 font-normal w-16 text-center"></th>
+                        </tr>
+                        </thead>
+                        <tbody id="filas" class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                         <tr class="hover:bg-surface-container-low transition-colors" id="fila-0">
-                            <td class="py-3 px-4">
+                            <td data-label="Materia Prima" class="py-3 px-4">
                                 <select name="materiaPrimaId" required onchange="onMateriaPrimaChange(this)"
-                                        class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
+                                        class="w-full sm:w-64 md:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
                                     <option value="">Seleccione materia prima...</option>
                                     <option th:each="mp : ${materiaPrimas}"
                                             th:value="${mp.id}"
-                                            th:text="${mp.nombre}">MP</option>
+                                            th:text="${mp.nombre + (mp.unidadMedida != null ? ' (' + mp.unidadMedida.descripcion + ')' : ' (kg)')}">MP</option>
                                 </select>
                             </td>
-                            <td class="py-3 px-4">
-                                <input type="number" name="cantidad" min="0.0" step="1.0" required placeholder="0.000"
-                                       class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                            <td data-label="Cantidad" class="py-3 px-4">
+                                <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="0.00"
+                                       class="w-32 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                             </td>
-                            <td class="py-3 px-4">
+                            <td data-label="Vencimiento" class="py-3 px-4">
                                 <input type="date" name="fechaVencimiento" title="Vencimiento del lote (opcional)"
-                                       class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                                       class="w-40 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td data-label="Acción" class="py-3 px-4 text-center">
                                 <button type="button" onclick="quitarFila(this)" title="Quitar fila"
-                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors opacity-0 pointer-events-none">
-                                    <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors opacity-0 pointer-events-none cursor-pointer">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
                                 </button>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Botón agregar fila -->
-            <div class="p-md border-t border-outline-variant/20 bg-surface-container-low/50">
+            <div class="p-3 sm:p-md border-t border-outline-variant/20 bg-surface-container-low/50">
                 <button type="button" onclick="agregarFila()"
-                        class="inline-flex items-center gap-xs px-md py-2 bg-surface-container text-primary font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors border border-outline-variant/30">
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2.5 bg-surface-container text-primary font-label-caps text-xs sm:text-label-caps font-bold rounded-lg hover:bg-surface-container-highest transition-colors border border-outline-variant/30 cursor-pointer">
                     <span class="material-symbols-outlined text-[18px]">add_circle</span>
                     <span>Agregar otra materia prima</span>
                 </button>
@@ -89,13 +98,13 @@
         </div>
 
         <!-- Botones de Acción -->
-        <div class="flex items-center justify-end gap-sm pt-sm">
+        <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-sm pt-sm">
             <a th:href="@{/ingresos-mp}"
-               class="px-md py-sm bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
+               class="w-full sm:w-auto text-center px-md py-2.5 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors">
                 Cancelar
             </a>
             <button type="submit"
-                    class="inline-flex items-center gap-xs px-lg py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-lg py-2.5 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity cursor-pointer">
                 <span class="material-symbols-outlined text-[20px]">check_circle</span>
                 <span>Confirmar Ingreso</span>
             </button>
@@ -121,7 +130,7 @@
             const selectedId = selectElem.value;
 
             if (!selectedId) {
-                cantidadInput.min = "1.00";
+                cantidadInput.min = "0.01";
                 cantidadInput.placeholder = "0.00";
                 return;
             }
@@ -134,24 +143,24 @@
             tr.className = 'hover:bg-surface-container-low transition-colors';
             tr.id = `fila-${contadorFilas}`;
             tr.innerHTML = `
-                <td class="py-3 px-4">
+                <td data-label="Materia Prima" class="py-3 px-4">
                     <select name="materiaPrimaId" required onchange="onMateriaPrimaChange(this)"
-                            class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
+                            class="w-full sm:w-64 md:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm">
                         ${buildSelect()}
                     </select>
                 </td>
-                <td class="py-3 px-4">
-                    <input type="number" name="cantidad" min="0.00" step="1.00" required placeholder="0.00"
-                           class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                <td data-label="Cantidad" class="py-3 px-4">
+                    <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="0.00"
+                           class="w-32 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                 </td>
-                <td class="py-3 px-4">
+                <td data-label="Vencimiento" class="py-3 px-4">
                     <input type="date" name="fechaVencimiento" title="Vencimiento del lote (opcional)"
-                           class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                           class="w-40 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                 </td>
-                <td class="py-3 px-4 text-center">
+                <td data-label="Acción" class="py-3 px-4 text-center">
                     <button type="button" onclick="quitarFila(this)" title="Quitar fila"
-                            class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
-                        <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+                            class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                 </td>`;
             tbody.appendChild(tr);

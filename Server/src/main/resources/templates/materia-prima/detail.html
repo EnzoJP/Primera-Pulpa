@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.nombre} + ' - Primera Pulpa', 'productos', ~{::#product-detail-content})}">
+      th:replace="~{layouts/main-layout :: layout('Detalle de ' + ${item.nombre} + ' - Primera Pulpa', 'materias-primas', ~{::#product-detail-content})}">
 <body>
 
 <div id="product-detail-content" class="max-w-4xl mx-auto space-y-md">
 
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
             <a th:href="@{|${basePath}|}"
@@ -13,87 +14,98 @@
                 <span>Volver al catálogo</span>
             </a>
             <div class="flex items-center gap-sm">
-                <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="${item.nombre}">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold break-words" th:text="${item.nombre}">
                     Almendras Enteras
                 </h1>
-                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium"
+                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium flex-shrink-0"
                       th:text="'#' + ${item.id}">#1</span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Ficha técnica, niveles de existencia y parámetros de inventario.</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Ficha técnica, niveles de existencia y parámetros de inventario.</p>
         </div>
 
-        <div class="flex items-center gap-xs">
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
             <a th:href="@{|${basePath}/${item.id}/editar|}"
-               class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">edit</span>
                 <span>Editar Producto</span>
             </a>
         </div>
     </div>
 
+    <!-- Cards de Métricas Principales -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
 
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-            <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Stock Disponible</p>
-                <span class="material-symbols-outlined text-secondary"
-                      th:classappend="${item.cantidadActual <= item.cantidadMinima} ? 'text-error' : 'text-secondary'">
-                    inventory_2
-                </span>
+        <!-- Stock Disponible -->
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-xs">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Stock Disponible</p>
+                    <span class="material-symbols-outlined text-[22px]"
+                          th:classappend="${item.cantidadActual <= item.cantidadMinima} ? 'text-error' : 'text-secondary'">
+                        inventory_2
+                    </span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight font-bold font-data-tabular"
+                          th:classappend="${item.cantidadActual <= item.cantidadMinima} ? 'text-error' : 'text-primary'"
+                          th:text="${#numbers.formatDecimal(item.cantidadActual, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs"
+                          th:text="${item.unidadMedida?.descripcion ?: 'kg'}">kg</span>
+                </div>
             </div>
-            <div class="flex items-baseline gap-1">
-                <span class="font-display text-[32px] leading-tight font-bold"
-                      th:classappend="${item.cantidadActual <= item.cantidadMinima} ? 'text-error' : 'text-primary'"
-                      th:text="${item.cantidadActual}">0</span>
-                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase"
-                      th:text="${item.unidadMedida?.descripcion ?: 'u'}">kg</span>
-            </div>
-            <div class="mt-2" th:if="${item.cantidadActual <= item.cantidadMinima}">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px] bg-error-container text-on-error-container">
+            <div class="mt-2">
+                <span th:if="${item.cantidadActual <= item.cantidadMinima}"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px] font-semibold bg-error-container text-on-error-container">
                     <span class="material-symbols-outlined text-[14px]">warning</span>
                     Bajo Stock
                 </span>
-            </div>
-            <div class="mt-2" th:unless="${item.cantidadActual <= item.cantidadMinima}">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px] bg-secondary-container text-on-secondary-container">
+                <span th:unless="${item.cantidadActual <= item.cantidadMinima}"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-caps text-[11px] font-semibold bg-secondary-container text-on-secondary-container">
                     <span class="material-symbols-outlined text-[14px]">check_circle</span>
                     Nivel Óptimo
                 </span>
             </div>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-            <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Precio Unitario</p>
-                <span class="material-symbols-outlined text-outline">payments</span>
-            </div>
-            <div class="flex items-baseline gap-1">
-                <span class="font-label-caps text-lg text-on-surface-variant">$</span>
-                <span class="font-display text-[32px] leading-tight text-primary font-bold"
-                      th:text="${#numbers.formatDecimal(item.precio, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+        <!-- Precio Unitario -->
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-xs">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Precio Unitario</p>
+                    <span class="material-symbols-outlined text-outline text-[22px]">payments</span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span class="font-label-caps text-lg text-on-surface-variant">$</span>
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight text-primary font-bold font-data-tabular"
+                          th:text="${#numbers.formatDecimal(item.precio, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                </div>
             </div>
             <p class="font-body-sm text-xs text-on-surface-variant mt-2">Costo registrado de referencia</p>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-            <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Stock Mínimo</p>
-                <span class="material-symbols-outlined text-outline">production_quantity_limits</span>
-            </div>
-            <div class="flex items-baseline gap-1">
-                <span class="font-display text-[32px] leading-tight text-primary font-bold"
-                      th:text="${item.cantidadMinima}">0</span>
-                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase"
-                      th:text="${item.unidadMedida?.descripcion ?: 'u'}">kg</span>
+        <!-- Stock Mínimo -->
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-xs">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Stock Mínimo</p>
+                    <span class="material-symbols-outlined text-outline text-[22px]">production_quantity_limits</span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span class="font-display text-2xl sm:text-[32px] leading-tight text-primary font-bold font-data-tabular"
+                          th:text="${#numbers.formatDecimal(item.cantidadMinima, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs"
+                          th:text="${item.unidadMedida?.descripcion ?: 'kg'}">kg</span>
+                </div>
             </div>
             <p class="font-body-sm text-xs text-on-surface-variant mt-2">Umbral de reposición sugerido</p>
         </div>
 
     </div>
 
+    <!-- Información General -->
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 class="font-headline-md text-headline-md text-primary">Información General</h2>
+            <h2 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Información General</h2>
             <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Propiedades</span>
         </div>
 
@@ -101,25 +113,25 @@
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-lg gap-y-md">
 
                 <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Nombre Comercial</dt>
-                    <dd class="font-body-md text-body-md text-on-surface font-medium" th:text="${item.nombre}">Nombre</dd>
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Nombre Comercial</dt>
+                    <dd class="font-body-md text-body-md text-on-surface font-medium break-words" th:text="${item.nombre}">Nombre</dd>
                 </div>
 
                 <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Unidad de Medida</dt>
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Unidad de Medida</dt>
                     <dd class="font-body-md text-body-md text-on-surface" th:text="${item.unidadMedida?.descripcion ?: 'No definida'}">Kilogramos (kg)</dd>
                 </div>
 
-                <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Último Ingreso</dt>
+                <div class="border-b border-outline-variant/10 pb-3 sm:border-b-0 sm:pb-0">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Último Ingreso</dt>
                     <dd class="font-data-tabular text-data-tabular text-on-surface" th:text="${item.fechaIngreso != null ? #temporals.format(item.fechaIngreso, 'dd/MM/yyyy') : '—'}">01/01/2026</dd>
                 </div>
 
-                <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Estado en Sistema</dt>
+                <div class="border-b border-outline-variant/10 pb-3 sm:border-b-0 sm:pb-0">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Estado en Sistema</dt>
                     <dd>
-                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container">Activo</span>
-                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container">Dado de Baja</span>
+                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-xs font-semibold bg-secondary-container text-on-secondary-container">Activo</span>
+                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-xs font-semibold bg-error-container text-on-error-container">Dado de Baja</span>
                     </dd>
                 </div>
 

@@ -14,19 +14,19 @@
                 <span>Volver a costos adicionales</span>
             </a>
             <div class="flex items-center gap-sm">
-                <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight" th:text="'Detalle: ' + ${item.descripcion}">
+                <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold break-words" th:text="'Detalle: ' + ${item.descripcion}">
                     Detalle de Costo Adicional
                 </h1>
-                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium"
+                <span class="font-data-tabular text-data-tabular px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30 text-xs font-medium flex-shrink-0"
                       th:text="'#' + ${item.id}">#1</span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Concepto de gasto indirecto o insumo de empaque aplicado al costo por unidad producida.</p>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Concepto de gasto indirecto o insumo de empaque aplicado al costo por unidad producida.</p>
         </div>
 
         <!-- Botón de Edición -->
-        <div class="flex items-center gap-xs">
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
             <a th:href="@{|${basePath}/${item.id}/editar|}"
-               class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">edit</span>
                 <span>Editar Costo</span>
             </a>
@@ -34,36 +34,36 @@
     </div>
 
     <!-- Métrica Destacada del Importe -->
-    <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
+    <div class="bg-surface-container-lowest rounded-xl p-md sm:p-lg soft-shadow border border-outline-variant/20">
         <div class="flex justify-between items-start mb-xs">
-            <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Valor Unitario Imputable</p>
-            <span class="material-symbols-outlined text-secondary">price_change</span>
+            <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Valor Unitario Imputable</p>
+            <span class="material-symbols-outlined text-secondary text-[24px]">price_change</span>
         </div>
         <div class="flex items-baseline gap-1">
             <span class="font-label-caps text-lg text-on-surface-variant">$</span>
-            <span class="font-display text-[32px] leading-tight text-primary font-bold"
+            <span class="font-display text-2xl sm:text-[32px] leading-tight text-primary font-bold font-data-tabular"
                   th:text="${#numbers.formatDecimal(item.valor ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
             <span class="font-label-caps text-xs text-on-surface-variant">/ unidad</span>
         </div>
-        <p class="font-body-sm text-xs text-on-surface-variant mt-2">Monto que se adiciona al costo total por cada unidad producida</p>
+        <p class="font-body-sm text-xs text-on-surface-variant mt-2">Monto que se adiciona al costo total por cada unidad producida.</p>
     </div>
 
     <!-- Tarjeta Principal de Información -->
     <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
         <div class="p-md bg-surface-container/40 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 class="font-headline-md text-headline-md text-primary">Información General</h2>
+            <h2 class="font-headline-md text-base sm:text-headline-md text-primary font-bold">Información General</h2>
             <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">Propiedades</span>
         </div>
 
-        <div class="p-md md:p-lg space-y-md">
+        <div class="p-md sm:p-lg space-y-md">
             <!-- Bloque Destacado: Icono + Concepto -->
-            <div class="flex items-center gap-md p-md bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="w-12 h-12 rounded-lg bg-secondary-container/40 flex items-center justify-center text-secondary flex-shrink-0">
-                    <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+            <div class="flex items-center gap-3 sm:gap-md p-3 sm:p-md bg-surface-container-low rounded-xl border border-outline-variant/10">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-secondary-container/40 flex items-center justify-center text-secondary flex-shrink-0">
+                    <span class="material-symbols-outlined text-[24px] sm:text-[28px]">receipt_long</span>
                 </div>
-                <div>
-                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Descripción / Concepto</span>
-                    <p class="font-headline-md text-headline-md text-primary font-semibold mt-0.5" th:text="${item.descripcion}">Bolsa bilaminada 1kg</p>
+                <div class="min-w-0 flex-1">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs block">Descripción / Concepto</span>
+                    <p class="font-headline-md text-base sm:text-headline-md text-primary font-bold break-words mt-0.5" th:text="${item.descripcion}">Bolsa bilaminada 1kg</p>
                 </div>
             </div>
 
@@ -71,29 +71,31 @@
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-lg gap-y-md pt-xs">
 
                 <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Identificador (ID)</dt>
-                    <dd class="font-data-tabular text-data-tabular text-on-surface font-medium" th:text="${item.id}">1</dd>
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Identificador (ID)</dt>
+                    <dd class="font-data-tabular text-data-tabular text-on-surface font-medium" th:text="'#' + ${item.id}">#1</dd>
                 </div>
 
                 <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Presentación a la que aplica</dt>
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Presentación a la que aplica</dt>
                     <dd>
                         <span th:if="${item.presentacion != null}"
-                              class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
+                              class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold font-label-caps uppercase tracking-wider"
                               th:classappend="${item.presentacion.name() == 'TODOS'} ? 'bg-surface-container-highest text-on-surface-variant' : 'bg-secondary-container text-on-secondary-container'"
                               th:text="${item.presentacion.etiqueta}">Todos</span>
                         <span th:unless="${item.presentacion != null}"
-                              class="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold bg-surface-container-highest text-on-surface-variant">Todos</span>
+                              class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold font-label-caps uppercase tracking-wider bg-surface-container-highest text-on-surface-variant">Todos</span>
                     </dd>
                 </div>
 
-                <div class="border-b border-outline-variant/10 pb-3">
-                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Estado en el Sistema</dt>
+                <div class="border-b border-outline-variant/10 pb-3 sm:border-b-0 sm:pb-0">
+                    <dt class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs mb-1">Estado en el Sistema</dt>
                     <dd>
-                        <span th:if="${!item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container">
+                        <span th:if="${!item.eliminado}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-caps text-xs font-semibold bg-secondary-container text-on-secondary-container">
+                            <span class="material-symbols-outlined text-[13px]">check_circle</span>
                             Activo
                         </span>
-                        <span th:if="${item.eliminado}" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container">
+                        <span th:if="${item.eliminado}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-caps text-xs font-semibold bg-error-container text-on-error-container">
+                            <span class="material-symbols-outlined text-[13px]">cancel</span>
                             Dado de baja
                         </span>
                     </dd>

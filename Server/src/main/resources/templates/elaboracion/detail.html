@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Lote del Día - Primera Pulpa', 'elaboracion', ~{::#elaboracion-detail-content})}">
 <body>
 
@@ -79,7 +79,7 @@
                     <th class="py-3 px-base font-normal w-16 text-center">ID</th>
                     <th class="py-3 px-base font-normal">Mix Elaborado</th>
                     <th class="py-3 px-base font-normal w-44 text-right">Cantidad (kg)</th>
-                    <th class="py-3 px-base font-normal w-24 text-right pr-6">Acciones</th>
+                    <th sec:authorize="hasRole('ADMIN')" class="py-3 px-base font-normal w-24 text-right pr-6">Acciones</th>
                 </tr>
                 </thead>
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
@@ -96,7 +96,7 @@
                         <span th:text="${#numbers.formatDecimal(el.cantidadElaborada ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                         <span class="text-on-surface-variant text-xs ml-0.5">kg</span>
                     </td>
-                    <td class="py-3.5 px-base pr-6 text-right whitespace-nowrap">
+                    <td sec:authorize="hasRole('ADMIN')" class="py-3.5 px-base pr-6 text-right whitespace-nowrap">
                         <div class="inline-flex items-center justify-end gap-1">
                             <a th:href="@{|/elaboracion/${el.id}/editar|}"
                                title="Editar"

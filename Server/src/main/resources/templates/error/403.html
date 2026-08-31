@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(titulo='403 - Acceso Restringido')}"></head>
+
+<body class="bg-[#F8F3ED] text-[#2C241E] min-h-screen antialiased flex items-center justify-center p-4 sm:p-6">
+
+<div class="w-full max-w-[480px] mx-auto text-center flex flex-col items-center gap-6">
+
+    <!-- Ícono de Seguridad / Bloqueo -->
+    <div class="w-16 h-16 rounded-2xl bg-[#FFDAD6] text-[#410002] flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-[36px] text-[#BA1A1A]">lock</span>
+    </div>
+
+    <!-- Encabezado 403 -->
+    <div class="w-full space-y-2">
+        <span class="block text-6xl sm:text-7xl font-bold tracking-tight text-[#2C241E] leading-none">403</span>
+        <h1 class="text-2xl sm:text-3xl font-bold text-[#2C241E]">Acceso Restringido</h1>
+        <p class="text-sm sm:text-base text-[#574338] px-4">
+            No tienes los permisos necesarios para acceder a esta sección.
+        </p>
+    </div>
+
+    <!-- Tarjeta de Acciones -->
+    <div class="w-full bg-white rounded-2xl p-6 shadow-sm border border-[#E9DFD8] flex flex-col items-center gap-5">
+
+        <!-- Botones de Acción -->
+        <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button onclick="window.history.back()"
+                    class="w-full sm:w-1/2 py-2.5 px-4 text-sm font-semibold rounded-xl border border-[#D7C3B7] text-[#574338] hover:bg-[#F8F3ED] transition-colors inline-flex items-center justify-center gap-2 cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                <span>Volver atrás</span>
+            </button>
+
+            <a th:href="@{/dashboard}"
+               class="w-full sm:w-1/2 py-2.5 px-4 text-sm font-semibold rounded-xl bg-[#2C241E] text-[#F8F3ED] hover:opacity-90 shadow transition-all inline-flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">home</span>
+                <span>Ir al Dashboard</span>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <p class="text-xs text-[#795B4C]">
+        Primera Pulpa &bull; Sistema de Control de Stock
+    </p>
+
+</div>
+
+</body>
+</html>

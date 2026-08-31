@@ -34,24 +34,54 @@
         <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
     </div>
 
-    <form th:action="@{/ingresos-mp}" method="get" class="flex items-center gap-2 flex-wrap">
-        <label for="filtroFecha" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Fecha</label>
-        <input id="filtroFecha" type="date" name="fecha"
-               th:value="${fechaFiltro != null ? #temporals.format(fechaFiltro, 'yyyy-MM-dd') : ''}"
-               class="bg-surface border border-outline-variant/40 rounded-lg px-md py-2 font-data-tabular text-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
-        <button type="submit"
-                class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
-            <span class="material-symbols-outlined text-[18px]">search</span>
-            Buscar
-        </button>
-        <a th:if="${fechaFiltro != null}" th:href="@{/ingresos-mp}"
-           class="inline-flex items-center gap-xs px-md py-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors">
-            Limpiar
-        </a>
-    </form>
+    <div class="w-full">
+        <!-- Botón móvil para mostrar/ocultar el buscador -->
+        <div class="sm:hidden flex justify-end mb-2">
+            <button id="btn-toggle-filtro"
+                    type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/30 text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                <span>Filtro de Fecha</span>
+            </button>
+        </div>
+
+        <!-- Contenedor del formulario: oculto en móvil hasta presionar el botón, visible siempre en PC -->
+        <!-- Filtro de Fecha Siempre Visible y Responsive -->
+        <form th:action="@{/ingresos-mp}" method="get"
+              class="bg-surface-container-lowest rounded-xl p-3 sm:p-4 border border-outline-variant/20 soft-shadow">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+
+                <!-- Campo Fecha -->
+                <div class="flex items-center gap-2 flex-1 w-full">
+                    <span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0">calendar_today</span>
+                    <input id="filtroFecha"
+                           type="date"
+                           name="fecha"
+                           th:value="${fechaFiltro != null ? #temporals.format(fechaFiltro, 'yyyy-MM-dd') : ''}"
+                           class="w-full bg-surface border border-outline-variant/40 rounded-lg px-3 py-2 text-sm font-data-tabular text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer" />
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="submit"
+                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary text-on-primary font-label-caps text-xs font-bold rounded-lg soft-shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">search</span>
+                        <span>Filtrar</span>
+                    </button>
+                    <a th:if="${fechaFiltro != null}"
+                       th:href="@{/ingresos-mp}"
+                       class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-outline-variant/30 bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high font-label-caps text-xs font-bold rounded-lg transition-colors text-center">
+                        <span class="material-symbols-outlined text-[18px]">clear</span>
+                        <span>Limpiar</span>
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
 
     <!-- Tabla -->
-    <div class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 overflow-hidden">
+    <div class="table-responsive-cards md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
@@ -67,11 +97,11 @@
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
                 <tr th:each="item : ${items}" class="hover:bg-surface-container-low transition-colors group">
                     <!-- ID -->
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
+                    <td data-label="ID" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
                         th:text="'#' + ${item.id}">#1</td>
 
                     <!-- Fecha -->
-                    <td class="py-3.5 px-4 font-medium text-primary">
+                    <td data-label="Fecha" class="py-3.5 px-4 font-medium text-primary">
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-outlined text-outline text-[20px]">calendar_today</span>
                             <span th:text="${#temporals.format(item.fechaHora, 'dd/MM/yyyy HH:mm')}">01/01/2026 12:00</span>
@@ -79,17 +109,17 @@
                     </td>
 
                     <!-- Cantidad de Ítems -->
-                    <td class="py-3.5 px-4 text-center font-data-tabular text-data-tabular">
+                    <td data-label="Cantidad Items" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular">
                         <span class="inline-block px-2.5 py-0.5 rounded bg-surface-container text-xs font-semibold"
                               th:text="${item.cantidadItems + ' insumo(s)'}">1 insumo</span>
                     </td>
 
                     <!-- Total -->
-                    <td class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary"
+                    <td data-label="Total" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular font-bold text-primary"
                         th:text="${item.cantidadTotal}">0</td>
 
                     <!-- Acciones -->
-                    <td class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                    <td data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
                         <a th:href="@{/ingresos-mp/{id}(id=${item.id})}"
                            title="Ver Detalle"
                            class="inline-flex p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
@@ -149,6 +179,70 @@
         </div>
     </div>
 </div>
+<!-- Script de búsqueda compatible con tarjetas móviles -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputFiltro = document.getElementById('filtroNombre');
+        const botonLimpiar = document.getElementById('limpiarFiltro');
+        const filaVacia = document.getElementById('fila-vacia');
+        const filas = Array.from(document.querySelectorAll('tbody tr:not(#fila-vacia)'));
 
+        function aplicarFiltro() {
+            const termino = (inputFiltro.value || '').trim().toLowerCase();
+            let visibles = 0;
+
+            filas.forEach(row => {
+                // Busca en el data-nombre o en todo el contenido de texto de la fila
+                const textoFila = (row.dataset.nombre || row.textContent).toLowerCase();
+                const coincide = !termino || textoFila.includes(termino);
+
+                if (coincide) {
+                    row.classList.remove('hidden');
+                    visibles++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            if (filaVacia) {
+                if (termino && visibles === 0) {
+                    filaVacia.classList.remove('hidden');
+                } else {
+                    filaVacia.classList.add('hidden');
+                }
+            }
+        }
+
+        // Eventos táctiles y de teclado
+        inputFiltro.addEventListener('input', aplicarFiltro);
+        inputFiltro.addEventListener('keyup', aplicarFiltro);
+
+        if (botonLimpiar) {
+            botonLimpiar.addEventListener('click', () => {
+                inputFiltro.value = '';
+                aplicarFiltro();
+                inputFiltro.focus();
+            });
+        }
+    });
+</script>
+<!-- Script para alternar la visibilidad en móvil -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnToggle = document.getElementById('btn-toggle-filtro');
+        const formFiltro = document.getElementById('form-filtro-fecha');
+        const inputFecha = document.getElementById('filtroFecha');
+
+        if (btnToggle && formFiltro) {
+            btnToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                formFiltro.classList.toggle('hidden');
+                if (!formFiltro.classList.contains('hidden') && inputFecha) {
+                    inputFecha.focus();
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

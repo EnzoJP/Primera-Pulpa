@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layouts/main-layout :: layout('Dashboard - Primera Pulpa', 'dashboard', ~{::#dashboard-content})}">
 <body>
 
@@ -9,33 +9,33 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Encabezado -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
         <div>
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Panel Principal</h1>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Resumen operativo de inventario, stock crítico y catálogo de producción.</p>
+            <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold">Panel Principal</h1>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Resumen operativo de inventario, stock crítico y catálogo de producción.</p>
         </div>
-        <div class="flex items-center gap-xs">
-            <a th:href="@{/materias-primas/nuevo}"
-               class="inline-flex items-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
+        <div class="flex items-center gap-xs pt-1 sm:pt-0">
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/materias-primas/nuevo}"
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-xs px-md py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity">
                 <span class="material-symbols-outlined text-[18px]">add</span>
                 <span>Cargar Insumo</span>
             </a>
         </div>
-    </div>
+    </header>
 
     <!-- 4 Tarjetas de Métricas -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+    <div sec:authorize="hasRole('ADMIN')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
 
         <!-- Valor Inventario -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 card-hover flex flex-col justify-between">
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Valorización Stock</p>
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Valorización Stock</p>
                 <span class="material-symbols-outlined text-secondary text-[22px]">account_balance_wallet</span>
             </div>
             <div>
                 <div class="flex items-baseline gap-1">
                     <span class="font-label-caps text-lg text-on-surface-variant">$</span>
-                    <span class="font-display text-[30px] font-bold text-primary leading-tight"
+                    <span class="font-display text-2xl sm:text-[30px] font-bold text-primary leading-tight font-data-tabular"
                           th:text="${#numbers.formatDecimal(stats.valorTotalInventario ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
                 </div>
                 <p class="font-body-sm text-xs text-on-surface-variant mt-1">Capital en materias primas</p>
@@ -43,26 +43,26 @@
         </div>
 
         <!-- Materias Primas -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 card-hover flex flex-col justify-between">
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Materias Primas</p>
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Materias Primas</p>
                 <span class="material-symbols-outlined text-primary text-[22px]">spa</span>
             </div>
             <div>
-                <span class="font-display text-[30px] font-bold text-primary leading-tight"
+                <span class="font-display text-2xl sm:text-[30px] font-bold text-primary leading-tight font-data-tabular"
                       th:text="${stats.totalMateriasPrimas}">0</span>
                 <p class="font-body-sm text-xs text-on-surface-variant mt-1">Insumos registrados</p>
             </div>
         </div>
 
         <!-- Stock Crítico -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 card-hover flex flex-col justify-between">
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Stock Crítico</p>
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Stock Crítico</p>
                 <span class="material-symbols-outlined text-error text-[22px]">warning</span>
             </div>
             <div>
-                <span class="font-display text-[30px] font-bold text-error leading-tight"
+                <span class="font-display text-2xl sm:text-[30px] font-bold text-error leading-tight font-data-tabular"
                       th:text="${stats.totalAlertasStockBajo}">0</span>
                 <div class="flex items-center gap-1 mt-1" th:if="${stats.totalAlertasStockBajo > 0}">
                     <a th:href="@{/materias-primas}" class="font-label-caps text-xs text-error hover:underline inline-flex items-center gap-0.5 font-semibold">
@@ -75,13 +75,13 @@
         </div>
 
         <!-- Mixes -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 card-hover flex flex-col justify-between">
+        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div class="flex justify-between items-start mb-xs">
-                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Mixes Registrados</p>
+                <p class="font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Mixes Registrados</p>
                 <span class="material-symbols-outlined text-secondary text-[22px]">inventory_2</span>
             </div>
             <div>
-                <span class="font-display text-[30px] font-bold text-primary leading-tight"
+                <span class="font-display text-2xl sm:text-[30px] font-bold text-primary leading-tight font-data-tabular"
                       th:text="${stats.totalMixes}">0</span>
                 <p class="font-body-sm text-xs text-on-surface-variant mt-1">Productos y fórmulas finales</p>
             </div>
@@ -93,16 +93,16 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
 
         <!-- Gráfico de Dona -->
-        <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
-            <div class="flex items-center justify-between pb-sm border-b border-outline-variant/10 mb-sm">
-                <div class="flex items-center gap-2 text-primary font-headline-md text-base">
+        <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl p-md sm:p-lg soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-sm border-b border-outline-variant/10 mb-sm">
+                <div class="flex items-center gap-2 text-primary font-headline-md text-base font-bold">
                     <span class="material-symbols-outlined text-secondary text-[20px]">pie_chart</span>
                     <span>Distribución de Existencias (Top Insumos)</span>
                 </div>
-                <span class="font-label-caps text-xs text-on-surface-variant uppercase">Existencia actual</span>
+                <span class="font-label-caps text-xs text-on-surface-variant uppercase tracking-wider">Existencia actual</span>
             </div>
 
-            <div class="relative w-full h-64 flex items-center justify-center">
+            <div class="relative w-full min-h-[260px] h-64 sm:h-72 flex items-center justify-center">
                 <canvas id="stockChart"></canvas>
 
                 <div th:if="${#lists.isEmpty(stats.chartData)}" class="absolute inset-0 flex flex-col items-center justify-center text-on-surface-variant">
@@ -113,22 +113,22 @@
         </div>
 
         <!-- Alertas de Stock Bajo -->
-        <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20 flex flex-col justify-between">
+        <div class="bg-surface-container-lowest rounded-xl p-md sm:p-lg soft-shadow border border-outline-variant/20 flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between pb-sm border-b border-outline-variant/10 mb-sm">
-                    <div class="flex items-center gap-2 text-primary font-headline-md text-base">
+                    <div class="flex items-center gap-2 text-primary font-headline-md text-base font-bold">
                         <span class="material-symbols-outlined text-error text-[20px]">warning</span>
                         <span>Stock Bajo Mínimo</span>
                     </div>
-                    <span class="font-label-caps text-xs px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-semibold"
+                    <span class="font-label-caps text-xs px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-semibold"
                           th:text="${stats.totalAlertasStockBajo}">0</span>
                 </div>
 
                 <div class="space-y-sm">
                     <div th:each="alerta : ${stats.alertasStockBajo}"
-                         class="p-sm rounded-lg bg-surface-container-low border border-outline-variant/20 flex items-center justify-between">
-                        <div class="min-w-0 pr-2">
-                            <p class="font-body-sm text-sm font-semibold text-primary truncate" th:text="${alerta.nombre}">Almendras</p>
+                         class="p-sm rounded-lg bg-surface-container-low border border-outline-variant/20 flex items-center justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-body-sm text-sm font-semibold text-primary break-words" th:text="${alerta.nombre}">Almendras</p>
                             <p class="font-body-sm text-xs text-on-surface-variant">
                                 Mínimo: <span class="font-data-tabular" th:text="${alerta.stockMinimo}">10</span> <span th:text="${alerta.unidad}">kg</span>
                             </p>
@@ -146,70 +146,96 @@
                 </div>
             </div>
 
-            <a th:href="@{/materias-primas}" class="mt-4 block w-full py-2 text-center font-label-caps text-label-caps text-primary border border-outline-variant/30 rounded-lg hover:bg-surface-container transition-colors">
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/materias-primas}"
+               class="mt-4 block w-full py-2 text-center font-label-caps text-xs font-bold text-primary border border-outline-variant/30 rounded-lg hover:bg-surface-container transition-colors">
                 Ver Catálogo Completo
             </a>
         </div>
 
     </div>
 
-    <!-- Sección Inferior: Últimos Ingresos -->
-    <div class="bg-surface-container-lowest rounded-xl p-md soft-shadow border border-outline-variant/20">
-        <div class="flex items-center justify-between pb-sm border-b border-outline-variant/10 mb-sm">
-            <div class="flex items-center gap-2 text-primary font-headline-md text-base">
+    <!-- Sección Inferior: Últimos Ingresos (Responsive Cards en Móvil) -->
+    <div sec:authorize="hasRole('ADMIN')"
+         class="space-y-sm md:space-y-0 md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
+
+        <div class="p-3 sm:p-md bg-transparent md:bg-surface-container/40 md:border-b md:border-outline-variant/20 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-primary font-headline-md text-base font-bold">
                 <span class="material-symbols-outlined text-secondary text-[20px]">history</span>
                 <span>Últimas Materias Primas Registradas</span>
             </div>
-            <a th:href="@{/materias-primas}" class="font-label-caps text-label-caps text-secondary hover:underline flex items-center gap-1">
-                Ver todas <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <a th:href="@{/materias-primas}" class="font-label-caps text-xs font-bold text-secondary hover:underline flex items-center gap-1">
+                <span>Ver todas</span>
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
             </a>
         </div>
 
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse table-fixed">
-                <thead class="bg-surface-container/40 border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps text-xs">
-                <tr>
-                    <th class="py-2.5 px-3 font-normal w-16 text-center">ID</th>
-                    <th class="py-2.5 px-3 font-normal w-auto">Insumo</th>
-                    <th class="py-2.5 px-3 font-normal w-36 text-right">Existencia Actual</th>
-                    <th class="py-2.5 px-3 font-normal w-36 text-center">Fecha Ingreso</th>
-                    <th class="py-2.5 px-3 font-normal w-24 text-right pr-4">Acción</th>
-                </tr>
-                </thead>
-                <tbody class="font-body-sm text-body-sm divide-y divide-outline-variant/10">
-                <tr th:each="ingreso : ${stats.ultimosIngresos}" class="hover:bg-surface-container-low transition-colors">
-                    <td class="py-3 px-3 text-center font-data-tabular text-on-surface-variant text-xs" th:text="'#' + ${ingreso.id}">#1</td>
-                    <td class="py-3 px-3 font-medium text-primary truncate" th:text="${ingreso.nombre}">Nueces Chandler</td>
-                    <td class="py-3 px-3 text-right font-data-tabular">
-                        <span class="font-semibold text-on-surface" th:text="${ingreso.cantidad}">100</span>
-                        <span class="text-xs text-on-surface-variant" th:text="${ingreso.unidad}">kg</span>
-                    </td>
-                    <td class="py-3 px-3 text-center font-data-tabular text-on-surface-variant text-xs" th:text="${ingreso.fecha}">23/08/2026</td>
-                    <td class="py-3 px-3 pr-4 text-right">
-                        <a th:href="@{|/materias-primas/${ingreso.id}|}"
-                           title="Ver Detalle"
-                           class="p-1 text-on-surface-variant hover:text-primary rounded-lg transition-colors inline-block">
-                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                        </a>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(stats.ultimosIngresos)}">
-                    <td colspan="5" class="py-8 text-center text-on-surface-variant">
-                        <p class="font-body-sm text-sm">No hay registros de materias primas disponibles.</p>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="table-responsive-cards">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-surface-container/40 border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps text-xs">
+                    <tr>
+                        <th class="py-3 px-4 font-normal w-16 text-center">ID</th>
+                        <th class="py-3 px-4 font-normal w-auto">Insumo</th>
+                        <th class="py-3 px-4 font-normal w-40 text-right">Existencia Actual</th>
+                        <th class="py-3 px-4 font-normal w-36 text-center">Fecha Ingreso</th>
+                        <th class="py-3 px-4 font-normal w-24 text-right pr-6">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                    <tr th:each="ingreso : ${stats.ultimosIngresos}" class="hover:bg-surface-container-low transition-colors group">
+
+                        <!-- ID -->
+                        <td data-label="ID" class="py-3.5 px-4 text-center font-data-tabular text-on-surface-variant font-medium text-xs"
+                            th:text="'#' + ${ingreso.id}">#1</td>
+
+                        <!-- Insumo -->
+                        <td data-label="Insumo" class="py-3.5 px-4 font-medium text-primary">
+                            <span class="material-symbols-outlined text-outline text-[18px] !hidden md:!inline-flex mr-1.5">spa</span>
+                            <span class="text-right md:text-left break-words font-semibold" th:text="${ingreso.nombre}">Nueces Chandler</span>
+                        </td>
+
+                        <!-- Existencia Actual -->
+                        <td data-label="Existencia" class="py-3.5 px-4 text-right font-data-tabular">
+                            <span class="font-bold md:font-semibold text-primary md:text-on-surface" th:text="${#numbers.formatDecimal(ingreso.cantidad, 1, 'POINT', 2, 'COMMA')}">100,00</span>
+                            <span class="text-xs text-on-surface-variant ml-0.5" th:text="${ingreso.unidad}">kg</span>
+                        </td>
+
+                        <!-- Fecha Ingreso -->
+                        <td data-label="Fecha Ingreso" class="py-3.5 px-4 text-center font-data-tabular text-on-surface-variant text-xs"
+                            th:text="${ingreso.fecha}">23/08/2026</td>
+
+                        <!-- Acción -->
+                        <td data-label="Acción" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                            <a th:href="@{|/materias-primas/${ingreso.id}|}"
+                               title="Ver Detalle"
+                               class="inline-flex items-center gap-1 font-label-caps text-xs text-secondary font-bold hover:underline md:hover:no-underline md:p-1 md:text-on-surface-variant md:hover:text-primary md:rounded-lg md:transition-colors">
+                                <span class="md:hidden">Ver Detalle</span>
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            </a>
+                        </td>
+
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(stats.ultimosIngresos)}">
+                        <td colspan="5" class="py-8 text-center text-on-surface-variant">
+                            <p class="font-body-sm text-sm">No hay registros de materias primas disponibles.</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
-    <!-- Script de Inicialización de Chart.js -->
+    <!-- Script de Inicialización de Chart.js con Responsive Legend -->
     <script th:inline="javascript">
         const labels = /*[[${stats.chartLabels}]]*/ [];
         const dataValues = /*[[${stats.chartData}]]*/ [];
 
         if (labels && labels.length > 0) {
             const ctx = document.getElementById('stockChart').getContext('2d');
+            const isMobile = window.innerWidth < 640;
+
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -233,15 +259,15 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'right',
+                            position: isMobile ? 'bottom' : 'right',
                             labels: {
                                 font: {
                                     family: 'Work Sans',
-                                    size: 12
+                                    size: 11
                                 },
                                 color: '#2C2416',
-                                boxWidth: 14,
-                                padding: 12
+                                boxWidth: 12,
+                                padding: 10
                             }
                         },
                         tooltip: {
