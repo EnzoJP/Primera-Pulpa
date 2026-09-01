@@ -6,6 +6,8 @@ import com.primeraPulpa.Services.UsuarioService;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +45,13 @@ public class UsuarioController extends BaseController<Usuario, Long> {
 
             cargarAtributosBase(model);
             model.addAttribute("items", todos);
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getName() != null) {
+                usuarioService.findByEmail(authentication.getName())
+                        .ifPresent(u -> model.addAttribute("usuarioActualId", u.getId()));
+            }
+
             return vistaListado();
         } catch (Exception e) {
             model.addAttribute("error", "Error al listar los usuarios");

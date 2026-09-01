@@ -5,6 +5,8 @@ import com.primeraPulpa.entities.Usuario;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.PedidoRepository;
 import com.primeraPulpa.repositories.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,10 +63,37 @@ public class UsuarioService extends BaseService<Usuario, Long> {
 
     @Override
     protected void preBaja(Long id) throws ErrorServiceException {
+        Usuario objetivo = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ErrorServiceException("El usuario no existe."));
+
+        // No se puede desactivar la propia cuenta.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getName() != null
+                && authentication.getName().equalsIgnoreCase(objetivo.getEmail())) {
+            throw new ErrorServiceException("No podés desactivar tu propia cuenta.");
+        }
+
+        // No se puede dejar al sistema sin administradores activos.
+        if (esAdministrador(objetivo) && contarAdministradoresActivos() <= 1) {
+            throw new ErrorServiceException("No se puede desactivar al último administrador activo.");
+        }
+
         List<Pedido> pedidos = pedidoRepository.findByUsuarioId(id);
         if (!pedidos.isEmpty()) {
             throw new ErrorServiceException("No se puede desactivar un usuario que tenga pedidos asociados.");
         }
+    }
+
+    private boolean esAdministrador(Usuario usuario) {
+        return usuario.getRol() != null && "ADMIN".equalsIgnoreCase(usuario.getRol().getDescripcion());
+    }
+
+    private long contarAdministradoresActivos() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> !Boolean.TRUE.equals(u.getEliminado()))
+                .filter(this::esAdministrador)
+                .count();
     }
 
     @Override

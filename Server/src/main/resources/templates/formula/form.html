@@ -136,8 +136,7 @@
                         <span class="px-3 py-1.5 rounded-full bg-surface text-on-surface border border-outline-variant/30 font-data-tabular text-data-tabular whitespace-wrap">
                             <span class="text-on-surface-variant font-normal text-[11px] uppercase tracking-wide mr-1">Precio/Unidad</span>
                             <span id="precioMix" class="font-semibold text-primary">—</span>
-                            <span id="precioMixSub" class="text-on-surface-variant text-xs font-normal ml-1"></span>
-                             <span class="text-on-surface-variant font-normal text-[11px] uppercase tracking-wide mr-1">Precio/Kg</span>
+                            <span class="text-on-surface-variant font-normal text-[11px] uppercase tracking-wide ml-1">Precio/Kg</span>
                             <span id="precioMixKg" class="font-semibold text-primary">—</span>
                         </span>
                     </div>
@@ -255,11 +254,15 @@
             const precioKg = mix ? (parseFloat(mix.precioVenta) > 0 ? parseFloat(mix.precioVenta) : 0) : 0;
             const rendimiento = parseFloat(inputCantidad.value) || 0;
 
-            const precioMix = document.getElementById("precioMix")
-            precioMix.innerHTML = mix.precioVenta * mix.cantidadPorUnidadOrDefault
-
-            const precioMixKg = document.getElementById("precioMixKg")
-            precioMixKg.innerHTML = mix.precioVenta
+            const precioMixEl = document.getElementById("precioMix");
+            const precioMixKgEl = document.getElementById("precioMixKg");
+            if (!mix) {
+                precioMixEl.textContent = '—';
+                precioMixKgEl.textContent = '—';
+            } else {
+                precioMixEl.textContent = '$' + (precioKg * cantidadUnidad).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                precioMixKgEl.textContent = '$' + precioKg.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
             // Costo de materia prima (por kg) calculado en vivo
             let subtotalMP = 0;
             filasDosificacion.forEach(tr => {

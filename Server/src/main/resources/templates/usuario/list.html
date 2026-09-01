@@ -67,6 +67,11 @@
                               th:classappend="${item.eliminado == true} ? 'text-error' : 'text-outline'"
                               th:text="${item.eliminado == true ? 'person_off' : 'person'}">person</span>
                         <span class="text-right md:text-left break-words font-semibold" th:text="${item.nombre}">Juan Perez</span>
+                        <span th:if="${item.id == usuarioActualId}"
+                              class="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-secondary-container text-on-secondary-container align-middle">
+                            <span class="material-symbols-outlined text-[11px] !hidden md:!inline-flex">person</span>
+                            Tu cuenta
+                        </span>
                     </td>
 
                     <!-- Email -->
@@ -122,8 +127,8 @@
                                 <span class="material-symbols-outlined text-[20px]">edit</span>
                             </a>
 
-                            <!-- Botón Desactivar (si está activo) -->
-                            <button th:if="${item.eliminado != true}"
+                            <!-- Botón Desactivar (si está activo y no es la propia cuenta) -->
+                            <button th:if="${item.eliminado != true and item.id != usuarioActualId}"
                                     type="button"
                                     title="Desactivar Usuario"
                                     th:data-id="${item.id}"
