@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main-layout :: layout('Restaurar Base de Datos - Primera Pulpa', 'backups', ~{::#backups-list-content})}">
+<body>
+
+<div id="backups-list-content" class="space-y-md">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-base pb-sm border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-label-caps uppercase mb-1">
+                <span class="material-symbols-outlined text-[18px]">restore</span>
+                <span>Administración del Sistema</span>
+            </div>
+            <h1 class="font-headline-lg text-xl sm:text-headline-lg text-primary tracking-tight font-bold">Restaurar Base de Datos</h1>
+            <p class="font-body-sm text-xs sm:text-body-sm text-on-surface-variant mt-0.5">Restaurá la base de datos desde una copia de seguridad del volumen compartido. Solo para administradores.</p>
+        </div>
+    </header>
+
+    <!-- Alertas -->
+    <div th:if="${success}" class="flex items-center gap-xs p-base bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 soft-shadow">
+        <span class="material-symbols-outlined text-secondary fill">check_circle</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${success}">Operación exitosa.</span>
+    </div>
+
+    <div th:if="${error}" class="flex items-center gap-xs p-base bg-error-container text-on-error-container rounded-lg border border-error/20 soft-shadow">
+        <span class="material-symbols-outlined text-error fill">error</span>
+        <span class="font-body-sm text-body-sm font-medium" th:text="${error}">Ha ocurrido un error.</span>
+    </div>
+
+    <div class="flex items-start gap-xs p-base bg-surface-container-high text-on-surface rounded-lg border border-outline-variant/20">
+        <span class="material-symbols-outlined text-on-surface-variant">info</span>
+        <p class="font-body-sm text-xs text-on-surface-variant">
+            La restauración <strong class="text-error">vacía por completo la base de datos actual</strong> y la reemplaza
+            con el contenido del backup seleccionado. Todos los usuarios deberán volver a iniciar sesión.
+        </p>
+    </div>
+
+    <!-- Listado de backups -->
+    <div class="table-responsive-cards md:bg-surface-container-lowest md:rounded-xl md:soft-shadow md:border md:border-outline-variant/20 md:overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
+                <tr>
+                    <th class="py-3 px-4 font-normal w-auto">Archivo de backup</th>
+                    <th class="py-3 px-4 font-normal w-40 text-right pr-6">Acciones</th>
+                </tr>
+                </thead>
+
+                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                <tr th:each="backup : ${backups}" class="hover:bg-surface-container-low transition-colors group">
+                    <td data-label="Archivo" class="py-3.5 px-4">
+                        <span class="material-symbols-outlined text-[20px] text-outline align-middle mr-1.5">archive</span>
+                        <span class="font-data-tabular text-data-tabular font-medium break-all" th:text="${backup}">backup_2024.sql.gz</span>
+                    </td>
+                    <td data-label="Acciones" class="py-3.5 px-4 pr-6 text-right whitespace-nowrap">
+                        <button type="button"
+                                th:data-nombre="${backup}"
+                                onclick="openRestaurarModal(this.getAttribute('data-nombre'))"
+                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-error text-on-error font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-opacity cursor-pointer">
+                            <span class="material-symbols-outlined text-[18px]">restore</span>
+                            <span>Restaurar</span>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Estado Vacío -->
+                <tr th:if="${#lists.isEmpty(backups)}">
+                    <td colspan="2" class="py-12 px-4 text-center">
+                        <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-outline text-[36px]">archive</span>
+                            <p class="font-body-md text-body-md">No hay backups disponibles en el volumen.</p>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación de Restauración -->
+    <div id="restaurarModal"
+         class="hidden fixed inset-0 bg-on-surface/50 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+         onclick="if(event.target === this) closeRestaurarModal()">
+
+        <div class="bg-surface-container-lowest rounded-2xl p-6 soft-shadow border border-outline-variant/30 w-full max-w-[500px] mx-auto shadow-2xl relative">
+
+            <button type="button" onclick="closeRestaurarModal()"
+                    class="absolute top-4 right-4 text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-[22px]">restore</span>
+                </div>
+                <div>
+                    <h3 class="font-headline-md text-lg sm:text-headline-md text-primary font-bold tracking-tight">¿Restaurar Base de Datos?</h3>
+                    <p class="font-body-sm text-xs text-on-surface-variant">Esta acción es destructiva y no se puede deshacer.</p>
+                </div>
+            </div>
+
+            <p class="font-body-md text-sm text-on-surface mb-2">
+                Estás por reemplazar la base de datos actual con el backup
+                <strong id="restaurarBackupName" class="text-error font-data-tabular"></strong>.
+            </p>
+            <p class="font-body-md text-sm text-on-surface mb-6">
+                Se <strong class="text-error">borrarán todos los datos actuales</strong> y se cargarán los del backup.
+                Al finalizar, será necesario iniciar sesión nuevamente.
+            </p>
+
+            <form id="restaurarForm" method="post" th:action="@{/backups/restaurar}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}" />
+                <input type="hidden" id="archivoBackup" name="archivo" value="" />
+
+                <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-3 border-t border-outline-variant/20">
+                    <button type="button" onclick="closeRestaurarModal()"
+                            class="w-full sm:w-auto px-4 py-2 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-error text-on-error font-label-caps text-label-caps rounded-lg soft-shadow hover:opacity-90 transition-opacity cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">restore</span>
+                        <span>Restaurar y borrar datos</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openRestaurarModal(nombre) {
+            const modal = document.getElementById('restaurarModal');
+            document.getElementById('restaurarBackupName').textContent = nombre;
+            document.getElementById('archivoBackup').value = nombre;
+            modal.classList.remove('hidden');
+        }
+        function closeRestaurarModal() {
+            document.getElementById('restaurarModal').classList.add('hidden');
+        }
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeRestaurarModal();
+        });
+    </script>
+</div>
+
+</body>
+</html>

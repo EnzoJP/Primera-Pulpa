@@ -157,6 +157,14 @@
                 <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">manage_accounts</span>
                 <span class="font-label-caps text-label-caps truncate">Usuarios</span>
             </a>
+
+            <a th:href="@{/backups}"
+               th:class="${activePage == 'backups' or activeMenu == 'backups'} ?
+                         'flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg font-bold group' :
+                         'flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all group'">
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform flex-shrink-0">restore</span>
+                <span class="font-label-caps text-label-caps truncate">Restaurar DB</span>
+            </a>
         </div>
     </nav>
 
