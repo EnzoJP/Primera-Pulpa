@@ -6,7 +6,6 @@ import com.primeraPulpa.Services.PedidoService;
 import com.primeraPulpa.entities.*;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.DetallePedidoRepository;
-import com.primeraPulpa.repositories.EstadoPedidoRepository;
 import com.primeraPulpa.repositories.PedidoRepository;
 import com.primeraPulpa.repositories.UsuarioRepository;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,7 +30,6 @@ public class PedidoController {
     private final PedidoService pedidoService;
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
-    private final EstadoPedidoRepository estadoPedidoRepository;
     private final ClienteService clienteService;
     private final MixService mixService;
     private final UsuarioRepository usuarioRepository;
@@ -39,14 +37,12 @@ public class PedidoController {
     public PedidoController(PedidoService pedidoService,
                             PedidoRepository pedidoRepository,
                             DetallePedidoRepository detallePedidoRepository,
-                            EstadoPedidoRepository estadoPedidoRepository,
                             ClienteService clienteService,
                             MixService mixService,
                             UsuarioRepository usuarioRepository) {
         this.pedidoService = pedidoService;
         this.pedidoRepository = pedidoRepository;
         this.detallePedidoRepository = detallePedidoRepository;
-        this.estadoPedidoRepository = estadoPedidoRepository;
         this.clienteService = clienteService;
         this.mixService = mixService;
         this.usuarioRepository = usuarioRepository;
@@ -67,8 +63,8 @@ public class PedidoController {
                 })
                 .filter(p -> fecha == null || p.getFecha().equals(fecha))
                 .filter(p -> estado == null || estado.isBlank()
-                        || (p.getEstadoPedido() != null && p.getEstadoPedido().getDescripcion() != null
-                            && p.getEstadoPedido().getDescripcion().equalsIgnoreCase(estado)))
+                        || (p.getEstadoPedido() != null && p.getEstadoPedido().name() != null
+                            && p.getEstadoPedido().name().equalsIgnoreCase(estado)))
                 .toList();
 
         int total = todos.size();
@@ -188,6 +184,7 @@ public class PedidoController {
     @PostMapping("/{pedidoId}/detalles/{detalleId}/preparar")
     public String prepararDetalle(@PathVariable Long pedidoId,
                                   @PathVariable Long detalleId,
+                                  @RequestParam(value = "origen", defaultValue = "detalle") String origen,
                                   @AuthenticationPrincipal User user,
                                   RedirectAttributes redirectAttributes) {
         try {
@@ -200,13 +197,14 @@ public class PedidoController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al procesar el ítem: " + e.getMessage());
         }
-        return "redirect:/pedidos/" + pedidoId;
+        return "list".equals(origen) ? "redirect:/pedidos" : "redirect:/pedidos/" + pedidoId;
     }
 
     // ── Desmarcar ítem preparado (revierte descuento de stock) ──────────────
     @PostMapping("/{pedidoId}/detalles/{detalleId}/desmarcar")
     public String desmarcarDetalle(@PathVariable Long pedidoId,
                                    @PathVariable Long detalleId,
+                                   @RequestParam(value = "origen", defaultValue = "detalle") String origen,
                                    @AuthenticationPrincipal User user,
                                    RedirectAttributes redirectAttributes) {
         try {
@@ -219,7 +217,26 @@ public class PedidoController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al desmarcar el ítem: " + e.getMessage());
         }
-        return "redirect:/pedidos/" + pedidoId;
+        return "list".equals(origen) ? "redirect:/pedidos" : "redirect:/pedidos/" + pedidoId;
+    }
+
+    // ── Preparar todos los ítems pendientes del pedido ──────────────────────
+    @PostMapping("/{id}/preparar-todos")
+    public String prepararTodos(@PathVariable Long id,
+                                @RequestParam(value = "origen", defaultValue = "detalle") String origen,
+                                @AuthenticationPrincipal User user,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = usuarioRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ErrorServiceException("Usuario no encontrado"));
+            pedidoService.prepararTodosDetalles(id, usuario);
+            redirectAttributes.addFlashAttribute("success", "Todos los ítems pendientes fueron preparados y se descontó el stock de los mixes.");
+        } catch (ErrorServiceException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al preparar los ítems: " + e.getMessage());
+        }
+        return "list".equals(origen) ? "redirect:/pedidos" : "redirect:/pedidos/" + id;
     }
 
     // ── Cambiar estado del pedido (HU-14) ────────────────────────────────────

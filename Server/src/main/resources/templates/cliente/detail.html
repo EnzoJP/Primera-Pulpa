@@ -119,8 +119,8 @@
                         <!-- Estado -->
                         <td data-label="Estado" class="py-3.5 px-4 text-center font-label-caps">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                  th:classappend="${p.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${p.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${p.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
-                                  th:text="${p.estadoPedido != null ? p.estadoPedido.descripcion : 'PENDIENTE'}">PENDIENTE</span>
+                                  th:classappend="${p.estadoPedido?.name() == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${p.estadoPedido?.name() == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${p.estadoPedido?.name() == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
+                                  th:text="${p.estadoPedido != null ? p.estadoPedido.name() : 'PENDIENTE'}">PENDIENTE</span>
                         </td>
 
                         <!-- Acción -->

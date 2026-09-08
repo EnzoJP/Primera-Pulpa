@@ -16,7 +16,7 @@ public interface DetallePedidoRepository extends BaseRepository<DetallePedido, L
     @org.springframework.data.jpa.repository.Query(
         "SELECT dp.mix.id, SUM(dp.cantidad) FROM DetallePedido dp " +
         "JOIN dp.pedido p " +
-        "WHERE p.eliminado = false AND p.estadoPedido.descripcion = 'PENDIENTE' " +
+        "WHERE p.eliminado = false AND p.estadoPedido = 'PENDIENTE' " +
         "AND dp.eliminado = false " +
         "AND (dp.preparado = false OR dp.preparado IS NULL) " +
         "GROUP BY dp.mix.id")
@@ -29,8 +29,8 @@ public interface DetallePedidoRepository extends BaseRepository<DetallePedido, L
         "SELECT dp.mix.id, SUM(dp.cantidad) FROM DetallePedido dp " +
         "JOIN dp.pedido p " +
         "WHERE p.eliminado = false AND dp.eliminado = false " +
-        "AND (p.estadoPedido.descripcion IS NULL OR " +
-        "     (p.estadoPedido.descripcion <> 'ENTREGADO' AND p.estadoPedido.descripcion <> 'CANCELADO')) " +
+        "AND (p.estadoPedido IS NULL OR " +
+        "     (p.estadoPedido <> 'ENTREGADO' AND p.estadoPedido <> 'CANCELADO')) " +
         "GROUP BY dp.mix.id")
     List<Object[]> sumCantidadPedidaByMixId();
 }

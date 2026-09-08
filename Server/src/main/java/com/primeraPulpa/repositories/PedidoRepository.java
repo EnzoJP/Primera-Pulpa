@@ -13,7 +13,7 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
     List<Pedido> findByClienteId(Long clienteId);
 
     // HU-14: pedidos por estado (ej. todos los PENDIENTE)
-    List<Pedido> findByEstadoPedidoId(Long estadoPedidoId);
+    List<Pedido> findByEstadoPedido(String estadoPedido);
 
     // Trazabilidad: pedidos registrados por un usuario
     List<Pedido> findByUsuarioId(Long usuarioId);

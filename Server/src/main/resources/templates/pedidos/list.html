@@ -116,8 +116,8 @@
                         <!-- Estado -->
                         <td data-label="Estado" class="py-3.5 px-4 text-center">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
-                              th:classappend="${item.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${item.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${item.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
-                              th:text="${item.estadoPedido?.descripcion ?: '—'}">PENDIENTE</span>
+                              th:classappend="${item.estadoPedido?.name() == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${item.estadoPedido?.name() == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${item.estadoPedido?.name() == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
+                              th:text="${item.estadoPedido?.name() ?: '—'}">PENDIENTE</span>
                         </td>
 
                         <!-- Progreso Armado -->
@@ -233,10 +233,10 @@
                                             </div>
 
                                             <!-- Estado Ítem -->
-                                            <div class="w-full flex items-center justify-between sm:justify-center mt-1 sm:mt-0 pt-1.5 sm:pt-0 border-t sm:border-none border-outline-variant/10"
-                                                 th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? 'sm:col-span-1' : 'sm:col-span-5'">
+                                            <div class="w-full flex flex-col items-start sm:items-center sm:flex-row gap-1.5 mt-1 sm:mt-0 pt-1.5 sm:pt-0 border-t sm:border-none border-outline-variant/10"
+                                                 th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? 'sm:col-span-3' : 'sm:col-span-5'">
                                                 <span class="sm:hidden font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Estado</span>
-                                                <div>
+                                                <div class="flex items-center gap-1.5">
                                                 <span th:if="${d.preparado}" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
                                                     <span class="material-symbols-outlined text-[14px]">check</span> Listo
                                                 </span>
@@ -244,16 +244,55 @@
                                                     <span class="material-symbols-outlined text-[14px]">hourglass_top</span> Pendiente
                                                 </span>
                                                 </div>
+                                                <span
+                                                      th:if="${item.estadoPedido?.name() != 'ENTREGADO' and item.estadoPedido?.name() != 'CANCELADO'}">
+                                                    <form th:if="${!d.preparado}"
+                                                          th:action="@{|/pedidos/${item.id}/detalles/${d.id}/preparar|}" method="post" class="inline-block align-middle">
+                                                        <input type="hidden" name="origen" value="list"/>
+                                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}"/>
+                                                        <button type="submit"
+                                                                title="Marcar como preparado y descontar stock del mix"
+                                                                class="inline-flex items-center gap-0.5 px-2 py-1 bg-primary text-on-primary text-[10px] font-label-caps font-semibold rounded-md hover:opacity-90 transition-opacity cursor-pointer">
+                                                            <span class="material-symbols-outlined text-[14px]">done</span>
+                                                            <span>Preparar</span>
+                                                        </button>
+                                                    </form>
+                                                    <form th:if="${d.preparado}"
+                                                          th:action="@{|/pedidos/${item.id}/detalles/${d.id}/desmarcar|}" method="post" class="inline-block align-middle"
+                                                          onsubmit="return confirm('¿Desea desmarcar este ítem y restaurar el stock del mix?');">
+                                                        <input type="hidden" name="origen" value="list"/>
+                                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}"/>
+                                                        <button type="submit"
+                                                                title="Desmarcar y restaurar stock de mix"
+                                                                class="inline-flex items-center gap-0.5 px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-label-caps rounded-md hover:bg-surface-container-highest transition-colors cursor-pointer">
+                                                            <span class="material-symbols-outlined text-[14px]">undo</span>
+                                                            <span>Deshacer</span>
+                                                        </button>
+                                                    </form>
+                                                </span>
                                             </div>
 
                                         </div>
                                     </div>
 
-                                    <!-- Footer Total del Pedido (ADMIN) -->
-                                    <div sec:authorize="hasRole('ADMIN')" class="flex items-center justify-between px-4 py-2.5 bg-surface-container/40 border-t border-outline-variant/20 font-label-caps text-xs">
-                                        <span class="text-on-surface-variant uppercase tracking-wider">Total Pedido:</span>
-                                        <span class="font-data-tabular font-bold text-sm text-primary"
+                                    <!-- Footer Total del Pedido (ADMIN) + Preparar todo -->
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-2.5 bg-surface-container/40 border-t border-outline-variant/20 font-label-caps text-xs">
+                                        <form th:if="${item.estadoPedido?.name() != 'ENTREGADO' and item.estadoPedido?.name() != 'CANCELADO' and item.cantidadDetallesPreparados < item.totalDetalles}"
+                                              th:action="@{/pedidos/{id}/preparar-todos(id=${item.id})}" method="post" class="w-full sm:w-auto"
+                                              onsubmit="return confirm('¿Desea marcar todos los ítems pendientes de este pedido como preparados y descontar el stock de cada mix?');">
+                                            <input type="hidden" name="origen" value="list"/>
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}"/>
+                                            <button type="submit"
+                                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary rounded-lg font-semibold hover:opacity-90 transition-opacity soft-shadow cursor-pointer">
+                                                <span class="material-symbols-outlined text-[16px]">done_all</span>
+                                                <span>Marcar todos como listos</span>
+                                            </button>
+                                        </form>
+                                        <div sec:authorize="hasRole('ADMIN')">
+                                            <span class="text-on-surface-variant uppercase tracking-wider">Total Pedido:</span>
+                                            <span class="font-data-tabular font-bold text-sm text-primary"
                                               th:text="'$ ' + ${#numbers.formatDecimal(totalPorPedido[item.id], 1, 'POINT', 2, 'COMMA')}">$ 0,00</span>
+                                        </div>
                                     </div>
 
                                 </div>

@@ -1,5 +1,5 @@
 package com.primeraPulpa.Services;
-
+/*
 import com.primeraPulpa.entities.EstadoPedido;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.EstadoPedidoRepository;
@@ -19,3 +19,4 @@ public class EstadoPedidoService extends BaseService<EstadoPedido, Long> {
         }
     }
 }
+*/

@@ -1,5 +1,5 @@
 package com.primeraPulpa.repositories;
-
+/*
 import com.primeraPulpa.entities.EstadoPedido;
 
 import java.util.Optional;
@@ -8,3 +8,4 @@ public interface EstadoPedidoRepository extends BaseRepository<EstadoPedido, Lon
 
     Optional<EstadoPedido> findByDescripcionIgnoreCase(String descripcion);
 }
+*/

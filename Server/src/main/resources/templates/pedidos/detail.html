@@ -63,10 +63,10 @@
             <span class="block font-label-caps text-label-caps text-on-surface-variant uppercase">Estado Actual</span>
             <div class="mt-1">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-label-caps uppercase tracking-wider font-semibold"
-                      th:classappend="${pedido.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${pedido.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${pedido.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
-                      th:text="${pedido.estadoPedido?.descripcion ?: '—'}">PENDIENTE</span>
+                      th:classappend="${pedido.estadoPedido?.name() == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${pedido.estadoPedido?.name() == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${pedido.estadoPedido?.name() == 'ENTREGADO'} ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-on-error-container'))"
+                      th:text="${pedido.estadoPedido?.name() ?: '—'}">PENDIENTE</span>
             </div>
-            <span class="block font-body-sm text-xs text-on-surface-variant mt-2" th:text="${pedido.estadoPedido?.descripcion == 'ENTREGADO' ? 'Pedido finalizado' : (pedido.estadoPedido?.descripcion == 'CANCELADO' ? 'Pedido cancelado' : (pedido.estadoPedido?.descripcion == 'PREPARADO' ? 'Listo para despachar' : 'En proceso de preparación'))}">Estado</span>
+            <span class="block font-body-sm text-xs text-on-surface-variant mt-2" th:text="${pedido.estadoPedido?.name() == 'ENTREGADO' ? 'Pedido finalizado' : (pedido.estadoPedido?.name() == 'CANCELADO' ? 'Pedido cancelado' : (pedido.estadoPedido?.name() == 'PREPARADO' ? 'Listo para despachar' : 'En proceso de preparación'))}">Estado</span>
         </div>
 
         <!-- Progreso de Preparación -->
@@ -104,13 +104,13 @@
     </div>
 
     <!-- Acciones Globales: Cambio de Estado -->
-    <div sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}"
+    <div sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.name() != 'ENTREGADO' and pedido.estadoPedido?.name() != 'CANCELADO'}"
          class="bg-surface-container-lowest rounded-xl soft-shadow border border-outline-variant/20 p-md">
         <h3 class="font-headline-md text-base sm:text-headline-md text-primary font-bold mb-3">Acciones Globales</h3>
         <div class="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-sm items-stretch sm:items-center">
 
             <!-- PENDIENTE → PREPARADO -->
-            <form sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.descripcion == 'PENDIENTE'}"
+            <form sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.name() == 'PENDIENTE'}"
                   th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="w-full sm:w-auto"
                   onsubmit="return confirm('¿Desea marcar todos los ítems pendientes como preparados y descontar el stock correspondiente de cada mix?');">
                 <input type="hidden" name="nuevoEstado" value="PREPARADO"/>
@@ -122,7 +122,7 @@
             </form>
 
             <!-- PREPARADO → ENTREGADO -->
-            <form sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.descripcion == 'PREPARADO'}"
+            <form sec:authorize="hasRole('ADMIN')" th:if="${pedido.estadoPedido?.name() == 'PREPARADO'}"
                   th:action="@{/pedidos/{id}/cambiar-estado(id=${pedido.id})}" method="post" class="w-full sm:w-auto">
                 <input type="hidden" name="nuevoEstado" value="ENTREGADO"/>
                 <button type="submit"
@@ -170,7 +170,7 @@
                         <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-36 text-right">Subtotal</th>
                         <th class="py-3 px-4 font-normal w-40 text-center">Estado Armado</th>
                         <th sec:authorize="hasRole('ADMIN')" class="py-3 px-4 font-normal w-44 text-center"
-                            th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">Acción</th>
+                            th:if="${pedido.estadoPedido?.name() != 'ENTREGADO' and pedido.estadoPedido?.name() != 'CANCELADO'}">Acción</th>
                     </tr>
                     </thead>
 
@@ -220,7 +220,7 @@
 
                         <!-- Acción Individual -->
                         <td sec:authorize="hasRole('ADMIN')" data-label="Acción" class="py-3.5 px-4 text-center"
-                            th:if="${pedido.estadoPedido?.descripcion != 'ENTREGADO' and pedido.estadoPedido?.descripcion != 'CANCELADO'}">
+                            th:if="${pedido.estadoPedido?.name() != 'ENTREGADO' and pedido.estadoPedido?.name() != 'CANCELADO'}">
 
                             <form th:if="${!det.preparado}"
                                   th:action="@{|/pedidos/${pedido.id}/detalles/${det.id}/preparar|}" method="post" class="w-full sm:w-auto">
@@ -288,17 +288,17 @@
 
                 <div th:each="h, stat : ${historial}" class="relative flex items-start gap-3 pb-4 last:pb-0">
                     <div class="relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xs"
-                         th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-emerald-100' : 'bg-error-container/40'))">
+                         th:classappend="${h.estadoPedido?.name() == 'PENDIENTE'} ? 'bg-amber-100' : (${h.estadoPedido?.name() == 'PREPARADO'} ? 'bg-blue-100' : (${h.estadoPedido?.name() == 'ENTREGADO'} ? 'bg-emerald-100' : 'bg-error-container/40'))">
                         <span class="material-symbols-outlined text-[20px]"
-                              th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'text-amber-700' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'text-blue-700' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'text-emerald-700' : 'text-error'))"
-                              th:text="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'receipt_long' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'inventory_2' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'local_shipping' : 'cancel'))">icon</span>
+                              th:classappend="${h.estadoPedido?.name() == 'PENDIENTE'} ? 'text-amber-700' : (${h.estadoPedido?.name() == 'PREPARADO'} ? 'text-blue-700' : (${h.estadoPedido?.name() == 'ENTREGADO'} ? 'text-emerald-700' : 'text-error'))"
+                              th:text="${h.estadoPedido?.name() == 'PENDIENTE'} ? 'receipt_long' : (${h.estadoPedido?.name() == 'PREPARADO'} ? 'inventory_2' : (${h.estadoPedido?.name() == 'ENTREGADO'} ? 'local_shipping' : 'cancel'))">icon</span>
                     </div>
 
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-label-caps uppercase tracking-wider font-semibold"
-                                  th:classappend="${h.estadoPedido?.descripcion == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${h.estadoPedido?.descripcion == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${h.estadoPedido?.descripcion == 'ENTREGADO'} ? 'bg-emerald-100 text-emerald-800' : 'bg-error-container/40 text-on-error-container'))"
-                                  th:text="${h.estadoPedido?.descripcion}">Estado</span>
+                                  th:classappend="${h.estadoPedido?.name() == 'PENDIENTE'} ? 'bg-amber-100 text-amber-800' : (${h.estadoPedido?.name() == 'PREPARADO'} ? 'bg-blue-100 text-blue-800' : (${h.estadoPedido?.name() == 'ENTREGADO'} ? 'bg-emerald-100 text-emerald-800' : 'bg-error-container/40 text-on-error-container'))"
+                                  th:text="${h.estadoPedido?.name()}">Estado</span>
                             <span class="font-body-sm text-xs text-on-surface-variant"
                                   th:text="${#temporals.format(h.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</span>
                         </div>

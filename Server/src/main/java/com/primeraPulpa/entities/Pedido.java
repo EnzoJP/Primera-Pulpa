@@ -1,9 +1,6 @@
 package com.primeraPulpa.entities;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +22,7 @@ public class Pedido extends BaseEntity<Long> {
     @ManyToOne
     private Cliente cliente;
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
     private EstadoPedido estadoPedido;
 
     // Usuario que registró el pedido

@@ -1,6 +1,8 @@
 package com.primeraPulpa.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +21,7 @@ public class HistorialEstadoPedido extends BaseEntity<Long> {
     @ManyToOne
     private Pedido pedido;
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
     private EstadoPedido estadoPedido;
 
     @ManyToOne

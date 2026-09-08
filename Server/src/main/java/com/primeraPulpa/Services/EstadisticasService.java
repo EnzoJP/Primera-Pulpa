@@ -80,7 +80,7 @@ public class EstadisticasService {
                 continue;
             }
             boolean cancelado = p.getEstadoPedido() != null
-                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().getDescripcion());
+                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().name());
             for (DetallePedido d : p.getDetalles()) {
                 if (d == null || d.getMix() == null) {
                     continue;
@@ -119,7 +119,7 @@ public class EstadisticasService {
                 continue;
             }
             boolean cancelado = p.getEstadoPedido() != null
-                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().getDescripcion());
+                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().name());
             for (DetallePedido d : p.getDetalles()) {
                 if (d == null || d.getMix() == null) {
                     continue;
@@ -168,7 +168,7 @@ public class EstadisticasService {
                 continue;
             }
             boolean cancelado = p.getEstadoPedido() != null
-                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().getDescripcion());
+                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().name());
             for (DetallePedido d : p.getDetalles()) {
                 if (d == null) {
                     continue;
@@ -226,7 +226,7 @@ public class EstadisticasService {
                 continue;
             }
             boolean cancelado = p.getEstadoPedido() != null
-                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().getDescripcion());
+                    && "CANCELADO".equalsIgnoreCase(p.getEstadoPedido().name());
             for (DetallePedido d : p.getDetalles()) {
                 if (d == null) {
                     continue;

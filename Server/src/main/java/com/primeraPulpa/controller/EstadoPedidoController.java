@@ -1,5 +1,5 @@
 package com.primeraPulpa.controller;
-
+/*
 import com.primeraPulpa.entities.EstadoPedido;
 import com.primeraPulpa.Services.EstadoPedidoService;
 import org.springframework.stereotype.Controller;
@@ -14,3 +14,4 @@ public class EstadoPedidoController extends BaseController<EstadoPedido, Long> {
         super(service, EstadoPedido.class, "/estado-pedidos", "estadoPedido");
     }
 }
+*/
