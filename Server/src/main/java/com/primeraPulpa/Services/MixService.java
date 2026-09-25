@@ -1,6 +1,7 @@
 package com.primeraPulpa.Services;
 
 import com.primeraPulpa.dto.DesgloseCostoMixDTO;
+import com.primeraPulpa.dto.DesgloseElaboracionDTO;
 import com.primeraPulpa.entities.*;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.*;
@@ -9,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MixService extends BaseService<Mix, Long> {
@@ -22,13 +25,15 @@ public class MixService extends BaseService<Mix, Long> {
     private final HistorialPrecioMixRepository historialPrecioRepository;
     private final CostoAdicionalRepository costoAdicionalRepository;
     private final MateriaPrimaRepository materiaPrimaRepository;
+    private final DetalleConsumoLoteRepository consumoLoteRepository;
 
     public MixService(MixRepository repository, DetallePedidoRepository detallePedidoRepository,
                       FormulaRepository formulaRepository,
                       DetalleIngresoMPRepository detalleIngresoMPRepository,
                       HistorialPrecioMixRepository historialPrecioRepository,
                       CostoAdicionalRepository costoAdicionalRepository,
-                      MateriaPrimaRepository materiaPrimaRepository) {
+                      MateriaPrimaRepository materiaPrimaRepository,
+                      DetalleConsumoLoteRepository consumoLoteRepository) {
         super(repository);
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
@@ -36,6 +41,7 @@ public class MixService extends BaseService<Mix, Long> {
         this.historialPrecioRepository = historialPrecioRepository;
         this.costoAdicionalRepository = costoAdicionalRepository;
         this.materiaPrimaRepository = materiaPrimaRepository;
+        this.consumoLoteRepository = consumoLoteRepository;
     }
 
     @Override
@@ -248,12 +254,28 @@ public class MixService extends BaseService<Mix, Long> {
                 .forEach(m -> recalcularCosto(m.getId()));
     }
 
-    // Actualiza el stock al registrar una elaboración:
-    //  - valida que el mix tenga fórmula y que haya stock de materia prima suficiente
-    //  - descuenta de cada materia prima lo necesario según la fórmula (managed → dirty checking)
-    //  - suma la cantidad elaborada al stock del mix (detached → save hace merge)
+    /**
+     * Actualiza el stock al registrar una elaboración:
+     *  - valida que el mix tenga fórmula y que haya stock de materia prima suficiente
+     *  - descuenta de cada materia prima lo necesario según la fórmula (managed → dirty checking)
+     *  - suma la cantidad elaborada al stock del mix (detached → save hace merge)
+     * Sin desglose de lotes: reparte en FEFO automáticamente (compatibilidad).
+     */
     @Transactional
     public void actualizarStockMixElaboracion(Mix mix, Double cantidad) throws ErrorServiceException {
+        actualizarStockMixElaboracion(mix, cantidad, null, null);
+    }
+
+    /**
+     * Igual que el anterior, pero permite elegir manualmente qué lotes consumir
+     * (modo híbrido). Si llega usoLotes con entradas válidas para una materia
+     * prima, se valida y se respeta el reparto del operario; si no, se usa FEFO.
+     * Cuando se provee el LoteMix, se registra el desglose DetalleConsumoLote
+     * (sumando entre tandas del mismo lote del día).
+     */
+    @Transactional
+    public void actualizarStockMixElaboracion(Mix mix, Double cantidad, LoteMix loteMix,
+                                              Map<Long, Double> usoLotes) throws ErrorServiceException {
         if (mix == null || mix.getId() == null) {
             throw new ErrorServiceException("Debe indicar el mix elaborado.");
         }
@@ -287,7 +309,7 @@ public class MixService extends BaseService<Mix, Long> {
             }
         }
 
-        // 2) Descontar de cada materia prima: stock global + desglose FIFO por lote
+        // 2) Descontar de cada materia prima: stock global + desglose por lote
         for (DetalleFormula detalle : formula.getDetalles()) {
             if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
                 continue;
@@ -295,15 +317,183 @@ public class MixService extends BaseService<Mix, Long> {
             double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
             MateriaPrima mp = materiaPrimaRepository.findById(detalle.getMateriaPrima().getId())
                     .orElse(detalle.getMateriaPrima());
+
+            Map<Long, Double> split = null;
+            if (usoLotes != null && !usoLotes.isEmpty()) {
+                split = evaluarSplitManual(mp, necesario, usoLotes);
+            }
+            if (split == null) {
+                split = splitFEFO(mp, necesario);
+            }
+
             mp.actualizarStock(-necesario);
             materiaPrimaRepository.save(mp);
-            consumirLotesFEFO(mp, necesario);
+
+            for (Map.Entry<Long, Double> e : split.entrySet()) {
+                DetalleIngresoMP lote = detalleIngresoMPRepository.findById(e.getKey()).orElse(null);
+                if (lote == null) {
+                    continue;
+                }
+                lote.setCantidadRestante(redondear(lote.getRestante() - e.getValue()));
+                detalleIngresoMPRepository.save(lote);
+            }
+
+            if (loteMix != null) {
+                registrarConsumos(loteMix, mp, split);
+            }
         }
 
         // 3) Aumentar el stock del mix
         Mix mixEntidad = repository.findById(mix.getId()).orElse(mix);
         mixEntidad.actualizarStock(cantidad);
         repository.save(mixEntidad);
+    }
+
+    /**
+     * Desglose propuesto (FEFO) para la vista previa del formulario de
+     * elaboración: por cada materia prima de la fórmula indica lo necesario y
+     * los lotes disponibles con la cantidad sugerida (ajustable por el operario).
+     */
+    @Transactional(readOnly = true)
+    public DesgloseElaboracionDTO desgloseFEFO(Mix mix, Double cantidad) throws ErrorServiceException {
+        if (mix == null || mix.getId() == null) {
+            throw new ErrorServiceException("Debe seleccionar el mix a elaborar.");
+        }
+        if (cantidad == null || cantidad <= 0) {
+            throw new ErrorServiceException("La cantidad elaborada debe ser mayor a cero.");
+        }
+
+        Formula formula = formulaRepository.findByMixId(mix.getId()).stream()
+                .filter(f -> !Boolean.TRUE.equals(f.getEliminado()))
+                .findFirst()
+                .orElse(null);
+
+        if (formula == null) {
+            throw new ErrorServiceException("El mix no tiene una fórmula asociada. Registre la fórmula antes de elaborar.");
+        }
+        if (formula.getCantidad() <= 0) {
+            throw new ErrorServiceException("La fórmula del mix no tiene un rendimiento válido.");
+        }
+
+        List<DesgloseElaboracionDTO.ItemMateriaPrima> items = new ArrayList<>();
+        for (DetalleFormula detalle : formula.getDetalles()) {
+            if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
+                continue;
+            }
+            double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
+            MateriaPrima mp = detalle.getMateriaPrima();
+
+            Map<Long, Double> split = splitFEFO(mp, necesario);
+            String unidad = mp.getUnidadMedida() != null && mp.getUnidadMedida().getDescripcion() != null
+                    ? mp.getUnidadMedida().getDescripcion() : "kg";
+
+            List<DesgloseElaboracionDTO.LoteSugerido> lotes = new ArrayList<>();
+            for (DetalleIngresoMP lote : detalleIngresoMPRepository.findLotesDisponiblesFEFO(mp.getId())) {
+                if (lote.getRestante() <= 0) {
+                    continue;
+                }
+                lotes.add(new DesgloseElaboracionDTO.LoteSugerido(
+                        lote.getId(),
+                        lote.getNumeroLote(),
+                        lote.getFechaVencimiento(),
+                        lote.getRestante(),
+                        split.getOrDefault(lote.getId(), 0.0)));
+            }
+
+            items.add(new DesgloseElaboracionDTO.ItemMateriaPrima(
+                    mp.getId(), mp.getNombre(), unidad, necesario, lotes));
+        }
+
+        if (items.isEmpty()) {
+            throw new ErrorServiceException("La fórmula del mix no tiene detalles de materia prima.");
+        }
+
+        return new DesgloseElaboracionDTO(mix.getId(), mix.getNombre(), cantidad, items);
+    }
+
+    /**
+     * Desglose para el formulario de EDICIÓN de una elaboración: propone el
+     * reparto ya registrado (ajustable) y, para cada lote, muestra como
+     * "disponible" lo que quedará una vez revertido el consumo actual, de modo
+     * que el operario pueda redistribuir entre lotes (incluso más de uno si un
+     * solo lote no alcanza) sin que el preview marque stock insuficiente.
+     */
+    @Transactional(readOnly = true)
+    public DesgloseElaboracionDTO desgloseFEFOEdicion(Mix mix, Double cantidad, LoteMix loteMix) throws ErrorServiceException {
+        if (mix == null || mix.getId() == null) {
+            throw new ErrorServiceException("Debe seleccionar el mix a elaborar.");
+        }
+        if (cantidad == null || cantidad <= 0) {
+            throw new ErrorServiceException("La cantidad elaborada debe ser mayor a cero.");
+        }
+
+        Formula formula = formulaRepository.findByMixId(mix.getId()).stream()
+                .filter(f -> !Boolean.TRUE.equals(f.getEliminado()))
+                .findFirst()
+                .orElse(null);
+
+        if (formula == null) {
+            throw new ErrorServiceException("El mix no tiene una fórmula asociada. Registre la fórmula antes de elaborar.");
+        }
+        if (formula.getCantidad() <= 0) {
+            throw new ErrorServiceException("La fórmula del mix no tiene un rendimiento válido.");
+        }
+
+        // Consumo ya registrado de esta elaboración, agrupado por materia prima y lote.
+        Map<Long, Map<Long, Double>> consumosActuales = new HashMap<>();
+        if (loteMix != null && loteMix.getId() != null) {
+            for (DetalleConsumoLote c : consumoLoteRepository.findByLoteMixId(loteMix.getId())) {
+                if (c.getMateriaPrima() == null || c.getLote() == null
+                        || c.getMateriaPrima().getId() == null || c.getLote().getId() == null) {
+                    continue;
+                }
+                consumosActuales
+                        .computeIfAbsent(c.getMateriaPrima().getId(), k -> new HashMap<>())
+                        .merge(c.getLote().getId(), c.getCantidadConsumida(), Double::sum);
+            }
+        }
+
+        List<DesgloseElaboracionDTO.ItemMateriaPrima> items = new ArrayList<>();
+        for (DetalleFormula detalle : formula.getDetalles()) {
+            if (detalle.getMateriaPrima() == null || detalle.getGramos() <= 0) {
+                continue;
+            }
+            double necesario = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad())) * cantidad);
+            MateriaPrima mp = detalle.getMateriaPrima();
+
+            Map<Long, Double> usadosMP = consumosActuales.getOrDefault(mp.getId(), Map.of());
+            boolean hayConsumoRegistrado = usadosMP.values().stream().anyMatch(v -> v > 0);
+            Map<Long, Double> split = splitFEFO(mp, necesario);
+            String unidad = mp.getUnidadMedida() != null && mp.getUnidadMedida().getDescripcion() != null
+                    ? mp.getUnidadMedida().getDescripcion() : "kg";
+
+            List<DesgloseElaboracionDTO.LoteSugerido> lotes = new ArrayList<>();
+            for (DetalleIngresoMP lote : detalleIngresoMPRepository.findLotesDisponiblesFEFO(mp.getId())) {
+                double usado = redondear(usadosMP.getOrDefault(lote.getId(), 0.0));
+                // En edición, lo "disponible" = restante actual + lo que este
+                // desglose revierte al guardar, así el preview admite re-partir.
+                double disponible = redondear(lote.getRestante() + (hayConsumoRegistrado ? usado : 0.0));
+                if (disponible <= 0) {
+                    continue;
+                }
+                double sugerido = hayConsumoRegistrado ? usado : split.getOrDefault(lote.getId(), 0.0);
+                lotes.add(new DesgloseElaboracionDTO.LoteSugerido(
+                        lote.getId(),
+                        lote.getNumeroLote(),
+                        lote.getFechaVencimiento(),
+                        disponible,
+                        sugerido));
+            }
+
+            items.add(new DesgloseElaboracionDTO.ItemMateriaPrima(
+                    mp.getId(), mp.getNombre(), unidad, necesario, lotes));
+        }
+
+        if (items.isEmpty()) {
+            throw new ErrorServiceException("La fórmula del mix no tiene detalles de materia prima.");
+        }
+
+        return new DesgloseElaboracionDTO(mix.getId(), mix.getNombre(), cantidad, items);
     }
 
     // Descuenta la cantidad necesaria de los lotes de la materia prima en orden FEFO
@@ -324,6 +514,112 @@ public class MixService extends BaseService<Mix, Long> {
             detalleIngresoMPRepository.save(lote);
             pendiente -= aDescontar;
         }
+    }
+
+    // Reparte lo necesario entre los lotes disponibles en FEFO, devolviendo
+    // un mapa loteId → cantidad. No descuenta nada.
+    private Map<Long, Double> splitFEFO(MateriaPrima mp, double necesario) {
+        Map<Long, Double> split = new LinkedHashMap<>();
+        double pendiente = necesario;
+        for (DetalleIngresoMP lote : detalleIngresoMPRepository.findLotesDisponiblesFEFO(mp.getId())) {
+            if (pendiente <= 0) {
+                break;
+            }
+            double restante = lote.getRestante();
+            if (restante <= 0) {
+                continue;
+            }
+            double aConsumir = Math.min(restante, pendiente);
+            if (aConsumir > 0) {
+                split.put(lote.getId(), redondear(aConsumir));
+            }
+            pendiente -= aConsumir;
+        }
+        return split;
+    }
+
+    // Valida el reparto manual del operario para una materia prima.
+    // Devuelve null si no hay lotes intervenidos para esa MP (→ se usa FEFO).
+    private Map<Long, Double> evaluarSplitManual(MateriaPrima mp, double necesario,
+                                                 Map<Long, Double> usoLotes) throws ErrorServiceException {
+        Map<Long, Double> candidato = new LinkedHashMap<>();
+        for (Map.Entry<Long, Double> e : usoLotes.entrySet()) {
+            Long loteId = e.getKey();
+            Double cantidad = e.getValue();
+            if (loteId == null || cantidad == null || cantidad <= 0) {
+                continue;
+            }
+            DetalleIngresoMP lote = detalleIngresoMPRepository.findById(loteId).orElse(null);
+            if (lote == null || Boolean.TRUE.equals(lote.getEliminado())) {
+                continue;
+            }
+            if (!mp.getId().equals(lote.getMateriaPrima().getId())) {
+                continue;
+            }
+            candidato.put(loteId, cantidad);
+        }
+
+        if (candidato.isEmpty()) {
+            return null;
+        }
+
+        double suma = 0;
+        for (Map.Entry<Long, Double> e : candidato.entrySet()) {
+            DetalleIngresoMP lote = detalleIngresoMPRepository.findById(e.getKey()).orElse(null);
+            if (lote == null) {
+                continue;
+            }
+            double cantidad = e.getValue();
+            if (cantidad > lote.getRestante() + 0.000001) {
+                throw new ErrorServiceException(
+                        "El lote " + etiquetaLote(lote) + " sólo tiene disponible " + lote.getRestante() + " kg.");
+            }
+            suma += cantidad;
+        }
+
+        if (Math.abs(suma - necesario) > 0.000001) {
+            throw new ErrorServiceException(
+                    "En la materia prima '" + mp.getNombre() + "' el reparto entre lotes suma " + redondear(suma)
+                    + " kg y se necesitan " + necesario + " kg.");
+        }
+
+        return candidato;
+    }
+
+    // Persiste el desglose de consumo; si el mismo lote ya aportó a este LoteMix
+    // (segunda tanda del día), se suma en lugar de duplicar la fila.
+    private void registrarConsumos(LoteMix loteMix, MateriaPrima mp, Map<Long, Double> split) {
+        Map<Long, DetalleConsumoLote> existentes = consumoLoteRepository.findByLoteMixId(loteMix.getId()).stream()
+                .filter(c -> c.getLote() != null && c.getLote().getId() != null)
+                .collect(Collectors.toMap(c -> c.getLote().getId(), c -> c));
+
+        for (Map.Entry<Long, Double> e : split.entrySet()) {
+            DetalleConsumoLote consumo = existentes.get(e.getKey());
+            if (consumo != null) {
+                consumo.setCantidadConsumida(redondear(consumo.getCantidadConsumida() + e.getValue()));
+                consumoLoteRepository.save(consumo);
+            } else {
+                DetalleIngresoMP lote = detalleIngresoMPRepository.findById(e.getKey()).orElse(null);
+                if (lote == null) {
+                    continue;
+                }
+                consumo = DetalleConsumoLote.builder()
+                        .loteMix(loteMix)
+                        .materiaPrima(mp)
+                        .lote(lote)
+                        .cantidadConsumida(redondear(e.getValue()))
+                        .build();
+                consumo.setEliminado(false);
+                consumoLoteRepository.save(consumo);
+            }
+        }
+    }
+
+    private String etiquetaLote(DetalleIngresoMP lote) {
+        if (lote.getNumeroLote() != null && !lote.getNumeroLote().isEmpty()) {
+            return "'" + lote.getNumeroLote() + "'";
+        }
+        return "#" + lote.getId();
     }
 
     /**

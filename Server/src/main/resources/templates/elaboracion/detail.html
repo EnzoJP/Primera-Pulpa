@@ -83,39 +83,80 @@
                 </tr>
                 </thead>
                 <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
-                <tr th:each="el : ${loteDelDia}" class="hover:bg-surface-container-low transition-colors">
-                    <td class="py-3.5 px-base text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
-                        th:text="${el.id}">#1</td>
-                    <td class="py-3.5 px-base font-medium text-primary">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-outline text-[20px]">inventory_2</span>
-                            <span th:text="${el.mix.nombre}">Mix Frutos Secos Clásico</span>
-                        </div>
-                    </td>
-                    <td class="py-3.5 px-base text-right font-data-tabular text-data-tabular">
-                        <span th:text="${#numbers.formatDecimal(el.cantidadElaborada ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
-                        <span class="text-on-surface-variant text-xs ml-0.5">kg</span>
-                    </td>
-                    <td sec:authorize="hasRole('ADMIN')" class="py-3.5 px-base pr-6 text-right whitespace-nowrap">
-                        <div class="inline-flex items-center justify-end gap-1">
-                            <a th:href="@{|/elaboracion/${el.id}/editar|}"
-                               title="Editar"
-                               class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-[20px]">edit</span>
-                            </a>
-                            <form th:action="@{|/elaboracion/${el.id}/eliminar|}"
-                                  method="post"
-                                  class="inline m-0"
-                                  onsubmit="return confirm('¿Seguro que deseas eliminar esta elaboración?');">
-                                <button type="submit"
-                                        title="Eliminar"
-                                        class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
+                <th:block th:each="el : ${loteDelDia}">
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="py-3.5 px-base text-center font-data-tabular text-data-tabular text-on-surface-variant font-medium"
+                            th:text="${el.id}">#1</td>
+                        <td class="py-3.5 px-base font-medium text-primary">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-outline text-[20px]">inventory_2</span>
+                                <span th:text="${el.mix.nombre}">Mix Frutos Secos Clásico</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-base text-right font-data-tabular text-data-tabular">
+                            <span th:text="${#numbers.formatDecimal(el.cantidadElaborada ?: 0, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                            <span class="text-on-surface-variant text-xs ml-0.5">kg</span>
+                        </td>
+                        <td sec:authorize="hasRole('ADMIN')" class="py-3.5 px-base pr-6 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center justify-end gap-1">
+                                <a th:href="@{|/elaboracion/${el.id}/editar|}"
+                                   title="Editar"
+                                   class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </a>
+                                <form th:action="@{|/elaboracion/${el.id}/eliminar|}"
+                                      method="post"
+                                      class="inline m-0"
+                                      onsubmit="return confirm('¿Seguro que deseas eliminar esta elaboración?');">
+                                    <button type="submit"
+                                            title="Eliminar"
+                                            class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Desglose de lotes de materia prima consumidos -->
+                    <tr th:if="${!el.consumos.isEmpty()}" class="bg-surface-container-low/40">
+                        <td colspan="4" class="p-0">
+                            <div th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? 'md:pl-16' : ''" class="px-4 py-2">
+                                <p class="font-label-caps text-label-caps text-xs text-on-surface-variant uppercase tracking-wider mb-1">
+                                    Materias primas consumidas
+                                </p>
+                                <table class="w-full text-left border-collapse mt-1">
+                                    <thead class="text-on-surface-variant font-label-caps text-label-caps text-xs">
+                                    <tr>
+                                        <th class="py-1.5 px-3 font-normal">Materia Prima</th>
+                                        <th class="py-1.5 px-3 font-normal w-36">N° Lote</th>
+                                        <th class="py-1.5 px-3 font-normal w-28 text-center">Vencimiento</th>
+                                        <th class="py-1.5 px-3 font-normal w-32 text-right">Cantidad (kg)</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-outline-variant/10">
+                                    <tr th:each="c : ${el.consumos}">
+                                        <td class="py-1.5 px-3 font-medium text-on-surface" th:text="${c.materiaPrima.nombre}">Almendras</td>
+                                        <td class="py-1.5 px-3">
+                                            <span th:if="${c.lote != null and c.lote.numeroLote != null and !c.lote.numeroLote.isEmpty()}"
+                                                  class="inline-flex items-center gap-1 rounded bg-secondary-container/50 text-on-secondary-container px-1.5 py-0.5 font-data-tabular text-data-tabular text-xs font-semibold">
+                                                <span class="material-symbols-outlined text-[13px]">tag</span>
+                                                <span th:text="${c.lote.numeroLote}">L-2609-01</span>
+                                            </span>
+                                            <span th:if="${c.lote == null or c.lote.numeroLote == null or c.lote.numeroLote.isEmpty()}"
+                                                  class="font-data-tabular text-data-tabular text-on-surface-variant"
+                                                  th:text="${c.lote != null ? 'Lote #' + c.lote.id : 'Sin lote'}">Lote #5</span>
+                                        </td>
+                                        <td class="py-1.5 px-3 text-center font-data-tabular text-data-tabular text-on-surface-variant"
+                                            th:text="${c.lote != null and c.lote.fechaVencimiento != null ? #temporals.format(c.lote.fechaVencimiento, 'dd/MM/yyyy') : '—'}">—</td>
+                                        <td class="py-1.5 px-3 text-right font-data-tabular text-data-tabular font-medium text-primary"
+                                            th:text="${#numbers.formatDecimal(c.cantidadConsumida, 1, 'POINT', 2, 'COMMA')}">0,00</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </th:block>
                 </tbody>
             </table>
         </div>

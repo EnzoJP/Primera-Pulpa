@@ -90,6 +90,7 @@
                     <th class="py-3 px-4 font-normal w-52">Tipo y Detalle</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Fecha</th>
                     <th class="py-3 px-4 font-normal w-36 text-right">Cantidad (kg)</th>
+                    <th class="py-3 px-4 font-normal w-40">N° Lote</th>
                     <th class="py-3 px-4 font-normal w-36">Usuario</th>
                     <th class="py-3 px-4 font-normal w-36 text-right pr-6">Saldo</th>
                 </tr>
@@ -123,6 +124,15 @@
                         <span class="text-xs font-normal ml-0.5">kg</span>
                     </td>
 
+                    <!-- N° Lote -->
+                    <td data-label="N° Lote" class="py-3.5 px-4">
+                        <span th:if="${mov.lote != null}" class="inline-flex items-center gap-1.5 rounded bg-secondary-container/60 text-on-secondary-container px-2 py-0.5 font-data-tabular text-data-tabular text-xs font-semibold">
+                            <span class="material-symbols-outlined text-[13px]">tag</span>
+                            <span th:text="${mov.lote}">ALM-2609-01</span>
+                        </span>
+                        <span th:if="${mov.lote == null}" class="text-on-surface-variant" th:text="'—'">—</span>
+                    </td>
+
                     <!-- Usuario -->
                     <td data-label="Usuario" class="py-3.5 px-4 text-on-surface">
                         <span class="text-right md:text-left truncate block" th:text="${mov.usuario != null ? mov.usuario : '—'}">Usuario</span>
@@ -137,7 +147,7 @@
 
                 <!-- Sin movimientos -->
                 <tr th:if="${#lists.isEmpty(resultado.movimientos)}">
-                    <td colspan="5" class="py-12 px-4 text-center">
+                    <td colspan="6" class="py-12 px-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-outline text-[36px]">inbox</span>
                             <p class="font-body-md text-body-md">No hay movimientos en el período seleccionado.</p>

@@ -52,6 +52,7 @@
                         <tr>
                             <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
                             <th class="py-3 px-4 font-normal w-40 text-right">Cantidad</th>
+                            <th class="py-3 px-4 font-normal w-40 text-center">N° Lote</th>
                             <th class="py-3 px-4 font-normal w-44 text-center">Vencimiento</th>
                             <th class="py-3 px-4 font-normal w-16 text-center"></th>
                         </tr>
@@ -70,6 +71,11 @@
                             <td data-label="Cantidad" class="py-3 px-4">
                                 <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="0.00"
                                        class="w-32 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                            </td>
+                            <td data-label="Lote" class="py-3 px-4">
+                                <input type="text" name="lote" maxlength="40" placeholder="L-2609-01"
+                                       title="Número de lote del insumo (ej: L-2609-01)"
+                                       class="w-40 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                             </td>
                             <td data-label="Vencimiento" class="py-3 px-4">
                                 <input type="date" name="fechaVencimiento" title="Vencimiento del lote (opcional)"
@@ -152,6 +158,11 @@
                 <td data-label="Cantidad" class="py-3 px-4">
                     <input type="number" name="cantidad" min="0.01" step="0.01" required placeholder="0.00"
                            class="w-32 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface text-right font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+                </td>
+                <td data-label="Lote" class="py-3 px-4">
+                    <input type="text" name="lote" maxlength="40" placeholder="L-2609-01"
+                           title="Número de lote del insumo (ej: L-2609-01)"
+                           class="w-40 sm:w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
                 </td>
                 <td data-label="Vencimiento" class="py-3 px-4">
                     <input type="date" name="fechaVencimiento" title="Vencimiento del lote (opcional)"

@@ -71,7 +71,39 @@
                         kg
                     </span>
                 </div>
-                <p class="font-body-sm text-xs text-on-surface-variant">Si ya cargaste este mix en la misma fecha, la cantidad se acumulará en el lote del día.</p>
+                <p class="font-body-sm text-xs text-on-surface-variant">Si ya cargaste este mix en la misma fecha, la cantidad se acumulará en el lote del día y el desglose de materias primas se sumará.</p>
+            </div>
+
+            <!-- Desglose de materias primas: reparto de lotes ajustable (alta y edición) -->
+            <div th:if="${(modoNuevo != null and modoNuevo) or (modoEdicion != null and modoEdicion)}" class="space-y-1.5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                        Desglose de Materias Primas
+                    </label>
+                    <button type="button" id="btn-recalcular"
+                            class="inline-flex items-center justify-center gap-xs px-md py-2 border border-outline-variant/30 bg-surface-container text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-container-highest transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">refresh</span>
+                        <span>Recalcular</span>
+                    </button>
+                </div>
+                <p th:if="${modoNuevo != null and modoNuevo}" class="font-body-sm text-xs text-on-surface-variant">
+                    El sistema propone un reparto (primero el lote que vence antes). Podés ajustar las cantidades
+                    antes de guardar; la suma de cada materia prima debe igualar lo necesario.
+                </p>
+                <p th:if="${modoEdicion != null and modoEdicion}" class="font-body-sm text-xs text-on-surface-variant">
+                    El sistema propone el reparto ya registrado de esta elaboración. Podés ajustar las cantidades
+                    entre los lotes disponibles; si un solo lote no alcanza, repartí entre varios.
+                </p>
+
+                <div id="desglose-estado" class="hidden">
+                    <span class="material-symbols-outlined text-outline animate-spin">progress_activity</span>
+                    <span>Calculando desglose...</span>
+                </div>
+                <div id="desglose-error" class="hidden p-base bg-error-container/40 text-on-error-container border border-error/20 rounded-lg font-body-sm text-body-sm">
+                    <span id="desglose-error-text"></span>
+                </div>
+                <div id="desglose-contenido" class="space-y-md"
+                     th:attr="data-desglose-url=@{/elaboracion/desglose}, data-desglose-lote-id=${modoEdicion != null and modoEdicion ? lote.id : null}"></div>
             </div>
 
             <div class="flex items-center justify-end gap-sm pt-md border-t border-outline-variant/20">
@@ -88,6 +120,182 @@
 
         </form>
     </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mixSelect = document.getElementById('mix');
+        const cantidadInput = document.getElementById('cantidad');
+        const btnRecalcular = document.getElementById('btn-recalcular');
+        const desgloseSeccion = document.getElementById('desglose-contenido');
+        const desgloseEstado = document.getElementById('desglose-estado');
+        const desgloseError = document.getElementById('desglose-error');
+        const desgloseErrorText = document.getElementById('desglose-error-text');
+        const formulario = document.querySelector('form');
+        const URL_DESGLOSE = desgloseSeccion ? (desgloseSeccion.dataset.desgloseUrl || '/elaboracion/desglose') : null;
+        const LOTE_MIX_ID = desgloseSeccion ? (desgloseSeccion.dataset.desgloseLoteId || null) : null;
+
+        if (!desgloseSeccion) return;
+
+        function fmt(v) {
+            return (Math.round(v * 1000) / 1000).toString().replace('.', ',');
+        }
+
+        function fechaLote(l) {
+            if (!l || !l.vencimiento) return '—';
+            return l.vencimiento.substring(8, 10) + '/' + l.vencimiento.substring(5, 7) + '/' + l.vencimiento.substring(0, 4);
+        }
+
+        function esc(s) {
+            if (s === null || s === undefined) return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Calcula la suma de lotes de cada materia prima y valida el reparto.
+        function validarReparto() {
+            let ok = true;
+            desgloseSeccion.querySelectorAll('[data-mpid]').forEach(mp => {
+                const necesario = parseFloat(mp.dataset.necesario || '0');
+                let suma = 0;
+                mp.querySelectorAll('input.cant-lote').forEach(inp => {
+                    suma += parseFloat(inp.value || '0');
+                });
+                const badge = mp.querySelector('[data-sum-badge]');
+                badge.classList.remove('bg-primary/10', 'text-primary', 'bg-error-container/40', 'text-error');
+                if (Math.abs(suma - necesario) < 0.000001) {
+                    badge.classList.add('bg-primary/10', 'text-primary');
+                    badge.innerHTML = '<span class="material-symbols-outlined text-[15px]">check_circle</span> Usado ' + fmt(suma) + ' de ' + fmt(necesario) + ' kg';
+                    mp.dataset.valido = 'true';
+                    // Corrige el borde de los inputs de ese bloque
+                    mp.querySelectorAll('input.cant-lote').forEach(inp => inp.classList.remove('border-error'));
+                } else {
+                    badge.classList.add('bg-error-container/40', 'text-error');
+                    badge.innerHTML = '<span class="material-symbols-outlined text-[15px]">warning</span> Ajuste: usado ' + fmt(suma) + ' de ' + fmt(necesario) + ' kg';
+                    mp.dataset.valido = 'false';
+                    ok = false;
+                }
+            });
+            return ok;
+        }
+
+        function renderDesglose(data) {
+            if (!data || !data.items || data.items.length === 0) {
+                desgloseError.classList.remove('hidden');
+                desgloseErrorText.textContent = 'El mix no tiene una fórmula válida para desglosar.';
+                return;
+            }
+            let html = '';
+            data.items.forEach(item => {
+                html += `
+                    <div class="rounded-xl border border-outline-variant/20 overflow-hidden" data-mpid="${item.materiaPrimaId}" data-necesario="${item.necesario}" data-valido="true">
+                        <div class="px-4 py-3 bg-surface-container/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-outline text-[20px]">spa</span>
+                                <span class="font-label-caps text-label-caps font-bold text-on-surface">${esc(item.materiaPrimaNombre)}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-body-sm text-xs text-on-surface-variant">Necesario: <b>${fmt(item.necesario)} ${esc(item.unidad)}</b></span>
+                                <span data-sum-badge class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"></span>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps text-xs">
+                                <tr>
+                                    <th class="py-2 px-4 font-normal">N° Lote</th>
+                                    <th class="py-2 px-4 font-normal w-28 text-center">Vencimiento</th>
+                                    <th class="py-2 px-4 font-normal w-28 text-right">Disponible (kg)</th>
+                                    <th class="py-2 px-4 font-normal w-32 text-right">A usar (kg)</th>
+                                </tr>
+                                </thead>
+                                <tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/10">
+                                    ${item.lotes.map(l => `
+                                    <tr class="hover:bg-surface-container-low transition-colors">
+                                        <td class="py-2.5 px-4">
+                                            <span class="inline-flex items-center gap-1.5 rounded bg-secondary-container/60 text-on-secondary-container px-2 py-1 font-data-tabular text-data-tabular text-xs font-semibold">
+                                                <span class="material-symbols-outlined text-[14px]">tag</span>
+                                                ${esc(l.numeroLote) || 'Lote #' + l.loteId}
+                                            </span>
+                                        </td>
+                                        <td class="py-2.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant">${fechaLote(l)}</td>
+                                        <td class="py-2.5 px-4 text-right font-data-tabular text-data-tabular">${fmt(l.restante)}</td>
+                                        <td class="py-2.5 px-4 text-right">
+                                            <input type="hidden" name="loteId" value="${l.loteId}" />
+                                            <input type="number" name="cantidadLote" class="cant-lote w-24 text-right px-2 py-1.5 bg-surface border border-outline-variant/40 rounded-lg font-data-tabular text-data-tabular focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                                   step="0.001" min="0" value="${fmt(l.sugerido)}" />
+                                        </td>
+                                    </tr>`).join('')}
+                                    ${item.lotes.length === 0 ? `
+                                    <tr>
+                                        <td colspan="4" class="py-6 px-4 text-center text-on-surface-variant">
+                                            Sin lotes disponibles: registrá un ingreso de esta materia prima antes de elaborar.
+                                        </td>
+                                    </tr>` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`;
+            });
+            desgloseSeccion.innerHTML = html;
+            desgloseSeccion.querySelectorAll('input.cant-lote').forEach(inp => {
+                inp.addEventListener('input', validarReparto);
+            });
+            validarReparto();
+        }
+
+        async function cargarDesglose() {
+            const mixId = mixSelect.value;
+            const cantidad = cantidadInput.value;
+            desgloseError.classList.add('hidden');
+            if (!mixId || cantidad === '' || parseFloat(cantidad) <= 0) {
+                desgloseSeccion.innerHTML = '';
+                return;
+            }
+            desgloseSeccion.innerHTML = '';
+            desgloseEstado.classList.remove('hidden');
+            try {
+                let url = URL_DESGLOSE + '?mixId=' + encodeURIComponent(mixId) + '&cantidad=' + encodeURIComponent(cantidad);
+                if (LOTE_MIX_ID) {
+                    url += '&loteMixId=' + encodeURIComponent(LOTE_MIX_ID);
+                }
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (!resp.ok) {
+                    desgloseError.classList.remove('hidden');
+                    document.getElementById('desglose-error-text').textContent = (data && data.error) || 'No se pudo calcular el desglose.';
+                    return;
+                }
+                renderDesglose(data);
+            } catch (e) {
+                desgloseError.classList.remove('hidden');
+                document.getElementById('desglose-error-text').textContent = 'Error de conexión al calcular el desglose.';
+            } finally {
+                desgloseEstado.classList.add('hidden');
+            }
+        }
+
+        mixSelect.addEventListener('change', cargarDesglose);
+        cantidadInput.addEventListener('input', cargarDesglose);
+        if (btnRecalcular) {
+            btnRecalcular.addEventListener('click', cargarDesglose);
+        }
+
+        // Edición: precarga el desglose con el reparto registrado.
+        if (LOTE_MIX_ID) {
+            cargarDesglose();
+        }
+
+        formulario.addEventListener('submit', (e) => {
+            if (!validarReparto()) {
+                e.preventDefault();
+                desgloseError.classList.remove('hidden');
+                document.getElementById('desglose-error-text').textContent =
+                    'Corregí el reparto de lotes: en cada materia prima la suma debe igualar lo necesario.';
+                desgloseError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+        });
+    });
+</script>
 </div>
 
 </body>

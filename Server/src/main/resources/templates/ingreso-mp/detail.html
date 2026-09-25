@@ -40,6 +40,7 @@
                 <thead class="bg-surface-container border-b border-outline-variant/20 text-on-surface-variant font-label-caps text-label-caps">
                 <tr>
                     <th class="py-3 px-4 font-normal w-auto">Materia Prima</th>
+                    <th class="py-3 px-4 font-normal w-40 text-center">N° Lote</th>
                     <th class="py-3 px-4 font-normal w-32 text-center">Unidad</th>
                     <th class="py-3 px-4 font-normal w-36 text-right">Cantidad</th>
                     <th class="py-3 px-4 font-normal w-40 text-center">Vencimiento</th>
@@ -56,6 +57,17 @@
                         <span class="text-right md:text-left break-words" th:text="${det.materiaPrima?.nombre}">Almendras Nonpareil</span>
                     </td>
 
+                    <!-- Lote -->
+                    <td data-label="Lote" class="py-3.5 px-4">
+                        <span th:if="${det.numeroLote != null and !det.numeroLote.isEmpty()}"
+                              class="inline-flex items-center gap-1.5 rounded bg-secondary-container/60 text-on-secondary-container px-2 py-1 font-data-tabular text-data-tabular text-xs font-semibold">
+                            <span class="material-symbols-outlined text-[14px]">tag</span>
+                            <span th:text="${det.numeroLote}">L-2609-01</span>
+                        </span>
+                        <span th:if="${det.numeroLote == null or det.numeroLote.isEmpty()}"
+                              class="text-on-surface-variant" th:text="'—'">—</span>
+                    </td>
+
                     <!-- Unidad -->
                     <td data-label="Unidad" class="py-3.5 px-4 text-center font-label-caps text-on-surface-variant">
                         <span class="inline-block px-2.5 py-0.5 rounded bg-surface-container text-xs font-semibold"
@@ -69,8 +81,6 @@
                     <!-- Vencimiento -->
                     <td data-label="Vencimiento" class="py-3.5 px-4 text-center font-data-tabular text-data-tabular text-on-surface-variant"
                         th:text="${det.fechaVencimiento != null ? #temporals.format(det.fechaVencimiento, 'dd/MM/yyyy') : '—'}">—</td>
-
-                    <!-- Restante (FIFO) -->
                     <td data-label="Restante Lote" class="py-3.5 px-4 text-right font-data-tabular text-data-tabular">
                         <span th:if="${det.restante <= 0}"
                               class="inline-flex items-center justify-end gap-1 font-bold text-error">
@@ -90,7 +100,7 @@
                 <!-- Total Escritorio -->
                 <tfoot class="hidden md:table-footer-group">
                 <tr class="bg-surface-container-low border-t-2 border-outline-variant/30">
-                    <td colspan="4" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+                    <td colspan="5" class="py-4 px-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
                         Cantidad Total del Ingreso:
                     </td>
                     <td class="py-4 px-4 pr-6 text-right font-data-tabular text-body-lg font-bold text-primary">
@@ -107,8 +117,9 @@
         <div class="flex items-start gap-2 text-on-surface-variant">
             <span class="material-symbols-outlined text-outline text-[18px] mt-0.5">fact_check</span>
             <div class="font-body-sm text-body-sm space-y-1">
-                <p class="font-medium text-on-surface">Sobre la columna "Restante Lote"</p>
-                <p>Es el <span class="font-semibold text-on-surface">stock disponible de cada lote (batch)</span> recibido en este ingreso. Se descuenta a medida que las elaboraciones de mixes consumen materia prima (método FIFO: se agota el lote que vence primero).</p>
+                <p class="font-medium text-on-surface">Sobre las columnas "N° Lote" y "Restante Lote"</p>
+                <p>El <span class="font-semibold text-on-surface">N° Lote</span> es el identificador manual del insumo (ej: "ALM-2609-01" o el código del proveedor). Entre varias materias primas del mismo tipo, el número de lote es lo que permite distinguir de qué ingreso proviene cada stock.</p>
+                <p>La columna <span class="font-semibold text-on-surface">Restante Lote</span> muestra el <span class="font-semibold text-on-surface">stock disponible de ese lote</span> recibido en este ingreso. Se descuenta a medida que las elaboraciones de mixes consumen materia prima (método FIFO: se agota el lote que vence primero).</p>
                 <p class="text-on-surface-variant">No es el stock total de la materia prima: ese se ve en el catálogo / historial de movimientos. "Agotado" indica que el lote ya se consumió por completo.</p>
                 <p class="text-on-surface-variant">Si aparece "(íntegro)" es un lote sin seguimiento FIFO registrado, por lo que se toma como disponible en su totalidad.</p>
             </div>

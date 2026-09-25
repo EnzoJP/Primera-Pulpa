@@ -21,6 +21,11 @@ public class DetalleIngresoMP extends BaseEntity<Long> {
 
     private double cantidad;
 
+    // Número de lote del insumo, ingresado manualmente al cargar el ingreso
+    // (ej: "ALM-2609-01" o el código del proveedor). Identifica el lote en la
+    // trazabilidad de elaboraciones.
+    private String numeroLote;
+
     // Costo unitario de la materia prima al momento de la recepción del lote.
     private double costoUnitario;
 

@@ -92,6 +92,7 @@ public class IngresoMPController {
     public String confirmar(
             @RequestParam("materiaPrimaId") List<Long> mpIds,
             @RequestParam("cantidad") List<Double> cantidades,
+            @RequestParam(value = "lote", required = false) List<String> lotes,
             @RequestParam(value = "fechaVencimiento", required = false) List<String> vencimientos,
             @AuthenticationPrincipal User user,
             RedirectAttributes redirectAttributes,
@@ -112,6 +113,7 @@ public class IngresoMPController {
                 DetalleIngresoMP detalle = new DetalleIngresoMP();
                 detalle.setMateriaPrima(mp);
                 detalle.setCantidad(cantidades.get(i));
+                detalle.setNumeroLote(parseLote(lotes, i));
                 detalle.setFechaVencimiento(parseFechaVencimiento(vencimientos, i));
                 detalles.add(detalle);
             }
@@ -154,5 +156,16 @@ public class IngresoMPController {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private String parseLote(List<String> lotes, int index) {
+        if (lotes == null || index >= lotes.size()) {
+            return null;
+        }
+        String valor = lotes.get(index);
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        return valor.trim();
     }
 }

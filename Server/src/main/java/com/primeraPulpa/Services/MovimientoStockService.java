@@ -1,6 +1,8 @@
 package com.primeraPulpa.Services;
 
+import com.primeraPulpa.dto.ConsumoElaboracionDTO;
 import com.primeraPulpa.dto.MovimientoStockDTO;
+import com.primeraPulpa.entities.DetalleConsumoLote;
 import com.primeraPulpa.entities.DetalleFormula;
 import com.primeraPulpa.entities.DetalleIngresoMP;
 import com.primeraPulpa.entities.DetallePedido;
@@ -8,6 +10,7 @@ import com.primeraPulpa.entities.Formula;
 import com.primeraPulpa.entities.LoteMix;
 import com.primeraPulpa.entities.MateriaPrima;
 import com.primeraPulpa.entities.Mix;
+import com.primeraPulpa.repositories.DetalleConsumoLoteRepository;
 import com.primeraPulpa.repositories.DetalleIngresoMPRepository;
 import com.primeraPulpa.repositories.DetallePedidoRepository;
 import com.primeraPulpa.repositories.FormulaRepository;
@@ -39,19 +42,22 @@ public class MovimientoStockService {
     private final FormulaRepository formulaRepository;
     private final MateriaPrimaRepository materiaPrimaRepository;
     private final MixRepository mixRepository;
+    private final DetalleConsumoLoteRepository consumoLoteRepository;
 
     public MovimientoStockService(DetalleIngresoMPRepository detalleIngresoMPRepository,
                                   LoteMixRepository loteMixRepository,
                                   DetallePedidoRepository detallePedidoRepository,
                                   FormulaRepository formulaRepository,
                                   MateriaPrimaRepository materiaPrimaRepository,
-                                  MixRepository mixRepository) {
+                                  MixRepository mixRepository,
+                                  DetalleConsumoLoteRepository consumoLoteRepository) {
         this.detalleIngresoMPRepository = detalleIngresoMPRepository;
         this.loteMixRepository = loteMixRepository;
         this.detallePedidoRepository = detallePedidoRepository;
         this.formulaRepository = formulaRepository;
         this.materiaPrimaRepository = materiaPrimaRepository;
         this.mixRepository = mixRepository;
+        this.consumoLoteRepository = consumoLoteRepository;
     }
 
     /**
@@ -80,7 +86,8 @@ public class MovimientoStockService {
                     : null;
             Long docId = detalle.getIngresoMP().getId();
             todos.add(new MovimientoStockDTO("IngresoMateriaPrima", fecha,
-                    detalle.getCantidad(), mp.getNombre(), usuario, docId, 0));
+                    detalle.getCantidad(), mp.getNombre(), usuario, docId, 0,
+                    detalle.getNumeroLote(), null));
         }
 
         // 2) Salidas por Elaboraciones de mixes que consumen esta materia prima
@@ -100,9 +107,25 @@ public class MovimientoStockService {
                     double consumido = redondear((detalle.getGramos() / (1000.0 * formula.getCantidad()))
                             * (lote.getCantidadElaborada() != null ? lote.getCantidadElaborada() : 0.0));
                     if (consumido <= 0) continue;
+
+                    // Desglose real por lote registrado (si la elaboración se cargó con lote).
+                    String loteEtiqueta = null;
+                    List<ConsumoElaboracionDTO> desglose = new ArrayList<>();
+                    for (DetalleConsumoLote c : consumoLoteRepository.findByLoteMixId(lote.getId())) {
+                        if (c.getMateriaPrima() == null || !mpId.equals(c.getMateriaPrima().getId())) continue;
+                        desglose.add(new ConsumoElaboracionDTO(
+                                c.getMateriaPrima().getNombre(), etiquetaLote(c.getLote()),
+                                c.getLote() != null ? c.getLote().getFechaVencimiento() : null,
+                                c.getCantidadConsumida()));
+                        if (loteEtiqueta == null) loteEtiqueta = "";
+                        else loteEtiqueta += ", ";
+                        loteEtiqueta += etiquetaLote(c.getLote());
+                    }
+
                     String usuario = lote.getUsuario() != null ? lote.getUsuario().getNombre() : null;
                     todos.add(new MovimientoStockDTO("ElaboracionMix", lote.getFechaElaboracion(),
-                            -consumido, lote.getMix().getNombre(), usuario, lote.getId(), 0));
+                            -consumido, lote.getMix().getNombre(), usuario, lote.getId(), 0,
+                            loteEtiqueta, desglose.isEmpty() ? null : desglose));
                     break;
                 }
             }
@@ -129,9 +152,18 @@ public class MovimientoStockService {
             if (lote.getFechaElaboracion() != null && lote.getMix() != null
                     && lote.getMix().getId().equals(mixId)) {
                 String usuario = lote.getUsuario() != null ? lote.getUsuario().getNombre() : null;
+                List<ConsumoElaboracionDTO> desglose = new ArrayList<>();
+                for (DetalleConsumoLote c : consumoLoteRepository.findByLoteMixId(lote.getId())) {
+                    desglose.add(new ConsumoElaboracionDTO(
+                            c.getMateriaPrima() != null ? c.getMateriaPrima().getNombre() : null,
+                            etiquetaLote(c.getLote()),
+                            c.getLote() != null ? c.getLote().getFechaVencimiento() : null,
+                            c.getCantidadConsumida()));
+                }
                 todos.add(new MovimientoStockDTO("ElaboracionMix", lote.getFechaElaboracion(),
                         lote.getCantidadElaborada() != null ? lote.getCantidadElaborada() : 0.0,
-                        mix.getNombre(), usuario, lote.getId(), 0));
+                        mix.getNombre(), usuario, lote.getId(), 0,
+                        null, desglose.isEmpty() ? null : desglose));
             }
         }
 
@@ -168,7 +200,8 @@ public class MovimientoStockService {
             acumulado += m.getCantidad();
             double saldo = redondear(acumulado);
             conSaldo.add(new MovimientoStockDTO(m.getTipo(), m.getFecha(), m.getCantidad(),
-                    m.getDescripcion(), m.getUsuario(), m.getDocumentoId(), saldo));
+                    m.getDescripcion(), m.getUsuario(), m.getDocumentoId(), saldo,
+                    m.getLote(), m.getConsumos()));
         }
 
         List<MovimientoStockDTO> enPeriodo = conSaldo.stream()
@@ -191,6 +224,13 @@ public class MovimientoStockService {
 
     private static double redondear(double v) {
         return Math.round(v * 1_000_000.0) / 1_000_000.0;
+    }
+
+    // Etiqueta legible de un lote: número manual si existe, si no el id interno.
+    private static String etiquetaLote(DetalleIngresoMP lote) {
+        if (lote == null) return null;
+        return (lote.getNumeroLote() != null && !lote.getNumeroLote().isEmpty())
+                ? lote.getNumeroLote() : "#" + lote.getId();
     }
 
     /**
