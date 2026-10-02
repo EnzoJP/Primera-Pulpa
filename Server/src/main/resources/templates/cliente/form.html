@@ -76,11 +76,20 @@
                 <!-- Contacto -->
                 <div class="space-y-1.5">
                     <label for="contacto" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
-                        Contacto (Teléfono / Email / Persona) <span class="text-error">*</span>
+                        Contacto (Teléfono / Email / Persona)
                     </label>
-                    <input type="text" id="contacto" th:field="*{contacto}" required placeholder="Ej. +54 9 11 4455-6677"
+                    <input type="text" id="contacto" th:field="*{contacto}" placeholder="Ej. +54 9 11 4455-6677"
                            class="w-full px-md py-2.5 bg-surface border border-outline-variant/40 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md transition-all placeholder:text-outline"/>
                     <p class="font-body-sm text-xs text-on-surface-variant">Teléfono, email o persona de contacto comercial.</p>
+                </div>
+
+                <div class="sm:col-span-2 space-y-1.5">
+                    <label for="otrosNombres" class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-xs">
+                        Otros nombres
+                    </label>
+                    <input type="text" id="otrosNombres" th:field="*{otrosNombres}" placeholder="Ej. Beto; Betito, El Turco"
+                           class="w-full px-md py-2.5 bg-surface border border-outline-variant/40 rounded-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md transition-all placeholder:text-outline"/>
+                    <p class="font-body-sm text-xs text-on-surface-variant">Personas que piden por este cliente, separadas por coma o punto y coma. El bot de Telegram las reconoce como alias.</p>
                 </div>
             </div>
 

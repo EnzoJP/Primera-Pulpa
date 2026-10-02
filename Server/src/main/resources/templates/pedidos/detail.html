@@ -219,7 +219,7 @@
                         </td>
 
                         <!-- Acción Individual -->
-                        <td sec:authorize="hasRole('ADMIN')" data-label="Acción" class="py-3.5 px-4 text-center"
+                        <td data-label="Acción" class="py-3.5 px-4 text-center"
                             th:if="${pedido.estadoPedido?.name() != 'ENTREGADO' and pedido.estadoPedido?.name() != 'CANCELADO'}">
 
                             <form th:if="${!det.preparado}"

@@ -45,7 +45,7 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/error/**").permitAll()
+            .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/error/**","/apple-touch-icon.png").permitAll()
             .requestMatchers("/usuarios/**", "/backups/**", "/formulas/nuevo", "/formulas/*/editar" ,"/materias-primas/*","/materias-primas/*/editar","/materias-primas/nuevo","/materias-primas/*/eliminar", "/unidades-medida/**",
                     "/mixes/nuevo","/mixes/*/editar","/elaboracion/*/editar", "/pedidos/*/editar","/pedidos/nuevo","/estadisticas/**" ,"/clientes/**","/costos-adicionales/**").hasRole("ADMIN")
             .anyRequest().hasAnyRole("ADMIN", "EMPLEADO"))

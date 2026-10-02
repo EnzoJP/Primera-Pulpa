@@ -5,6 +5,7 @@ import com.primeraPulpa.dto.DesgloseElaboracionDTO;
 import com.primeraPulpa.entities.*;
 import com.primeraPulpa.exceptions.ErrorServiceException;
 import com.primeraPulpa.repositories.*;
+import com.primeraPulpa.util.Textos;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -494,6 +495,46 @@ public class MixService extends BaseService<Mix, Long> {
         }
 
         return new DesgloseElaboracionDTO(mix.getId(), mix.getNombre(), cantidad, items);
+    }
+
+    /**
+     * Busca el mix más parecido a un nombre libre de un mensaje de Telegram
+     * (ej: "trop con mani" → "Tropical con Maní"). Si el mensaje indica la
+     * presentación (kg por paquete, el "x 5"), se priorizan los mixes de ese
+     * tamaño; si no hay ninguno, se amplía a todos los activos.
+     * Devuelve null si nada supera el umbral de confianza.
+     */
+    @Transactional(readOnly = true)
+    public MixMatch matchearMix(String texto, Double presentacionKg) {
+        List<Mix> candidatos = repository.findAll().stream()
+                .filter(m -> !Boolean.TRUE.equals(m.getEliminado()))
+                .toList();
+        if (presentacionKg != null && presentacionKg > 0) {
+            List<Mix> deEseTamanio = candidatos.stream()
+                    .filter(m -> Math.abs(m.getCantidadPorUnidadOrDefault() - presentacionKg) < 0.05)
+                    .toList();
+            if (!deEseTamanio.isEmpty()) {
+                candidatos = deEseTamanio;
+            }
+        }
+
+        String consultaNorm = Textos.normalizar(texto);
+        Mix mejor = null;
+        double mejorScore = 0.0;
+        for (Mix m : candidatos) {
+            double score = Textos.similitudFuzzy(m.getNombre(), consultaNorm);
+            if (score > mejorScore) {
+                mejorScore = score;
+                mejor = m;
+            }
+        }
+        if (mejor == null || mejorScore < 0.6) {
+            return null;
+        }
+        return new MixMatch(mejor, mejorScore);
+    }
+
+    public record MixMatch(Mix mix, double score) {
     }
 
     // Descuenta la cantidad necesaria de los lotes de la materia prima en orden FEFO

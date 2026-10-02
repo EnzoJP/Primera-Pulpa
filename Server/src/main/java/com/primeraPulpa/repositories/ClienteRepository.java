@@ -11,4 +11,7 @@ public interface ClienteRepository extends BaseRepository<Cliente, Long> {
 
     // Para validar duplicados / búsqueda exacta por cuit
     Cliente findByCuit(String cuit);
+
+    //buscar clientes por nombre u otros nombres
+    List<Cliente> findByNombreContainingIgnoreCaseOrOtrosNombresContainingIgnoreCase(String nombre, String otrosNombres);
 }

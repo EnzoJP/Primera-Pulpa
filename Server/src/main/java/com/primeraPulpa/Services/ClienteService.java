@@ -25,15 +25,6 @@ public class ClienteService extends BaseService<Cliente, Long> {
         if (cliente.getNombre() == null || cliente.getNombre().trim().isEmpty()) {
             throw new ErrorServiceException("Debe indicar el nombre del cliente");
         }
-        if (cliente.getContacto() == null || cliente.getContacto().trim().isEmpty()) {
-            throw new ErrorServiceException("Debe indicar un contacto del cliente");
-        }
-        if (cliente.getCuit() != null && !cliente.getCuit().trim().isEmpty()) {
-            String cuit = cliente.getCuit().replaceAll("[^0-9]", "");
-            if (cuit.isEmpty() || cuit.length() < 3) {
-                throw new ErrorServiceException("El CUIT solo puede contener números (y separadores como guiones o espacios).");
-            }
-        }
     }
 
     // HU-12: no se puede eliminar un cliente con pedidos asociados
@@ -50,7 +41,7 @@ public class ClienteService extends BaseService<Cliente, Long> {
             return listarActivos();
         }
         return clienteRepository
-                .findByNombreContainingIgnoreCaseOrContactoContainingIgnoreCase(query.trim(), query.trim())
+                .findByNombreContainingIgnoreCaseOrOtrosNombresContainingIgnoreCase(query.trim(), query.trim())
                 .stream()
                 .filter(c -> !Boolean.TRUE.equals(c.getEliminado()))
                 .toList();
@@ -64,6 +55,7 @@ public class ClienteService extends BaseService<Cliente, Long> {
             existente.setNombre(entidadNueva.getNombre());
             existente.setCuit(entidadNueva.getCuit());
             existente.setContacto(entidadNueva.getContacto());
+            existente.setOtrosNombres(entidadNueva.getOtrosNombres());
             Cliente guardado = clienteRepository.save(existente);
             try {
                 postModificacion(guardado);

@@ -4,6 +4,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${titulo}">Primera Pulpa</title>
 
+
+    <!-- Nombre que aparecerá debajo del ícono en la pantalla de inicio -->
+    <meta name="apple-mobile-web-app-title" content="Primera Pulpa">
+
+    <!-- Indica a iOS que la web puede ejecutarse como app independiente (pantalla completa) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Cambia el color de la barra de estado superior del iPhone (default, black, o black-translucent) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Ícono para la pantalla de inicio de Apple -->
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/apple-touch-icon.png}">
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

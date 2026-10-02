@@ -18,6 +18,7 @@ public class Cliente extends BaseEntity<Long> {
     private String cuit;
     private String nombre;
     private String contacto;
+    private String otrosNombres;
 
     @Override
     public Long getId() {
@@ -27,6 +28,14 @@ public class Cliente extends BaseEntity<Long> {
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getNombre() {
+        return this.nombre;
     }
 
     @Override
