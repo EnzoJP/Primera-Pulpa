@@ -63,8 +63,18 @@ public class UsuarioService extends BaseService<Usuario, Long> {
 
     @Override
     protected void preBaja(Long id) throws ErrorServiceException {
-        Usuario objetivo = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ErrorServiceException("El usuario no existe."));
+        Optional<Usuario> objetivoOpt = usuarioRepository.findById(id);
+        if (objetivoOpt.isEmpty()) {
+
+            // BaseService.bajaLogica detectará que no existe y devolverá false. (para que pase el baseService test)
+            return;
+        }
+        /**
+         * Usuario objetivo = usuarioRepository.findById(id)
+         *
+         * .orElseThrow(() -> new ErrorServiceException("El usuario no existe."));
+         */
+        Usuario objetivo = objetivoOpt.get();
 
         // No se puede desactivar la propia cuenta.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
